@@ -10,6 +10,9 @@ Este índice está pensado para que cualquier lector encuentre rápido:
 
 - Compendio (PDF): [`OCC_Compendio_Canonico_Completo.pdf`](OCC_Compendio_Canonico_Completo.pdf)
 - Guía de inicio: [`START_HERE.md`](START_HERE.md)
+- Executive Summary: [`EXECUTIVE_SUMMARY.md`](EXECUTIVE_SUMMARY.md)
+- Glosario: [`GLOSSARY.md`](GLOSSARY.md)
+- Releasing (DOI + ArXiv): [`RELEASING.md`](RELEASING.md)
 
 ## Documentos canónicos adicionales (PDF)
 

@@ -2,6 +2,12 @@
 
 Si estás viendo este repositorio por primera vez, esta página es el **punto de entrada**.
 
+> Si el PDF de 300+ páginas te intimida: perfecto. **No está pensado para leerse linealmente**.
+> Está pensado como **manual de referencia**. Para una visión rápida, usa el *Executive Summary*.
+
+📌 Executive Summary (científico): [`EXECUTIVE_SUMMARY.md`](EXECUTIVE_SUMMARY.md)
+📖 Glosario (no‑expertos): [`GLOSSARY.md`](GLOSSARY.md)
+
 ## Qué es OCC
 
 **OCC** (Operational Consistency Compiler) es un runtime reproducible con CLI (`occ`) para:
@@ -13,6 +19,19 @@ El objetivo práctico del repo es doble:
 
 1. **Acceso a conceptos** (documentación canónica + compendio).
 2. **Uso inmediato de herramientas** (CLI + suite MRD ejecutable).
+
+## Por qué existe (en una frase)
+
+OCC existe para filtrar afirmaciones físicas que, aun siendo matemáticamente consistentes, no son
+**operacionalmente evaluables** (o quedan “malleables” por parámetros UV inaccesibles).
+
+## Predicción destacada (para orientar lectura)
+
+El canon incluye una predicción falsable destacada:
+
+- Correlación **EDM ↔ GW** en escenarios de **bariogénesis**.
+
+Si vienes del lado experimental: esta es una buena “entrada” porque aterriza el marco en un observable.
 
 ## Ruta rápida (5 minutos)
 
@@ -56,6 +75,10 @@ Sugerencia de lectura:
 - No lo leas linealmente. Úsalo como **manual de referencia**.
 - Empieza por la introducción y el índice.
 - Luego salta a la sección que corresponda al tipo de afirmación/experimento que quieras evaluar.
+
+Recomendación:
+
+- Si eres *no‑experto* (o vienes de otra subárea), abre primero el glosario: [`GLOSSARY.md`](GLOSSARY.md).
 
 ## Mapa del repositorio
 
