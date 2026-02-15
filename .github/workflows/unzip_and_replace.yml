@@ -1,0 +1,89 @@
+name: Unzip release and replace repo tree
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  unzip-replace:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unzip and replace tree
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Listing zips in repo root:"
+          ls -lah *.zip || true
+
+          # Prefer enterprise zip; otherwise pick largest zip in root
+          ZIP=""
+          if ls -1 OCC_GITHUB_READY_ENTERPRISE*.zip >/dev/null 2>&1; then
+            ZIP="$(ls -1 OCC_GITHUB_READY_ENTERPRISE*.zip | head -n 1)"
+          else
+            ZIP="$(ls -S1 *.zip | head -n 1 || true)"
+          fi
+
+          if [ -z "${ZIP}" ] || [ ! -f "${ZIP}" ]; then
+            echo "ERROR: No ZIP found in repo root to unpack."
+            exit 1
+          fi
+
+          echo "Using ZIP: ${ZIP}"
+
+          rm -rf .tmp_unpack
+          mkdir -p .tmp_unpack
+          unzip -q "${ZIP}" -d .tmp_unpack
+
+          ROOT_EXTRACT="$(find .tmp_unpack -maxdepth 6 -name pyproject.toml -print -quit | xargs -I{} dirname {})"
+          if [ -z "${ROOT_EXTRACT}" ] || [ ! -d "${ROOT_EXTRACT}" ]; then
+            echo "ERROR: Could not locate pyproject.toml inside ZIP payload."
+            exit 1
+          fi
+          echo "ROOT_EXTRACT=${ROOT_EXTRACT}"
+
+          # Replace directories if they exist in payload
+          for d in occ docs tests ILSC_MRD_suite_15_modulos_CANON .github; do
+            if [ -d "${ROOT_EXTRACT}/${d}" ]; then
+              mkdir -p "${d}"
+              rsync -a --delete "${ROOT_EXTRACT}/${d}/" "./${d}/"
+            fi
+          done
+
+          # Copy common root files if present
+          for f in README.md pyproject.toml LICENSE NOTICE CITATION.cff CITATION.bib .gitignore .editorconfig .gitattributes CONTRIBUTING.md SECURITY.md CODE_OF_CONDUCT.md Makefile .pre-commit-config.yaml; do
+            if [ -f "${ROOT_EXTRACT}/${f}" ]; then
+              cp -f "${ROOT_EXTRACT}/${f}" "./${f}"
+            fi
+          done
+
+          # Remove old zip if present
+          if [ -f "OCC_GITHUB_PROJECT_v1.0.1.zip" ]; then
+            git rm -f "OCC_GITHUB_PROJECT_v1.0.1.zip" || true
+          fi
+
+          # Remove the enterprise zip from tracking
+          git rm -f "${ZIP}" || true
+
+          rm -rf .tmp_unpack
+
+      - name: Commit & push
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git status
+
+          git commit -m "chore: replace zip-only repo with enterprise-ready tree" || {
+            echo "No changes to commit."
+            exit 0
+          }
+
+          git push origin HEAD:main
