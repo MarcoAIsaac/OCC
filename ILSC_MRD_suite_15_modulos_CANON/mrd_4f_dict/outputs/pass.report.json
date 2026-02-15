@@ -1,0 +1,104 @@
+{
+  "input": "inputs/mrd_4f_dict/pass.yaml",
+  "artifact": {
+    "observables": {
+      "O1": 0.9729603394717602,
+      "O2": 0.9751703272018161
+    },
+    "rules": [
+      "Composition: U(loop)=Π U(path_i)",
+      "Gauge: U -> V U V^{-1}; Tr(U) invariant"
+    ]
+  },
+  "locks": {
+    "4F1_DICT_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "Dictionary declared"
+    },
+    "4F2_GROUP_VALID": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "All path holonomies unitary within eps"
+    },
+    "4F3_GAUGE_INVARIANCE": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "Observables invariant under conjugation within eps"
+    },
+    "4F4_CLOSURE": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "Loop holonomies in SU(2) within tolerance"
+    }
+  },
+  "diagnostic": [],
+  "verdict": "PASS",
+  "first_reason": "",
+  "certificates": {
+    "RFS": {
+      "verdict": "PASS(RFS)",
+      "note": "RFS certificate checks passed (incl. RFS5)",
+      "cert": {
+        "cert_type": "RFS-CERT",
+        "cert_version": "v1",
+        "resource_budget": {
+          "compute_seconds": 30,
+          "grid_max": 2048,
+          "tolerance": 1e-10
+        },
+        "isaac_link": {
+          "OmegaI_max_resolution": "declared"
+        },
+        "pcn_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "pcd_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "idealizations": [
+          {
+            "name": "toy_SU2",
+            "finite_surrogate": "2x2 complex matrices"
+          }
+        ],
+        "audit_hashes": {
+          "code": "sha256:a05e910a9fcf57484da173dc1d5e3601b9a0b671d1a80928677bb5df2b63fb8a",
+          "data": "sha256:a308e4a5f33c5158eb7004e8628c9ef559db5bc06fad4a225a402dfe673c85ee",
+          "env": "sha256:62f0f3308d5872918fcd4500d2727a7847324c5d0cde3ec8739fb448d52fed85"
+        }
+      }
+    },
+    "IO": {
+      "verdict": "PASS(IO)",
+      "note": "IO certificate checks passed",
+      "cert": {
+        "cert_type": "IO-CERT",
+        "cert_version": "v1",
+        "map_O_theta": "O = Tr(U(loop))/2; parameters are axis/angle of paths (toy)",
+        "theta_effective_list": [
+          "angle_p1",
+          "angle_p2",
+          "angle_p3"
+        ],
+        "observables_list": [
+          "O1",
+          "O2"
+        ],
+        "identifiability_metric": {
+          "name": "toy_rank_proxy",
+          "value": 0.2
+        },
+        "threshold_tau": 0.1,
+        "degeneracies_list": [
+          "toy dataset may be underdetermined; here we only require minimal tau"
+        ],
+        "dataset_equivalence": [
+          "mrd_4f_dict_spec_v1"
+        ]
+      }
+    }
+  }
+}

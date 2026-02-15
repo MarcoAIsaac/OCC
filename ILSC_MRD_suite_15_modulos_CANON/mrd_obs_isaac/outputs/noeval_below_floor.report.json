@@ -1,0 +1,81 @@
+{
+  "module": "OBS_ISAAC",
+  "verdict": "NO-EVAL(ISAAC1_FLOOR_RESPECTED)",
+  "first_reason": "ISAAC1_FLOOR_RESPECTED",
+  "artifact": {
+    "module": "observability_isaac",
+    "ISAAC": {
+      "concept": "SR causal limit + QM E~hbar/λ + GR backreaction of probe energy-momentum",
+      "LI_m": 1.61625502392855e-35,
+      "constants": {
+        "c": 299792458.0,
+        "hbar": 1.054571817e-34,
+        "G": 6.6743e-11
+      }
+    },
+    "instrument": {
+      "type": "interferometer",
+      "wavelength_m": 5e-07,
+      "aperture_m": 1.0,
+      "baseline_m": 100.0,
+      "note": "toy spec"
+    },
+    "declared_resolution_estimates": {
+      "diffraction_lambda_over_D_m": 5e-07,
+      "interferometer_lambda_over_B_m": 5e-09
+    },
+    "requested_resolution_m": 1e-40,
+    "safety_factor": 10.0,
+    "operational_floor_m": 1.61625502392855e-34,
+    "OmegaI_decl": {
+      "E_max_GeV": 1000.0,
+      "L_min_declared_m": 1e-40,
+      "notes": "toy OmegaI"
+    }
+  },
+  "locks": {
+    "ISAAC0_CONCEPT_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "ISAAC concept declared (equation is instantiation)"
+    },
+    "ISAAC1_REQUESTED_RESOLUTION_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "requested_resolution_m declared"
+    },
+    "ISAAC1_FLOOR_RESPECTED": {
+      "pass": false,
+      "verdict": "NO-EVAL(ISAAC1)",
+      "note": "requested_resolution_m=1.000e-40 < safety*LI=1.616e-34"
+    },
+    "ISAAC2_OMEGAI_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "OmegaI declared"
+    },
+    "ISAAC2_OMEGAI_LMIN_RESPECTS_FLOOR": {
+      "pass": false,
+      "verdict": "NO-EVAL(ISAAC2)",
+      "note": "OmegaI L_min undercuts ISAAC floor"
+    },
+    "RFS1_RESOURCE_BUDGET_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "resources.budget declared"
+    }
+  },
+  "diagnostic": [
+    "Requested resolution below ISAAC operational floor -> NO-EVAL(ISAAC1)",
+    "OmegaI L_min undercuts ISAAC floor -> NO-EVAL(ISAAC2)"
+  ],
+  "certificates": {
+    "RFS": {
+      "verdict": "PASS(RFS)",
+      "note": "RFS certificate checks passed (incl. RFS5)"
+    }
+  },
+  "dataset_hashes": {
+    "meta": "sha256:aaa2a5161c621c6807ca67420ceec66855b4426df086f34374f444cf513ecff7"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "cert_type": "IO-CERT",
+  "cert_version": "v1",
+  "map_O_theta": "Toy decoherence D(t)=exp(-Gamma t) gives redundancy R=N(1-D). Locks require fast decoherence, stability, redundancy, and no-backflow.",
+  "theta_effective_list": [
+    "Gamma_decoh",
+    "N_fragments"
+  ],
+  "observables_list": [
+    "tau_dec",
+    "R",
+    "PASS/FAIL locks"
+  ],
+  "identifiability_metric": {
+    "name": "toy_redundancy_proxy",
+    "value": 0.2
+  },
+  "threshold_tau": 0.1,
+  "degeneracies_list": [
+    "Toy; real objectivity uses mutual information over environment fragments."
+  ],
+  "dataset_equivalence": [
+    "mrd_rama_ef_times_v1"
+  ]
+}

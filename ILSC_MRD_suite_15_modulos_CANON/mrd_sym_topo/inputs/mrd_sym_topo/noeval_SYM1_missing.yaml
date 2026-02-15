@@ -1,0 +1,23 @@
+case:
+  name: mrd_sym_topo_noeval_SYM1
+  description: 'SYM/ANOM/TOPO MRD — NO-EVAL(SYM1): missing symmetry group'
+dataset:
+  dataset_id: mrd_sym_anom_topo_v1
+  csv_path: data/mrd_sym_anom_topo_v1.csv
+  meta_path: data/mrd_sym_anom_topo_v1.meta.json
+symmetry:
+  notes: toy U(1)
+topology:
+  tol_integer: 1.0e-08
+tolerances:
+  anom_tol: 1.0e-12
+judge_certs:
+  IO:
+    enabled: true
+    path: certs/io_cert_sym_anom_topo_v1.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_sym_anom_topo_v1.json
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json

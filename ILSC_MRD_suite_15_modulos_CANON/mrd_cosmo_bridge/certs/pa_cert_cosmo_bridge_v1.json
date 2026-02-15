@@ -1,0 +1,45 @@
+{
+  "cert_type": "PA-CERT",
+  "cert_version": "v1",
+  "projection_version": "COSMO-BRIDGE-toy-v1",
+  "Pi_signature": "H(z)=H0 sqrt(Om(1+z)^3+(1-Om)(1+z)^{3(1+w0)}) with bounded Δw",
+  "assumptions": [
+    "Flat universe toy",
+    "w(z) truncated to constant w0",
+    "Missing structure bounded by delta_w_bound"
+  ],
+  "delta_proj_method": "delta_w_bound_to_delta_H_bound",
+  "delta_proj": {
+    "z": [
+      0.0,
+      0.5,
+      1.0
+    ],
+    "delta": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "E": [
+      0.0,
+      0.5,
+      1.0
+    ]
+  },
+  "kappa_rule": {
+    "kappa": 1.0
+  },
+  "sigma_data": {
+    "sigma": 8.0
+  },
+  "hashes": {
+    "code": "AUTO",
+    "data": "AUTO"
+  },
+  "seeds": {
+    "generator": 20260213
+  },
+  "run_log": {
+    "note": "AUTO hashes filled by validator"
+  }
+}

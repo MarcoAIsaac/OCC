@@ -1,0 +1,17 @@
+case:
+  name: mrd_grav_ir_starter
+  description: 'Starter MRD for GRAV_IR (IR effective gravity: GW/PPN)'
+module:
+  name: mrd_grav_ir
+  status: TODO
+judge_certs:
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json
+  IO:
+    enabled: false
+    path: certs/io_cert_example.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_example.json
+dataset: null

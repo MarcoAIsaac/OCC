@@ -1,0 +1,30 @@
+case:
+  name: mrd_eft_ren_noeval_EFT1
+  description: 'EFT REN MRD — NO-EVAL(EFT1): missing cutoff'
+dataset:
+  dataset_id: mrd_eft_ren_data_v1
+  csv_path: data/mrd_eft_ren_data_v1.csv
+  meta_path: data/mrd_eft_ren_data_v1.meta.json
+eft:
+  c6_mu0: 0.5
+  gamma: 0.05
+  c8_max_abs: 0.1
+scales:
+  mu0_GeV: 100.0
+  mu_mid_GeV: 300.0
+  mu1_GeV: 1000.0
+omegaI:
+  frac_cutoff_max: 0.5
+tolerances:
+  rg_tol: 1.0e-10
+kappa: 1.0
+judge_certs:
+  PA:
+    enabled: true
+    path: certs/pa_cert_eft_ren_v1.json
+  IO:
+    enabled: true
+    path: certs/io_cert_eft_ren_v1.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_eft_ren_v1.json

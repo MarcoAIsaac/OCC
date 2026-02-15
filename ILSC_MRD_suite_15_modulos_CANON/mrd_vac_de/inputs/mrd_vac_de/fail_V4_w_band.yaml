@@ -1,0 +1,24 @@
+case:
+  name: mrd_vac_de_fail_V4
+  description: 'VAC/DE MRD — FAIL(V4): w outside band'
+dataset:
+  dataset_id: mrd_vac_de_bounds_v1
+  csv_path: data/mrd_vac_de_bounds_v1.csv
+  meta_path: data/mrd_vac_de_bounds_v1.meta.json
+params:
+  w: -0.2
+  rho0: 1.0
+  coupling_to_matter: 0.0
+policy:
+  allow_w_variable: false
+  has_exchange_Q: false
+judge_certs:
+  IO:
+    enabled: true
+    path: certs/io_cert_vac_de_v1.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_vac_de_v1.json
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json

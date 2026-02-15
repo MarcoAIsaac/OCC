@@ -1,0 +1,117 @@
+{
+  "input": "inputs/mrd_grav_ir/fail_GR3_cT.yaml",
+  "artifact": {
+    "module": "grav_ir",
+    "params": {
+      "gamma_ppn": 1.000001,
+      "beta_ppn": 1.000001,
+      "cT_over_c": 1.0001
+    },
+    "deviations": {
+      "dgamma": 9.999999999177334e-07,
+      "dbeta": 9.999999999177334e-07,
+      "dcT": 9.999999999998899e-05
+    },
+    "bounds": {
+      "dgamma_max": 2.3e-05,
+      "dbeta_max": 8e-05,
+      "dcT_max": 6e-15,
+      "v_over_c_dataset": 0.0001
+    },
+    "omegaI": {
+      "v_over_c_max": 0.3
+    },
+    "notes": "Toy PPN & GW-propagation checks. Replace with full PPN+GW likelihoods and IR handling."
+  },
+  "locks": {
+    "GR0_PARAMS_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "params declared"
+    },
+    "GR1_IR_DOMAIN": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "v/c within IR domain"
+    },
+    "GR2_PPN": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "|dgamma|=1e-06, |dbeta|=1e-06"
+    },
+    "GR3_GW_SPEED": {
+      "pass": false,
+      "verdict": "FAIL(GR3)",
+      "note": "|dcT|=0.0001 > 6e-15"
+    }
+  },
+  "diagnostic": [
+    "GW speed bound violated -> FAIL(GR3)"
+  ],
+  "verdict": "FAIL(GR3_GW_SPEED)",
+  "first_reason": "GR3_GW_SPEED",
+  "certificates": {
+    "RFS": {
+      "verdict": "PASS(RFS)",
+      "note": "RFS certificate checks passed (incl. RFS5)",
+      "cert": {
+        "cert_type": "RFS-CERT",
+        "cert_version": "v1",
+        "resource_budget": {
+          "compute_seconds": 30
+        },
+        "isaac_link": {
+          "OmegaI_max_resolution": "declared"
+        },
+        "pcn_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "pcd_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "idealizations": [
+          {
+            "name": "toy_PPN_GW",
+            "finite_surrogate": "finite bounds checks"
+          }
+        ],
+        "audit_hashes": {
+          "code": "sha256:235c3006336363991b17f93f350bff96fd52b6d2d0520013bc446133d71567c5",
+          "data": "sha256:4f9fce40405d701732a993a4fbf5866152670a327004b4c019a92e4a3d1a08ae",
+          "env": "sha256:62f0f3308d5872918fcd4500d2727a7847324c5d0cde3ec8739fb448d52fed85"
+        }
+      }
+    },
+    "IO": {
+      "verdict": "PASS(IO)",
+      "note": "IO certificate checks passed",
+      "cert": {
+        "cert_type": "IO-CERT",
+        "cert_version": "v1",
+        "map_O_theta": "Params=(gamma_ppn,beta_ppn,cT/c). Locks enforce PPN bounds and GW speed bound within IR domain.",
+        "theta_effective_list": [
+          "gamma_ppn",
+          "beta_ppn",
+          "cT_over_c"
+        ],
+        "observables_list": [
+          "GR2_PPN",
+          "GR3_GW_SPEED"
+        ],
+        "identifiability_metric": {
+          "name": "toy_constraint_proxy",
+          "value": 0.2
+        },
+        "threshold_tau": 0.1,
+        "degeneracies_list": [
+          "Toy; real PPN has correlations and systematics."
+        ],
+        "dataset_equivalence": [
+          "mrd_grav_ir_bounds_v1"
+        ]
+      }
+    }
+  }
+}

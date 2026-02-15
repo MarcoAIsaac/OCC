@@ -1,0 +1,17 @@
+case:
+  name: mrd_sym_topo_starter
+  description: Starter MRD for SYM_TOPO (Operational symmetries/anomalies/topology)
+module:
+  name: mrd_sym_topo
+  status: TODO
+judge_certs:
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json
+  IO:
+    enabled: false
+    path: certs/io_cert_example.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_example.json
+dataset: null

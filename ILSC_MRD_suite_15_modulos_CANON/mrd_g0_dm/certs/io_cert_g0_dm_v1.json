@@ -1,0 +1,26 @@
+{
+  "cert_type": "IO-CERT",
+  "cert_version": "v1",
+  "map_O_theta": "Given (baryons, NFW dm_profile) compute v(r) and lensing alpha(r). Locks enforce positivity and joint fit.",
+  "theta_effective_list": [
+    "M0_Msun",
+    "r0_kpc",
+    "rho0_Msun_kpc3",
+    "rs_kpc"
+  ],
+  "observables_list": [
+    "v(r)",
+    "alpha(r)"
+  ],
+  "identifiability_metric": {
+    "name": "toy_joint_fit_proxy",
+    "value": 0.2
+  },
+  "threshold_tau": 0.1,
+  "degeneracies_list": [
+    "Baryon/DM degeneracy; multi-observable fit reduces it (toy)."
+  ],
+  "dataset_equivalence": [
+    "mrd_g0_dm_galaxy_v1"
+  ]
+}

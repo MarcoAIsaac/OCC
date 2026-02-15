@@ -1,0 +1,25 @@
+case:
+  name: mrd_uv_omegai_pass
+  description: 'UV→ΩI MRD — PASS: ΔΠ below σ_data'
+projection:
+  Lambda_GeV: 1000.0
+  c6: 1.0
+  c8_max_abs: 0.1
+  kappa: 1.0
+reparam:
+  scale_Lambda: 2.0
+  tol: 1.0e-12
+dataset:
+  dataset_id: mrd_uv_omegai_dataset_v1
+  csv_path: data/mrd_uv_omegai_dataset_v1.csv
+  meta_path: data/mrd_uv_omegai_dataset_v1.meta.json
+judge_certs:
+  PA:
+    enabled: true
+    path: certs/pa_cert_uv_omegai_v1.json
+  IO:
+    enabled: false
+    path: certs/io_cert_example.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_uv_omegai_v1.json

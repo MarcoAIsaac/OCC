@@ -1,0 +1,31 @@
+case:
+  name: mrd_4f_unif_dyn_fail_UD2
+  description: '4F Unif Dyn MRD — FAIL(UD2): no unification within tol'
+dataset:
+  dataset_id: mrd_4f_unif_dyn_couplings_v1
+  csv_path: data/mrd_4f_unif_dyn_couplings_v1.csv
+  meta_path: data/mrd_4f_unif_dyn_couplings_v1.meta.json
+omegaI:
+  mu_min_GeV: 100.0
+  mu_max_GeV: 1.0e+16
+betas:
+  b1: 4.0
+  b2: -2.0
+  b3: -7.0
+unification:
+  tol_abs: 0.005
+  grid_N: 400
+stability:
+  eps_fraction: 0.01
+gating:
+  passed: true
+judge_certs:
+  IO:
+    enabled: true
+    path: certs/io_cert_4f_unif_dyn_v1.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_4f_unif_dyn_v1.json
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json

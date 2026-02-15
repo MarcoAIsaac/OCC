@@ -1,0 +1,17 @@
+{
+  "dataset_id": "mrd_baryo_obs_v1",
+  "created_utc": "2026-02-14T00:43:53Z",
+  "provenance": {
+    "type": "semi_synthetic",
+    "note": "Toy baryon asymmetry + EDM limit. Update with latest values for real use."
+  },
+  "schema": {
+    "columns": [
+      "Y_obs",
+      "sigma_Y",
+      "edm_limit",
+      "gw_threshold",
+      "source"
+    ]
+  }
+}

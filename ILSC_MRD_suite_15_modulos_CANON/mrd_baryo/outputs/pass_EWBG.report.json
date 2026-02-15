@@ -1,0 +1,169 @@
+{
+  "input": "inputs/mrd_baryo/pass_EWBG.yaml",
+  "artifact": {
+    "module": "baryo",
+    "mode": "EWBG",
+    "params": {
+      "Lambda_CPV_GeV": 2000.0,
+      "sin_delta": 0.5,
+      "vc_over_Tc": 1.2,
+      "beta_over_H": 120.0,
+      "alpha_PT": 0.1
+    },
+    "pred": {
+      "Y_B": 8.599999999999999e-11,
+      "d_e": 1.25e-30,
+      "f_peak_mHz": 1.2,
+      "Omega_GW": 5.739210284664831e-13
+    },
+    "obs": {
+      "Y_obs": 8.6e-11,
+      "sigma_Y": 5e-12,
+      "edm_limit": 1e-29,
+      "gw_threshold": 1e-12,
+      "source": "synthetic-audited"
+    },
+    "notes": "Toy umbrella for baryogenesis; demonstrates how ILSC forces correlated predictions (EDM/GW) in ΩI."
+  },
+  "locks": {
+    "B0_MODE": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "mode=EWBG"
+    },
+    "B1_OBS_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "Y_obs declared"
+    },
+    "B2_MATCH_Y": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "|Y-Yobs|<= 3.0σ"
+    },
+    "B3_SAKHAROV": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "strong first-order proxy vc/Tc>1"
+    },
+    "B4_EDM": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "EDM below limit"
+    }
+  },
+  "diagnostic": [],
+  "verdict": "PASS",
+  "first_reason": "",
+  "certificates": {
+    "PA": {
+      "verdict": "PASS(PA)",
+      "note": "PA certificate checks passed (incl. PA5)",
+      "cert": {
+        "cert_type": "PA-CERT",
+        "cert_version": "v1",
+        "projection_version": "BARYO-umbrella-toy-v1",
+        "Pi_signature": "Y_B = kY * theta_CPV * strength; d_e = kE * theta_CPV; GW = kO*(alpha/(1+alpha))^2*(100/betaH)^2",
+        "assumptions": [
+          "Toy mapping from CPV EFT operator to baryon asymmetry",
+          "Higher operators bounded implicitly (demo)"
+        ],
+        "delta_proj_method": "toy_higher_operator_bound",
+        "delta_proj": {
+          "note": "Set by c8_max-like bound in full model",
+          "delta": [
+            0.0
+          ],
+          "E": [
+            100.0
+          ]
+        },
+        "kappa_rule": {
+          "kappa": 1.0
+        },
+        "sigma_data": {
+          "sigma": 5e-12
+        },
+        "hashes": {
+          "code": "sha256:1856c0e46a7cb6688f8d75d7093351770e536b743a049ab7fb7595324bcaeaa1",
+          "data": "sha256:d4d6136678e6988c89752f4a736a5419fe745735a9fcf358284ab2512747ae60"
+        },
+        "seeds": {
+          "generator": 20260213
+        },
+        "run_log": {
+          "note": "AUTO hashes filled by validator",
+          "validated_at_utc": "2026-02-15T01:51:21Z"
+        }
+      }
+    },
+    "RFS": {
+      "verdict": "PASS(RFS)",
+      "note": "RFS certificate checks passed (incl. RFS5)",
+      "cert": {
+        "cert_type": "RFS-CERT",
+        "cert_version": "v1",
+        "resource_budget": {
+          "compute_seconds": 30
+        },
+        "isaac_link": {
+          "OmegaI_max_resolution": "declared"
+        },
+        "pcn_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "pcd_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "idealizations": [
+          {
+            "name": "toy_baryo",
+            "finite_surrogate": "simple algebraic mapping"
+          }
+        ],
+        "audit_hashes": {
+          "code": "sha256:1856c0e46a7cb6688f8d75d7093351770e536b743a049ab7fb7595324bcaeaa1",
+          "data": "sha256:d4d6136678e6988c89752f4a736a5419fe745735a9fcf358284ab2512747ae60",
+          "env": "sha256:62f0f3308d5872918fcd4500d2727a7847324c5d0cde3ec8739fb448d52fed85"
+        }
+      }
+    },
+    "IO": {
+      "verdict": "PASS(IO)",
+      "note": "IO certificate checks passed",
+      "cert": {
+        "cert_type": "IO-CERT",
+        "cert_version": "v1",
+        "map_O_theta": "EWBG/LEP umbrella predicts Y_B plus correlated EDM/GW (EWBG). Locks enforce matching to Y_obs and EDM bound.",
+        "theta_effective_list": [
+          "mode",
+          "Lambda_CPV_GeV",
+          "sin_delta",
+          "vc_over_Tc",
+          "beta_over_H",
+          "alpha_PT",
+          "epsilon1"
+        ],
+        "observables_list": [
+          "Y_B",
+          "d_e",
+          "f_peak_mHz",
+          "Omega_GW"
+        ],
+        "identifiability_metric": {
+          "name": "toy_correlation_proxy",
+          "value": 0.2
+        },
+        "threshold_tau": 0.1,
+        "degeneracies_list": [
+          "Toy; real model degeneracies handled via IO + datasets (EDM/GW)."
+        ],
+        "dataset_equivalence": [
+          "mrd_baryo_obs_v1"
+        ]
+      }
+    }
+  }
+}

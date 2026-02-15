@@ -1,0 +1,12 @@
+{
+  "dictionary": {
+    "group": "SU2",
+    "observables": {
+      "O1": 0.9729603394717602,
+      "O2": 0.9751703272018161
+    },
+    "rules": [
+      "Gauge invariant observables are class functions (trace)"
+    ]
+  }
+}

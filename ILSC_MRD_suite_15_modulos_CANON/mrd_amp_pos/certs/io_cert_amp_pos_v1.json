@@ -1,0 +1,24 @@
+{
+  "cert_type": "IO-CERT",
+  "cert_version": "v1",
+  "map_O_theta": "A(s)=c2(s/Λ^2)^2 + c3(s/Λ^2)^3; checks use positivity(c2>0), crossing(c3≈0) and unitarity proxy on grid.",
+  "theta_effective_list": [
+    "c2",
+    "c3",
+    "Lambda"
+  ],
+  "observables_list": [
+    "PASS/FAIL locks AMP3-AMP5"
+  ],
+  "identifiability_metric": {
+    "name": "toy_nonzero_sensitivity",
+    "value": 0.2
+  },
+  "threshold_tau": 0.1,
+  "degeneracies_list": [
+    "Toy; full program uses dispersion/SDP for stronger identifiability."
+  ],
+  "dataset_equivalence": [
+    "mrd_amp_pos_grid_v1"
+  ]
+}

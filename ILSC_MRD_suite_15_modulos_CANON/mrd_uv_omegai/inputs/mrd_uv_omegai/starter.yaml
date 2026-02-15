@@ -1,0 +1,17 @@
+case:
+  name: mrd_uv_omegai_starter
+  description: Starter MRD for UV_OmegaI (UV→ΩI auditable projection)
+module:
+  name: mrd_uv_omegai
+  status: TODO
+judge_certs:
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json
+  IO:
+    enabled: false
+    path: certs/io_cert_example.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_example.json
+dataset: null

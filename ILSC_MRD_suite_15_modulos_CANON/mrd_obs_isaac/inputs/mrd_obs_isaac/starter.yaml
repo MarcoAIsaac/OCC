@@ -1,0 +1,17 @@
+case:
+  name: mrd_obs_isaac_starter
+  description: Starter MRD for OBS_ISAAC (Observability & ISAAC instrumentation constraints)
+module:
+  name: observability_isaac
+  status: implemented_v1
+judge_certs:
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json
+  IO:
+    enabled: false
+    path: certs/io_cert_example.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_example.json
+dataset: null

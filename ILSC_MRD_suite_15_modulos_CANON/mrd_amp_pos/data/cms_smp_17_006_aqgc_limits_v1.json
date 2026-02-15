@@ -1,0 +1,48 @@
+{
+  "dataset_id": "cms_smp_17_006_aqgc_limits_v1",
+  "units": "TeV^{-4}",
+  "description": "CMS-SMP-17-006 observed 95% CL intervals for aQGC operators T0,T1,T2,T8,T9 in ZZjj (13 TeV, 35.9 fb^-1).",
+  "operators": {
+    "FT0": {
+      "low": -0.46,
+      "high": 0.44,
+      "confidence": 0.95,
+      "kind": "observed"
+    },
+    "FT1": {
+      "low": -0.61,
+      "high": 0.61,
+      "confidence": 0.95,
+      "kind": "observed"
+    },
+    "FT2": {
+      "low": -1.2,
+      "high": 1.2,
+      "confidence": 0.95,
+      "kind": "observed"
+    },
+    "FT8": {
+      "low": -0.84,
+      "high": 0.84,
+      "confidence": 0.95,
+      "kind": "observed"
+    },
+    "FT9": {
+      "low": -1.8,
+      "high": 1.8,
+      "confidence": 0.95,
+      "kind": "observed"
+    }
+  },
+  "provenance": {
+    "collaboration": "CMS",
+    "result_page": "CMS-SMP-17-006 public results page",
+    "publication": "Phys. Lett. B 774 (2017) 682",
+    "arxiv": "1708.02812",
+    "date": "2017-08-09"
+  },
+  "notes": [
+    "Intervals are quoted in the CMS public results summary, in units of TeV^{-4}.",
+    "This MRD uses them as a minimal observational anchor for the aQGC positivity lock demo."
+  ]
+}

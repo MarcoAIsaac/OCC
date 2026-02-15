@@ -1,0 +1,166 @@
+{
+  "input": "/mnt/data/ILSC_hardening_work/suite_v6/mrd_uv_omegai/inputs/mrd_uv_omegai/noeval_PA3_dominance.yaml",
+  "artifact": {
+    "module": "uv_omegai",
+    "Pi": {
+      "type": "EFT_truncation_toy",
+      "Lambda_GeV": 1000.0,
+      "c6": 1.0,
+      "assumptions": [
+        "Local EFT valid in ΩI up to E_max",
+        "Neglected higher operators bounded by |c8| <= c8_max_abs"
+      ]
+    },
+    "DeltaPi": {
+      "method": "dimension-8 truncation bound",
+      "c8_max_abs": 10.0,
+      "grid": [
+        {
+          "E_GeV": 100.0,
+          "delta_proj": 0.0010000000000000002
+        },
+        {
+          "E_GeV": 200.0,
+          "delta_proj": 0.016000000000000004
+        },
+        {
+          "E_GeV": 300.0,
+          "delta_proj": 0.08099999999999999
+        }
+      ]
+    },
+    "predictions": [
+      {
+        "E_GeV": 100.0,
+        "O_pred": 1.01
+      },
+      {
+        "E_GeV": 200.0,
+        "O_pred": 1.04
+      },
+      {
+        "E_GeV": 300.0,
+        "O_pred": 1.09
+      }
+    ],
+    "kappa": 1.0
+  },
+  "locks": {
+    "PA1_Pi_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "Pi declared"
+    },
+    "PA2_DeltaPi_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "DeltaPi grid declared"
+    },
+    "PA3_SIGMA_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "sigma_data declared"
+    },
+    "PA3_INFORMATIVE": {
+      "pass": false,
+      "verdict": "NO-EVAL(PA3)",
+      "note": "max ΔΠ=0.081 >= κσ=0.02"
+    },
+    "PA4_REPARAM_VALID": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "reparam scale valid"
+    },
+    "PA4_INVARIANCE": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "predictions invariant under allowed reparam"
+    }
+  },
+  "diagnostic": [
+    "Projection not informative (ΔΠ dominates) -> NO-EVAL(PA3)"
+  ],
+  "verdict": "NO-EVAL(PA3_INFORMATIVE)",
+  "first_reason": "PA3_INFORMATIVE",
+  "certificates": {
+    "PA": {
+      "verdict": "PASS(PA)",
+      "note": "PA certificate checks passed (incl. PA5)",
+      "cert": {
+        "cert_type": "PA-CERT",
+        "cert_version": "v1",
+        "projection_version": "Pi-EFT-toy-v1",
+        "Pi_signature": "UV->OmegaI:toy_EFT_truncation",
+        "assumptions": [
+          "local EFT in OmegaI",
+          "|c8| bounded by c8_max_abs"
+        ],
+        "delta_proj_method": "dimension-8 truncation bound",
+        "delta_proj": {
+          "E": [
+            100.0,
+            200.0,
+            300.0
+          ],
+          "delta": [
+            1.0000000000000003e-05,
+            0.00016000000000000004,
+            0.00081
+          ]
+        },
+        "kappa_rule": {
+          "kappa": 1.0
+        },
+        "sigma_data": {
+          "sigma": 0.02
+        },
+        "hashes": {
+          "code": "sha256:9cf9a0c49ac959b07fc810ba558b21624bc5d0c6fd41eb72868bb0ddae08fd95",
+          "data": "sha256:bf9e8ffc69600493fa9711bcb246d5c58ca79f1a268b9afa4d54b61b788fee96"
+        },
+        "seeds": {
+          "generator": 20260213
+        },
+        "run_log": {
+          "note": "AUTO hashes filled by validator",
+          "validated_at_utc": "2026-02-14T03:00:26Z"
+        }
+      }
+    },
+    "RFS": {
+      "verdict": "PASS(RFS)",
+      "note": "RFS certificate checks passed (incl. RFS5)",
+      "cert": {
+        "cert_type": "RFS-CERT",
+        "cert_version": "v1",
+        "resource_budget": {
+          "compute_seconds": 30,
+          "grid_max": 2048,
+          "tolerance": 1e-06
+        },
+        "isaac_link": {
+          "OmegaI_max_resolution": "declared"
+        },
+        "pcn_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "pcd_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "idealizations": [
+          {
+            "name": "thermodynamic_limit",
+            "finite_surrogate": "N=1e6"
+          }
+        ],
+        "audit_hashes": {
+          "code": "sha256:9cf9a0c49ac959b07fc810ba558b21624bc5d0c6fd41eb72868bb0ddae08fd95",
+          "data": "sha256:bf9e8ffc69600493fa9711bcb246d5c58ca79f1a268b9afa4d54b61b788fee96",
+          "env": "sha256:62f0f3308d5872918fcd4500d2727a7847324c5d0cde3ec8739fb448d52fed85"
+        }
+      }
+    }
+  }
+}

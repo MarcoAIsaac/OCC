@@ -1,0 +1,21 @@
+{
+  "dataset_id": "mrd_pa_dataset_v1",
+  "created_utc": "2026-02-13T23:21:45Z",
+  "provenance": {
+    "type": "synthetic_but_audited",
+    "generator": "ILSC MRD-PA v1 (fixed seed)",
+    "seed": 12345,
+    "note": "Deterministic small dataset for PA pipeline hardening. Replace with real dataset when available."
+  },
+  "schema": {
+    "columns": [
+      "E_GeV",
+      "O_eff",
+      "sigma",
+      "source"
+    ],
+    "units": {
+      "E_GeV": "GeV"
+    }
+  }
+}

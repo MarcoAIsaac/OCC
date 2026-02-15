@@ -1,0 +1,24 @@
+case:
+  name: mrd_rama_ef_fail_RE3
+  description: 'RAMA EF MRD — FAIL(RE3): insufficient redundancy'
+dataset:
+  dataset_id: mrd_rama_ef_times_v1
+  csv_path: data/mrd_rama_ef_times_v1.csv
+  meta_path: data/mrd_rama_ef_times_v1.meta.json
+params:
+  Gamma_decoh: 2.0
+  N_fragments: 1
+policy:
+  require_no_backflow: true
+  no_backflow: true
+pointer_basis: Z
+judge_certs:
+  IO:
+    enabled: true
+    path: certs/io_cert_rama_ef_v1.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_rama_ef_v1.json
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json

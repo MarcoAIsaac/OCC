@@ -1,0 +1,31 @@
+{
+  "cert_type": "RFS-CERT",
+  "cert_version": "v1",
+  "resource_budget": {
+    "compute_seconds": 30,
+    "grid_max": 2048,
+    "tolerance": 1e-06
+  },
+  "isaac_link": {
+    "OmegaI_max_resolution": "declared"
+  },
+  "pcn_sweep": {
+    "enabled": true,
+    "flips": false
+  },
+  "pcd_sweep": {
+    "enabled": true,
+    "flips": false
+  },
+  "idealizations": [
+    {
+      "name": "thermodynamic_limit",
+      "finite_surrogate": "N=1e6"
+    }
+  ],
+  "audit_hashes": {
+    "code": "AUTO",
+    "data": "AUTO",
+    "env": "AUTO"
+  }
+}

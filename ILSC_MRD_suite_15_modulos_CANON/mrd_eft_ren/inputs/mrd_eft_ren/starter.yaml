@@ -1,0 +1,17 @@
+case:
+  name: mrd_eft_ren_starter
+  description: Starter MRD for EFT_REN (EFT & operational renormalization)
+module:
+  name: mrd_eft_ren
+  status: TODO
+judge_certs:
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json
+  IO:
+    enabled: false
+    path: certs/io_cert_example.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_example.json
+dataset: null

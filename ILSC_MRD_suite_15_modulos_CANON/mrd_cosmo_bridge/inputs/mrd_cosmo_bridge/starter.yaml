@@ -1,0 +1,17 @@
+case:
+  name: mrd_cosmo_bridge_starter
+  description: Starter MRD for COSMO_BRIDGE (Operational cosmology bridge (local↔cosmo))
+module:
+  name: mrd_cosmo_bridge
+  status: TODO
+judge_certs:
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json
+  IO:
+    enabled: false
+    path: certs/io_cert_example.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_example.json
+dataset: null

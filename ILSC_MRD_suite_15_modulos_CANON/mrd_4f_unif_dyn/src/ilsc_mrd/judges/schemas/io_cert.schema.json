@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IO-CERT",
+  "type": "object",
+  "required": [
+    "cert_type",
+    "cert_version",
+    "map_O_theta",
+    "theta_effective_list",
+    "observables_list",
+    "identifiability_metric",
+    "threshold_tau",
+    "degeneracies_list",
+    "dataset_equivalence"
+  ],
+  "properties": {
+    "cert_type": {
+      "const": "IO-CERT"
+    },
+    "cert_version": {
+      "type": "string"
+    },
+    "map_O_theta": {
+      "type": "string"
+    },
+    "theta_effective_list": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "observables_list": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "identifiability_metric": {
+      "type": "object",
+      "required": [
+        "name",
+        "value"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number"
+        }
+      }
+    },
+    "threshold_tau": {
+      "type": "number"
+    },
+    "degeneracies_list": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dataset_equivalence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

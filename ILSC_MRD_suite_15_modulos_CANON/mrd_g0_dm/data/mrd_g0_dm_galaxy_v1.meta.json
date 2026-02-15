@@ -1,0 +1,23 @@
+{
+  "dataset_id": "mrd_g0_dm_galaxy_v1",
+  "created_utc": "2026-02-14T00:43:53Z",
+  "provenance": {
+    "type": "synthetic_but_audited",
+    "note": "Toy rotation+lensing dataset generated from one NFW profile."
+  },
+  "schema": {
+    "columns": [
+      "r_kpc",
+      "v_obs_kms",
+      "sigma_v",
+      "alpha_obs_arcsec",
+      "sigma_alpha",
+      "source"
+    ],
+    "units": {
+      "r_kpc": "kpc",
+      "v_obs_kms": "km/s",
+      "alpha_obs_arcsec": "arcsec"
+    }
+  }
+}

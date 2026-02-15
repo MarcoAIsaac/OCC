@@ -1,32 +1,47 @@
-# Python
+# Python bytecode
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
-*.so
-*.egg-info/
-.eggs/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.cache/
+*$py.class
 
 # Virtual environments
 .venv/
 venv/
+ENV/
+env/
 
-# Build outputs
+# Packaging
 build/
 dist/
+*.egg-info/
+.eggs/
 
-# Runtime outputs
-out/
-runs/
-artifacts/
-reports/
-tmp/
+# Test / type / lint caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
 
-# OS/editor
+# OS / IDE
 .DS_Store
+Thumbs.db
 .vscode/
 .idea/
+*.swp
+
+# Repo-local runtime outputs (keep MRD module outputs tracked)
+/out/
+/_out/
+/artifacts/
+/reports/
+/tmp/
+/temp/
+verification_summary.json
+
+# Local scratch
+.tmp*/
+
+# Archives (publish via GitHub Releases instead)
+*.zip
+*.tar.gz

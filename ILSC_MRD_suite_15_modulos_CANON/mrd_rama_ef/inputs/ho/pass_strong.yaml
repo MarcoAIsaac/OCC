@@ -1,0 +1,85 @@
+mrd:
+  id: MRD-1X-HO-PASS-STRONG
+  language: bilingual
+  author: Marco Antonio Isaac Alcuria
+  date: '2026-02-13'
+  module: SK
+  variant: MRD-1X-hybrid-maximum
+isaac_omegaI:
+  ISAAC0_policy:
+    principle: operational_closure_backreaction
+    note_es: 'No reinyección UV: nada sub-Ω_I entra como perilla.'
+    note_en: 'No UV reinjection: no sub-Ω_I structure as a knob.'
+  omega_window:
+    omega_min: 0.0
+    omega_max: 50.0
+    time_min: 0.0
+    time_max: 50.0
+  resolution:
+    dt: 0.01
+    domega: 0.05
+numerics:
+  grid:
+    omega_grid:
+      type: lin
+      n: 200
+      min: 0.0
+      max: 50.0
+    time_grid:
+      type: lin
+      n: 5000
+      min: 0.0
+      max: 50.0
+  integrator:
+    type: rk4
+    abs_tol: 1.0e-09
+    rel_tol: 1.0e-09
+  pcn:
+    refinements:
+    - 2
+    - 4
+    max_runtime_hint_seconds: 60
+  tolerances:
+    eps_causal: 1.0e-08
+    eps_psd: 1.0e-10
+    eps_cptp: 1.0e-10
+    eps_fdt: 1.0e-06
+    eps_trace: 1.0e-10
+model:
+  type: ho_caldeira_leggett
+  oscillator:
+    m: 1.0
+    omega0: 1.0
+  bath:
+    spectral_density:
+      type: ohmic
+      gamma: 0.1
+      omega_c: 30.0
+      form: J(ω)=m γ ω exp(-ω/ω_c)
+    temperature: 1.0
+    initial_state: factorized_thermal_bath
+  coupling:
+    operator: x
+    strength: 1.0
+compile:
+  route: semianalytic_then_numeric
+  truncate:
+    cutoff_policy: declared_cutoff_with_error
+    cutoff_value: 100.0
+    delta_trunc_estimate: 0.0001
+checks:
+  run:
+  - SK_causality
+  - SK_psd_noise
+  - SK_cptp
+  - SK_fdt_if_equilibrium
+  - SK_no_uv_reinject
+  - PCN_stability
+  - PCD_stability
+  equilibrium:
+    declared: true
+    temperature: 1.0
+audit:
+  seed: 123456
+  deterministic: true
+judge_certs: {}

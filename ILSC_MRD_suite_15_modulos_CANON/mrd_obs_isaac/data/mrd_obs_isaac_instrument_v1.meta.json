@@ -1,0 +1,16 @@
+{
+  "dataset_id": "mrd_obs_isaac_instrument_v1",
+  "created_utc": "2026-02-13T23:29:04Z",
+  "provenance": {
+    "type": "audited_minimal",
+    "note": "Minimal instrument spec dataset for ISAAC/observability MRD. Replace with real instrument sheet if needed."
+  },
+  "schema": {
+    "columns": [
+      "param",
+      "value",
+      "unit",
+      "note"
+    ]
+  }
+}

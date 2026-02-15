@@ -1,0 +1,17 @@
+case:
+  name: mrd_vac_de_starter
+  description: Starter MRD for VAC_DE (Vacuum/DE module)
+module:
+  name: mrd_vac_de
+  status: TODO
+judge_certs:
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json
+  IO:
+    enabled: false
+    path: certs/io_cert_example.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_example.json
+dataset: null

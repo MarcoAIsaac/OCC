@@ -1,0 +1,37 @@
+case:
+  name: mrd_amp_pos_fail_aqgc_outside_FT0
+  description: 'AMP MRD — FAIL: aQGC positivity (Table 4 sign) + within CMS 95% CL interval (anchor)'
+dataset:
+  dataset_id: mrd_amp_pos_grid_v1
+  csv_path: data/mrd_amp_pos_grid_v1.csv
+  meta_path: data/mrd_amp_pos_grid_v1.meta.json
+eft:
+  Lambda_GeV: 1000.0
+  c2: 1.0
+  c3: 0.0
+dispersion:
+  ir_safe: true
+  N_sub: 2
+omegaI:
+  frac_cutoff_max: 0.5
+crossing:
+  required: true
+  tol: 1.0e-12
+# aQGC mode (dimension-8 EFT coefficients in TeV^{-4})
+aqgc:
+  operator: FT0
+  coeff_TeV4: 1.50
+# Observational anchor: CMS-SMP-17-006 95% CL intervals (TeV^{-4})
+exp_dataset:
+  json_path: data/cms_smp_17_006_aqgc_limits_v1.json
+  meta_path: data/cms_smp_17_006_aqgc_limits_v1.meta.json
+judge_certs:
+  IO:
+    enabled: true
+    path: certs/io_cert_amp_pos_v1.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_amp_pos_v1.json
+  PA:
+    enabled: true
+    path: certs/pa_cert_amp_pos_v1.json

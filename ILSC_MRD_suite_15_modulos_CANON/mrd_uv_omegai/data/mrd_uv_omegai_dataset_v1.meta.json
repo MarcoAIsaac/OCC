@@ -1,0 +1,21 @@
+{
+  "dataset_id": "mrd_uv_omegai_dataset_v1",
+  "created_utc": "2026-02-13T23:32:35Z",
+  "provenance": {
+    "type": "synthetic_but_audited",
+    "generator": "toy EFT observable with bounded truncation error",
+    "seed": 20260213,
+    "note": "Replace with a real dataset + analysis chain when targeting a specific experiment."
+  },
+  "schema": {
+    "columns": [
+      "E_GeV",
+      "O_obs",
+      "sigma",
+      "source"
+    ],
+    "units": {
+      "E_GeV": "GeV"
+    }
+  }
+}

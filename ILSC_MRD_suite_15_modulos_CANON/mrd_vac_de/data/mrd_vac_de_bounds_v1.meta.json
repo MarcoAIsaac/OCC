@@ -1,0 +1,16 @@
+{
+  "dataset_id": "mrd_vac_de_bounds_v1",
+  "created_utc": "2026-02-14T00:43:53Z",
+  "provenance": {
+    "type": "synthetic_but_audited",
+    "note": "Toy bounds for vacuum/DE module."
+  },
+  "schema": {
+    "columns": [
+      "w_center",
+      "w_halfwidth",
+      "coupling_max",
+      "source"
+    ]
+  }
+}

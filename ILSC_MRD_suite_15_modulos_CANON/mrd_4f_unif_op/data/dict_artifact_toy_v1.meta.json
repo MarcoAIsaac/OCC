@@ -1,0 +1,11 @@
+{
+  "dataset_id": "dict_artifact_toy_v1",
+  "created_utc": "2026-02-14T00:01:17Z",
+  "provenance": {
+    "type": "audited_minimal",
+    "note": "Toy 4F dictionary artifact used for gating MRD."
+  },
+  "schema": {
+    "format": "json"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "cert_type": "IO-CERT",
+  "cert_version": "v1",
+  "map_O_theta": "Vacuum as effective fluid with params (w,rho0,coupling). Locks enforce acceleration, w band, local coupling, and policy for w(z).",
+  "theta_effective_list": [
+    "w",
+    "rho0",
+    "coupling_to_matter"
+  ],
+  "observables_list": [
+    "V3_ACCEL",
+    "V4_W_BAND",
+    "V5_LOCAL_COUPLING"
+  ],
+  "identifiability_metric": {
+    "name": "toy_constraint_proxy",
+    "value": 0.2
+  },
+  "threshold_tau": 0.1,
+  "degeneracies_list": [
+    "Vacuum/DM degeneracy handled by higher modules (bridge/G0)."
+  ],
+  "dataset_equivalence": [
+    "mrd_vac_de_bounds_v1"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "dataset_id": "cms_smp_17_006_aqgc_limits_v1",
+  "sha256": "d5b3e658849c595dc8f128998460563fb405678a7efc0031afbb22b25ba333da",
+  "license": "CC0 (HepData default, unless explicitly stated otherwise).",
+  "citation": [
+    "CMS Collaboration, CMS-SMP-17-006 public results page (limits on f_Ti/Λ^4).",
+    "CMS Collaboration, Phys. Lett. B 774 (2017) 682; arXiv:1708.02812."
+  ],
+  "units": "TeV^{-4}",
+  "source_url": "https://www.hepdata.net/record/ins1615207",
+  "source_doi": "10.17182/hepdata.81936.v2/t2",
+  "source_accessed_utc": "2026-02-15",
+  "redistribution_policy": "allowed_under_CC0",
+  "notes": [
+    "Values correspond to 95% CL intervals for f_Ti/Λ^4 limits used as a compact public summary for the MRD.",
+    "For full provenance, consult the HepData record and the corresponding CMS publication."
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "dataset_id": "mrd_rama_ef_times_v1",
+  "created_utc": "2026-02-14T00:43:53Z",
+  "provenance": {
+    "type": "synthetic_but_audited",
+    "note": "Toy timing+redundancy thresholds."
+  },
+  "schema": {
+    "columns": [
+      "tau_read",
+      "tau_stab",
+      "R_min",
+      "source"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+case:
+  name: mrd_4f_unif_op_starter
+  description: Starter MRD for 4F_UNIF_OP (4F operational unification (gating))
+module:
+  name: mrd_4f_unif_op
+  status: TODO
+judge_certs:
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json
+  IO:
+    enabled: false
+    path: certs/io_cert_example.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_example.json
+dataset: null

@@ -1,0 +1,27 @@
+{
+  "dataset_id": "CC_data_unibo_v1",
+  "sha256": "3bbc05e6ca3901fe72d50ad1c3a664e9395200367ef2df358aaec1bec3094240",
+  "license": "No explicit license stated by the hosting page; treated as a compilation of published H(z) measurements with per-row references.",
+  "citation": [
+    "University of Bologna (cluster.difa.unibo.it) CC_data/data_CC.dat (cosmic chronometer H(z) compilation).",
+    "See references in the 4th column for original measurements."
+  ],
+  "columns": [
+    "z",
+    "H_obs",
+    "sigma",
+    "source"
+  ],
+  "units": {
+    "H_obs": "km/s/Mpc",
+    "sigma": "km/s/Mpc"
+  },
+  "source_url": "https://cluster.difa.unibo.it/astro/CC_data/",
+  "source_file_url": "https://cluster.difa.unibo.it/astro/CC_data/data_CC.dat",
+  "source_accessed_utc": "2026-02-15",
+  "redistribution_policy": "mirror_for_reproducibility_with_attribution",
+  "notes": [
+    "This release includes a reformatted CSV copy for deterministic execution.",
+    "If redistribution is a concern in a given jurisdiction, delete the local CSV and re-fetch from the source URL; the per-row references identify the original measurements."
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "case_id": "MRD-1X-HO-FAIL-CAUSALITY",
+  "verdict": "FAIL(SK_causality)",
+  "timestamp": "2026-02-14T03:00:14.928305Z",
+  "input_sha256": "09f4263e840dca6d872f2ad8396ef04fefb3caf68a43dd6d7676529901a86d02",
+  "env": {
+    "python": "3.11.2 (main, Apr 28 2025, 14:11:48) [GCC 12.2.0]",
+    "platform": "Linux-4.4.0-x86_64-with-glibc2.36",
+    "machine": "x86_64",
+    "processor": "",
+    "git_commit": null
+  },
+  "versions": {
+    "numpy": "1.24.0",
+    "scipy": "1.14.1",
+    "pyyaml": "6.0.3"
+  },
+  "locks": {
+    "CERTS": {
+      "verdict": "SKIP",
+      "note": "no judge_certs provided",
+      "pass": true,
+      "severity": "FAIL"
+    },
+    "SK_causality": {
+      "pass": false,
+      "max_violation": 0.001,
+      "eps": 1e-08
+    },
+    "SK_psd_noise": {
+      "pass": true,
+      "min_value": 0.0,
+      "eps": 1e-10
+    },
+    "SK_cptp": {
+      "pass": true,
+      "min_eig": 0.0518191617571635,
+      "eps": 1e-10
+    },
+    "SK_fdt_if_equilibrium": {
+      "pass": true,
+      "max_rel_error": 0.0,
+      "eps": 1e-06,
+      "temperature": 1.0
+    },
+    "SK_no_uv_reinject": {
+      "pass": true,
+      "cutoff_value": 100.0,
+      "policy": "declared_cutoff_with_error",
+      "delta_trunc_estimate": 0.0001,
+      "severity": "PASS"
+    },
+    "PCN_stability": {
+      "pass": true,
+      "flip": false,
+      "runs": [
+        {
+          "refinement": 1,
+          "verdict": "FAIL(SK_causality)"
+        },
+        {
+          "refinement": 2,
+          "verdict": "FAIL(SK_causality)"
+        },
+        {
+          "refinement": 4,
+          "verdict": "FAIL(SK_causality)"
+        }
+      ],
+      "skipped": [],
+      "work_cap": 50000000.0
+    },
+    "PCD_stability": {
+      "pass": true,
+      "flip": false,
+      "runs": [
+        {
+          "factor": 0.1,
+          "verdict": "FAIL(SK_causality)"
+        },
+        {
+          "factor": 1.0,
+          "verdict": "FAIL(SK_causality)"
+        },
+        {
+          "factor": 10.0,
+          "verdict": "FAIL(SK_causality)"
+        }
+      ],
+      "work_cap": 50000000.0
+    }
+  },
+  "diagnostic": "CERTS: SKIP (no judge_certs) First failing lock: SK_causality"
+}

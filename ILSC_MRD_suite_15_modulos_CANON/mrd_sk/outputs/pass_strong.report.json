@@ -1,0 +1,87 @@
+{
+  "mrd": "mrd_sk",
+  "case_id": "MRD-1X-HO-PASS-STRONG",
+  "input_yaml": "/mnt/data/ILSC_hardening_work/suite_v6/mrd_sk/inputs/ho/pass_strong.yaml",
+  "verdict": "PASS",
+  "locks": {
+    "CERTS": {
+      "verdict": "SKIP",
+      "note": "no judge_certs provided",
+      "pass": true,
+      "severity": "FAIL"
+    },
+    "SK_causality": {
+      "pass": true,
+      "max_violation": 0.0,
+      "eps": 1e-08
+    },
+    "SK_psd_noise": {
+      "pass": true,
+      "min_value": 0.0,
+      "eps": 1e-10
+    },
+    "SK_cptp": {
+      "pass": true,
+      "min_eig": 0.0518191617571635,
+      "eps": 1e-10
+    },
+    "SK_fdt_if_equilibrium": {
+      "pass": true,
+      "max_rel_error": 0.0,
+      "eps": 1e-06,
+      "temperature": 1.0
+    },
+    "SK_no_uv_reinject": {
+      "pass": true,
+      "cutoff_value": 100.0,
+      "policy": "declared_cutoff_with_error",
+      "delta_trunc_estimate": 0.0001,
+      "severity": "PASS"
+    },
+    "PCN_stability": {
+      "pass": true,
+      "flip": false,
+      "runs": [
+        {
+          "refinement": 1,
+          "verdict": "PASS"
+        },
+        {
+          "refinement": 2,
+          "verdict": "PASS"
+        },
+        {
+          "refinement": 4,
+          "verdict": "PASS"
+        }
+      ],
+      "skipped": [],
+      "work_cap": 50000000.0
+    },
+    "PCD_stability": {
+      "pass": true,
+      "flip": false,
+      "runs": [
+        {
+          "factor": 0.1,
+          "verdict": "PASS"
+        },
+        {
+          "factor": 1.0,
+          "verdict": "PASS"
+        },
+        {
+          "factor": 10.0,
+          "verdict": "PASS"
+        }
+      ],
+      "work_cap": 50000000.0
+    }
+  },
+  "first_reason": "",
+  "certificates": {},
+  "artifacts": {
+    "result_json": "outputs/MRD-1X-HO-PASS-STRONG/result.json",
+    "report_pdf": "outputs/MRD-1X-HO-PASS-STRONG/report.pdf"
+  }
+}

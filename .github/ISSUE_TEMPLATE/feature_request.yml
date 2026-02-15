@@ -1,0 +1,32 @@
+name: "Feature request"
+description: "Propón una mejora para accesibilidad, docs o herramientas"
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Explica el objetivo y el valor. Si puedes, propone un diseño mínimo.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema
+      description: "¿Qué te impide avanzar hoy?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propuesta
+      description: "¿Qué cambio propones?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas
+      description: "¿Qué alternativas consideraste?"
+    validations:
+      required: false

@@ -1,0 +1,39 @@
+{
+  "cert_type": "PA-CERT",
+  "cert_version": "v1",
+  "projection_version": "Pi-EFT-toy-v1",
+  "Pi_signature": "UV->OmegaI:toy_EFT_truncation",
+  "assumptions": [
+    "local EFT in OmegaI",
+    "|c8| bounded by c8_max_abs"
+  ],
+  "delta_proj_method": "dimension-8 truncation bound",
+  "delta_proj": {
+    "E": [
+      100.0,
+      200.0,
+      300.0
+    ],
+    "delta": [
+      1.0000000000000003e-05,
+      0.00016000000000000004,
+      0.00081
+    ]
+  },
+  "kappa_rule": {
+    "kappa": 1.0
+  },
+  "sigma_data": {
+    "sigma": 0.02
+  },
+  "hashes": {
+    "code": "AUTO",
+    "data": "AUTO"
+  },
+  "seeds": {
+    "generator": 20260213
+  },
+  "run_log": {
+    "note": "AUTO hashes filled by validator"
+  }
+}

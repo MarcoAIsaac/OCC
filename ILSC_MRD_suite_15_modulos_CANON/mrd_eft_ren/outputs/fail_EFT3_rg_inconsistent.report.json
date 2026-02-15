@@ -1,0 +1,169 @@
+{
+  "input": "inputs/mrd_eft_ren/fail_EFT3_rg_inconsistent.yaml",
+  "artifact": {
+    "module": "eft_ren",
+    "eft": {
+      "Lambda_GeV": 1000.0,
+      "c6_mu0": 0.5,
+      "gamma": 0.05,
+      "c8_max_abs": 0.1
+    },
+    "scales": {
+      "mu0_GeV": 100.0,
+      "mu_mid_GeV": 300.0,
+      "mu1_GeV": 1000.0,
+      "E_probe_GeV": 100.0
+    },
+    "running": {
+      "c6_mu1_direct": 0.6151292546497023,
+      "c6_mu1_step": 0.7957251752985928,
+      "c6_mu_mid": 0.5549306144334055,
+      "gamma_mid_used": 0.2
+    },
+    "observable": {
+      "O_pred": 1.006151292546497,
+      "delta_O_bound": 1.0000000000000003e-05
+    },
+    "kappa": 1.0,
+    "notes": "Toy EFT running + truncation bound; illustrates PA/IO/RFS integration."
+  },
+  "locks": {
+    "EFT1_CUTOFF_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "cutoff declared"
+    },
+    "EFT2_SIGMA_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "sigma_data declared"
+    },
+    "EFT2_TRUNC_INFORMATIVE": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "ΔO below κσ"
+    },
+    "EFT3_RG_CONSISTENCY": {
+      "pass": false,
+      "verdict": "FAIL(EFT3)",
+      "note": "|Δ|=1.806e-01 > 1.0e-10"
+    },
+    "EFT4_OMEGAI_VALID": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "E within ΩI"
+    }
+  },
+  "diagnostic": [
+    "RG inconsistency -> FAIL(EFT3)"
+  ],
+  "verdict": "FAIL(EFT3_RG_CONSISTENCY)",
+  "first_reason": "EFT3_RG_CONSISTENCY",
+  "certificates": {
+    "PA": {
+      "verdict": "PASS(PA)",
+      "note": "PA certificate checks passed (incl. PA5)",
+      "cert": {
+        "cert_type": "PA-CERT",
+        "cert_version": "v1",
+        "projection_version": "EFT-REN-toy-v1",
+        "Pi_signature": "RG_running_C6 + truncation_dim8_bound",
+        "assumptions": [
+          "Toy RG: C6(mu)=C6(mu0)+gamma ln(mu/mu0)",
+          "Neglected dim-8 bounded by |c8|<=c8_max_abs"
+        ],
+        "delta_proj_method": "dim8_truncation_bound",
+        "delta_proj": {
+          "E": [
+            100.0
+          ],
+          "delta": [
+            0.0
+          ]
+        },
+        "kappa_rule": {
+          "kappa": 1.0
+        },
+        "sigma_data": {
+          "sigma": 0.02
+        },
+        "hashes": {
+          "code": "sha256:6c412f1eb91e749c9d97b5267810e14b7c3f715bed816399534eb59eeb0c56b7",
+          "data": "sha256:acd46890ddf06884d6f2bb2611996ce0809a56da8f3027f5653f8bce61f371e4"
+        },
+        "seeds": {
+          "generator": 20260213
+        },
+        "run_log": {
+          "note": "AUTO hashes filled by validator",
+          "validated_at_utc": "2026-02-14T08:51:53Z"
+        }
+      }
+    },
+    "RFS": {
+      "verdict": "PASS(RFS)",
+      "note": "RFS certificate checks passed (incl. RFS5)",
+      "cert": {
+        "cert_type": "RFS-CERT",
+        "cert_version": "v1",
+        "resource_budget": {
+          "compute_seconds": 30,
+          "grid_max": 4096
+        },
+        "isaac_link": {
+          "OmegaI_max_resolution": "declared"
+        },
+        "pcn_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "pcd_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "idealizations": [
+          {
+            "name": "toy_RG",
+            "finite_surrogate": "log running of one coefficient"
+          }
+        ],
+        "audit_hashes": {
+          "code": "sha256:6c412f1eb91e749c9d97b5267810e14b7c3f715bed816399534eb59eeb0c56b7",
+          "data": "sha256:acd46890ddf06884d6f2bb2611996ce0809a56da8f3027f5653f8bce61f371e4",
+          "env": "sha256:62f0f3308d5872918fcd4500d2727a7847324c5d0cde3ec8739fb448d52fed85"
+        }
+      }
+    },
+    "IO": {
+      "verdict": "PASS(IO)",
+      "note": "IO certificate checks passed",
+      "cert": {
+        "cert_type": "IO-CERT",
+        "cert_version": "v1",
+        "map_O_theta": "O(E)=1+C6(E)(E/Λ)^2; RG provides C6(E). Locks enforce RG consistency and informative truncation.",
+        "theta_effective_list": [
+          "C6(mu0)",
+          "gamma",
+          "Lambda",
+          "c8_max_abs"
+        ],
+        "observables_list": [
+          "O(E)",
+          "ΔO_bound",
+          "RG consistency"
+        ],
+        "identifiability_metric": {
+          "name": "toy_sensitivity_proxy",
+          "value": 0.2
+        },
+        "threshold_tau": 0.1,
+        "degeneracies_list": [
+          "Toy; real EFT has operator basis degeneracies handled by IO judge."
+        ],
+        "dataset_equivalence": [
+          "mrd_eft_ren_data_v1"
+        ]
+      }
+    }
+  }
+}

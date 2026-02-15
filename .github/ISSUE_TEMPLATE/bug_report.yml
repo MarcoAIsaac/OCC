@@ -1,0 +1,53 @@
+name: "Bug report"
+description: "Reporta un problema reproducible en el CLI/runtime o en la suite MRD"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportar el problema. Por favor incluye pasos mínimos reproducibles.
+
+  - type: input
+    id: version
+    attributes:
+      label: Versión
+      description: "¿Qué commit/tag estás usando? (o salida de `occ --help`)"
+      placeholder: "main @ <sha>"
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Pasos para reproducir
+      description: "Comandos exactos, rutas de bundles y salida relevante."
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Resultado esperado
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Resultado actual
+      description: "Incluye logs y/o report.json si aplica."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Sistema operativo
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - Otro
+    validations:
+      required: true

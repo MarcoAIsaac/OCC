@@ -1,0 +1,16 @@
+{
+  "dataset_id": "mrd_amp_pos_grid_v1",
+  "created_utc": "2026-02-14T00:43:53Z",
+  "provenance": {
+    "type": "audited_grid",
+    "note": "Energy grid used for unitarity proxy."
+  },
+  "schema": {
+    "columns": [
+      "E_GeV"
+    ],
+    "units": {
+      "E_GeV": "GeV"
+    }
+  }
+}

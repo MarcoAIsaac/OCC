@@ -1,0 +1,39 @@
+{
+  "cert_type": "PA-CERT",
+  "cert_version": "v1",
+  "projection_version": "Pi-v1",
+  "Pi_signature": "UV->OmegaI:EFT_truncation",
+  "assumptions": [
+    "local EFT in OmegaI",
+    "declared truncation order"
+  ],
+  "delta_proj_method": "EFT truncation estimate",
+  "delta_proj": {
+    "E": [
+      100.0,
+      200.0,
+      300.0
+    ],
+    "delta": [
+      0.1,
+      0.15,
+      0.2
+    ]
+  },
+  "kappa_rule": {
+    "kappa": 1.0
+  },
+  "sigma_data": {
+    "sigma": 0.25
+  },
+  "hashes": {
+    "code": "AUTO",
+    "data": "AUTO"
+  },
+  "seeds": {
+    "solver": 123
+  },
+  "run_log": {
+    "timestamp": "..."
+  }
+}

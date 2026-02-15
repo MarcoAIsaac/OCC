@@ -1,0 +1,30 @@
+case:
+  name: mrd_cosmo_bridge_pass
+  description: 'COSMO BRIDGE MRD — PASS: fits H(z), local bound, informative Δw'
+dataset:
+  dataset_id: CC_data_unibo_v1
+  csv_path: data/CC_data_unibo_v1.csv
+  meta_path: data/CC_data_unibo_v1.meta.json
+params:
+  H0: 70.0
+  Om: 0.3
+  w0: -1.0
+  gdot_over_G: 0.0
+local_bounds:
+  gdot_over_G_max: 0.001
+projection:
+  delta_w_bound: 0.02
+kappa_rule:
+  kappa: 1.0
+tolerances:
+  chi2_red_max: 10.0
+judge_certs:
+  PA:
+    enabled: true
+    path: certs/pa_cert_cosmo_bridge_v1.json
+  IO:
+    enabled: true
+    path: certs/io_cert_cosmo_bridge_v1.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_cosmo_bridge_v1.json

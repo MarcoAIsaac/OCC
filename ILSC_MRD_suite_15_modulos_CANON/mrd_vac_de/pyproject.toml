@@ -1,0 +1,9 @@
+[project]
+name = "ilsc-mrd-1x-sk"
+version = "0.0.0"
+description = "ILSC MRD-1X (SK Hybrid Maximum) runner"
+requires-python = ">=3.10"
+dependencies = ["numpy", "scipy", "pyyaml", "reportlab"]
+
+[project.scripts]
+ilsc-mrd = "ilsc_mrd.runner:main"

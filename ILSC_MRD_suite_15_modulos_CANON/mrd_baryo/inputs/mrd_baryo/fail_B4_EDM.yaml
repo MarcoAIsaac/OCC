@@ -1,0 +1,31 @@
+case:
+  name: mrd_baryo_fail_B4_EDM
+  description: 'BARYO MRD — FAIL(B4): EDM exceeds limit'
+dataset:
+  dataset_id: mrd_baryo_obs_v1
+  csv_path: data/mrd_baryo_obs_v1.csv
+  meta_path: data/mrd_baryo_obs_v1.meta.json
+mode: EWBG
+params:
+  Lambda_CPV_GeV: 500.0
+  sin_delta: 0.5
+  vc_over_Tc: 1.2
+  beta_over_H: 120.0
+  alpha_PT: 0.1
+constants:
+  kappa_Y: 2.0e-10
+  kappa_EDM: 1.0e-29
+  kappa_f_mHz: 1.0
+  kappa_Omega: 1.0e-10
+tolerances:
+  n_sigma: 3.0
+judge_certs:
+  PA:
+    enabled: true
+    path: certs/pa_cert_baryo_v1.json
+  IO:
+    enabled: true
+    path: certs/io_cert_baryo_v1.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_baryo_v1.json

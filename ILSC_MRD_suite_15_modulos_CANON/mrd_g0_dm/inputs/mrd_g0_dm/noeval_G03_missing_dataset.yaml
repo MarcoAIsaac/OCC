@@ -1,0 +1,22 @@
+case:
+  name: mrd_g0_dm_noeval_G03
+  description: 'G0 MRD — NO-EVAL(G03): missing dataset'
+baryons:
+  M0_Msun: 50000000000.0
+  r0_kpc: 2.0
+dm_profile:
+  rho0_Msun_kpc3: 50000000.0
+  rs_kpc: 10.0
+tolerances:
+  chi2_v_max: 50.0
+  chi2_a_max: 50.0
+judge_certs:
+  IO:
+    enabled: true
+    path: certs/io_cert_g0_dm_v1.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_g0_dm_v1.json
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json

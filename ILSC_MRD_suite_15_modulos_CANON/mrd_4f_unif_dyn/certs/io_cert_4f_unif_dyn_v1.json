@@ -1,0 +1,25 @@
+{
+  "cert_type": "IO-CERT",
+  "cert_version": "v1",
+  "map_O_theta": "Unification score S(mu)=max|gi-gj| over mu grid; theta=(b1,b2,b3) given; observable is PASS/FAIL wrt tol.",
+  "theta_effective_list": [
+    "b1",
+    "b2",
+    "b3"
+  ],
+  "observables_list": [
+    "score(mu)",
+    "mu_U"
+  ],
+  "identifiability_metric": {
+    "name": "toy_sensitivity_proxy",
+    "value": 0.2
+  },
+  "threshold_tau": 0.1,
+  "degeneracies_list": [
+    "If tol too small and grid too coarse, NO-EVAL recommended."
+  ],
+  "dataset_equivalence": [
+    "mrd_4f_unif_dyn_couplings_v1"
+  ]
+}

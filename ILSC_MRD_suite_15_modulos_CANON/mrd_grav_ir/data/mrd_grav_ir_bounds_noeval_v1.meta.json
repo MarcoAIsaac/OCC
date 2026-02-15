@@ -1,0 +1,18 @@
+{
+  "dataset_id": "mrd_grav_ir_bounds_noeval_v1",
+  "created_utc": "2026-02-14T03:07:01Z",
+  "provenance": {
+    "type": "synthetic_but_audited",
+    "seed": 20260214,
+    "note": "NO-EVAL dataset with v/c beyond PPN domain (toy)."
+  },
+  "schema": {
+    "columns": [
+      "dgamma_max",
+      "dbeta_max",
+      "dcT_max",
+      "v_over_c_dataset",
+      "source"
+    ]
+  }
+}

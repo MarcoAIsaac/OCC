@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use OCC or the MRD suite in your work, please cite this repository."
+authors:
+  - family-names: Isaac
+    given-names: Marco A.
+title: "Operational Consistency Compiler (OCC) runtime and MRD suite"
+version: "1.0.0"
+date-released: 2026-02-15
+license: Apache-2.0
+repository-code: "https://github.com/MarcoAIsaac/OCC"

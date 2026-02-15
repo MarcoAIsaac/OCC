@@ -1,0 +1,25 @@
+case:
+  name: mrd_sym_topo_fail_TOPO2
+  description: 'SYM/ANOM/TOPO MRD — FAIL(TOPO2): k not integer'
+dataset:
+  dataset_id: mrd_sym_anom_topo_v1
+  csv_path: data/mrd_sym_anom_topo_v1.csv
+  meta_path: data/mrd_sym_anom_topo_v1.meta.json
+symmetry:
+  group: U1
+  notes: toy U(1)
+topology:
+  tol_integer: 1.0e-08
+  chern_k: 0.5
+tolerances:
+  anom_tol: 1.0e-12
+judge_certs:
+  IO:
+    enabled: true
+    path: certs/io_cert_sym_anom_topo_v1.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_sym_anom_topo_v1.json
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json

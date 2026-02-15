@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PA-CERT",
+  "type": "object",
+  "required": [
+    "cert_type",
+    "cert_version",
+    "projection_version",
+    "Pi_signature",
+    "assumptions",
+    "delta_proj_method",
+    "delta_proj",
+    "kappa_rule",
+    "hashes",
+    "seeds",
+    "run_log",
+    "sigma_data"
+  ],
+  "properties": {
+    "cert_type": {
+      "const": "PA-CERT"
+    },
+    "cert_version": {
+      "type": "string"
+    },
+    "projection_version": {
+      "type": "string"
+    },
+    "Pi_signature": {
+      "type": "string"
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "delta_proj_method": {
+      "type": "string"
+    },
+    "delta_proj": {
+      "type": "object",
+      "required": [
+        "E",
+        "delta"
+      ],
+      "properties": {
+        "E": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "delta": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "kappa_rule": {
+      "type": "object",
+      "required": [
+        "kappa"
+      ],
+      "properties": {
+        "kappa": {
+          "type": "number"
+        }
+      }
+    },
+    "sigma_data": {
+      "type": "object",
+      "required": [
+        "sigma"
+      ],
+      "properties": {
+        "sigma": {
+          "type": "number"
+        }
+      }
+    },
+    "hashes": {
+      "type": "object",
+      "required": [
+        "code",
+        "data"
+      ],
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "data": {
+          "type": "string"
+        }
+      }
+    },
+    "seeds": {
+      "type": "object"
+    },
+    "run_log": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,99 @@
+{
+  "input": "/mnt/data/ILSC_hardening_work/suite_v6/mrd_vac_de/inputs/mrd_vac_de/noeval_V1_missing_rho0.yaml",
+  "artifact": {
+    "module": "vac_de",
+    "params": {
+      "w": -1.0,
+      "rho0": null,
+      "coupling_to_matter": 0.0
+    },
+    "policy": {
+      "allow_w_variable": false,
+      "has_exchange_Q": false
+    },
+    "bounds": {
+      "w_center": -1.0,
+      "w_halfwidth": 0.2,
+      "coupling_max": 0.001,
+      "source": "synthetic-audited"
+    },
+    "notes": "Toy vacuum/DE module: acceleration condition + observational w band + local coupling bound."
+  },
+  "locks": {
+    "V1_DECLARED": {
+      "pass": false,
+      "verdict": "NO-EVAL(V1)",
+      "note": "Need params.w and params.rho0"
+    }
+  },
+  "diagnostic": [
+    "Missing vacuum parameters -> NO-EVAL(V1)"
+  ],
+  "verdict": "NO-EVAL(V1_DECLARED)",
+  "first_reason": "V1_DECLARED",
+  "certificates": {
+    "RFS": {
+      "verdict": "PASS(RFS)",
+      "note": "RFS certificate checks passed (incl. RFS5)",
+      "cert": {
+        "cert_type": "RFS-CERT",
+        "cert_version": "v1",
+        "resource_budget": {
+          "compute_seconds": 30
+        },
+        "isaac_link": {
+          "OmegaI_max_resolution": "declared"
+        },
+        "pcn_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "pcd_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "idealizations": [
+          {
+            "name": "toy_vacuum_fluid",
+            "finite_surrogate": "constant-w effective fluid"
+          }
+        ],
+        "audit_hashes": {
+          "code": "sha256:994c0743d198637957a575ba451248be39370480033326a75c0bdb5f82e5eb50",
+          "data": "sha256:1ada676c29487a335e3b90eeb784391a3696b8699e8f9be2683f3f8fa8665dad",
+          "env": "sha256:62f0f3308d5872918fcd4500d2727a7847324c5d0cde3ec8739fb448d52fed85"
+        }
+      }
+    },
+    "IO": {
+      "verdict": "PASS(IO)",
+      "note": "IO certificate checks passed",
+      "cert": {
+        "cert_type": "IO-CERT",
+        "cert_version": "v1",
+        "map_O_theta": "Vacuum as effective fluid with params (w,rho0,coupling). Locks enforce acceleration, w band, local coupling, and policy for w(z).",
+        "theta_effective_list": [
+          "w",
+          "rho0",
+          "coupling_to_matter"
+        ],
+        "observables_list": [
+          "V3_ACCEL",
+          "V4_W_BAND",
+          "V5_LOCAL_COUPLING"
+        ],
+        "identifiability_metric": {
+          "name": "toy_constraint_proxy",
+          "value": 0.2
+        },
+        "threshold_tau": 0.1,
+        "degeneracies_list": [
+          "Vacuum/DM degeneracy handled by higher modules (bridge/G0)."
+        ],
+        "dataset_equivalence": [
+          "mrd_vac_de_bounds_v1"
+        ]
+      }
+    }
+  }
+}

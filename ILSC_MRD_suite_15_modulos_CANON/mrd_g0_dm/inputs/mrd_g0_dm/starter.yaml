@@ -1,0 +1,17 @@
+case:
+  name: mrd_g0_dm_starter
+  description: Starter MRD for G0_DM (Effective DM G0 residual geometry)
+module:
+  name: mrd_g0_dm
+  status: TODO
+judge_certs:
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json
+  IO:
+    enabled: false
+    path: certs/io_cert_example.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_example.json
+dataset: null

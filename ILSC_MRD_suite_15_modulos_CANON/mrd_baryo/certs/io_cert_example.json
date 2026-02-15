@@ -1,0 +1,25 @@
+{
+  "cert_type": "IO-CERT",
+  "cert_version": "v1",
+  "map_O_theta": "O = f(theta) computed by pipeline X",
+  "theta_effective_list": [
+    "theta1",
+    "theta2"
+  ],
+  "observables_list": [
+    "O1",
+    "O2"
+  ],
+  "identifiability_metric": {
+    "name": "cond(J)^-1",
+    "value": 0.2
+  },
+  "threshold_tau": 0.1,
+  "degeneracies_list": [
+    "none in ROI"
+  ],
+  "dataset_equivalence": [
+    "datasetA",
+    "datasetB"
+  ]
+}

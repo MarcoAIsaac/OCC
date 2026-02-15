@@ -1,0 +1,19 @@
+{
+  "dataset_id": "mrd_eft_ren_data_v1",
+  "created_utc": "2026-02-14T00:43:53Z",
+  "provenance": {
+    "type": "synthetic_but_audited",
+    "note": "Toy observable datum for EFT truncation test."
+  },
+  "schema": {
+    "columns": [
+      "E_probe_GeV",
+      "O_obs",
+      "sigma",
+      "source"
+    ],
+    "units": {
+      "E_probe_GeV": "GeV"
+    }
+  }
+}

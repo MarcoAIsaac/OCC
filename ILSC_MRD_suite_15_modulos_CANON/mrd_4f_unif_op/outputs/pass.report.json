@@ -1,0 +1,128 @@
+{
+  "input": "inputs/mrd_4f_unif_op/pass.yaml",
+  "artifact": {
+    "module": "fourf_unif_op",
+    "dictionary_observables": {
+      "O1": 0.9729603394717602,
+      "O2": 0.9751703272018161
+    },
+    "proposal": {
+      "claimed_observables": [
+        {
+          "name": "X1",
+          "value": 0.9729603394717602
+        },
+        {
+          "name": "X2",
+          "value": 0.9751703272018161
+        }
+      ],
+      "mapping": [
+        {
+          "name": "X1",
+          "maps_to": "O1"
+        },
+        {
+          "name": "X2",
+          "maps_to": "O2"
+        }
+      ],
+      "mapped_values": {
+        "X1": 0.9729603394717602,
+        "X2": 0.9751703272018161
+      }
+    },
+    "rule": "All proposal observables must be functions of 4F invariants (here: trace class functions)."
+  },
+  "locks": {
+    "4U1_DICT_PRESENT": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "Dictionary present"
+    },
+    "4U2_MAPPING_COMPLETE": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "Mapping declared for all claimed observables"
+    },
+    "4U3_MAPPING_VALID": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "All mapping targets exist in dictionary"
+    },
+    "4U4_NUMERIC_MATCH": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "Numeric values (if any) match mapped invariants"
+    },
+    "4U5_NONINVARIANT_FORBIDDEN": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "No non-invariant observables used"
+    }
+  },
+  "diagnostic": [],
+  "verdict": "PASS",
+  "first_reason": "",
+  "certificates": {
+    "RFS": {
+      "verdict": "PASS(RFS)",
+      "note": "RFS certificate checks passed (incl. RFS5)",
+      "cert": {
+        "cert_type": "RFS-CERT",
+        "cert_version": "v1",
+        "resource_budget": {
+          "compute_seconds": 30
+        },
+        "isaac_link": {
+          "OmegaI_max_resolution": "declared"
+        },
+        "pcn_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "pcd_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "idealizations": [
+          {
+            "name": "toy_gating",
+            "finite_surrogate": "mapping to class functions"
+          }
+        ],
+        "audit_hashes": {
+          "code": "sha256:ebf9e1001efbeb6b126ab942bbb671438a16f8c87d81058af320f9ce94aadeb9",
+          "data": "sha256:b55e972389a8e108eb5bfcf647a9d6a09f8720034853569ff3630a00c675cc2c",
+          "env": "sha256:62f0f3308d5872918fcd4500d2727a7847324c5d0cde3ec8739fb448d52fed85"
+        }
+      }
+    },
+    "IO": {
+      "verdict": "PASS(IO)",
+      "note": "IO certificate checks passed",
+      "cert": {
+        "cert_type": "IO-CERT",
+        "cert_version": "v1",
+        "map_O_theta": "Proposal observables must map to dictionary invariants (trace class functions).",
+        "theta_effective_list": [
+          "dict_invariant_values"
+        ],
+        "observables_list": [
+          "claimed_observables"
+        ],
+        "identifiability_metric": {
+          "name": "toy_nontrivial_mapping",
+          "value": 0.2
+        },
+        "threshold_tau": 0.1,
+        "degeneracies_list": [
+          "if mapping incomplete -> NO-EVAL(4U2)"
+        ],
+        "dataset_equivalence": [
+          "dict_artifact_toy_v1"
+        ]
+      }
+    }
+  }
+}

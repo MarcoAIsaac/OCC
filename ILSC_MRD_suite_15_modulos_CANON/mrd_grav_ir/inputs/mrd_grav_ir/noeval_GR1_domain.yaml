@@ -1,0 +1,24 @@
+case:
+  name: mrd_grav_ir_noeval_GR1
+  description: "GR IR MRD \u2014 NO-EVAL(GR1): PPN domain exceeded v/c"
+dataset:
+  dataset_id: mrd_grav_ir_bounds_noeval_v1
+  csv_path: data/mrd_grav_ir_bounds_noeval_v1.csv
+  meta_path: data/mrd_grav_ir_bounds_noeval_v1.meta.json
+params:
+  gamma_ppn: 1.000001
+  beta_ppn: 1.000001
+  cT_over_c: 1.0
+omegaI:
+  v_over_c: 0.90
+  v_over_c_max: 0.3
+judge_certs:
+  IO:
+    enabled: true
+    path: certs/io_cert_grav_ir_v1.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_grav_ir_v1.json
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json

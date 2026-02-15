@@ -1,0 +1,16 @@
+{
+  "dataset_id": "mrd_cosmo_bridge_Hz_v1",
+  "created_utc": "2026-02-14T00:43:53Z",
+  "provenance": {
+    "type": "synthetic_but_audited",
+    "note": "Toy H(z) dataset for bridge MRD."
+  },
+  "schema": {
+    "columns": [
+      "z",
+      "H_obs",
+      "sigma",
+      "source"
+    ]
+  }
+}

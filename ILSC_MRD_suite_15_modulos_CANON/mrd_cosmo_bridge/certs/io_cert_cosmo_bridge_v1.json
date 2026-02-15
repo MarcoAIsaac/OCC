@@ -1,0 +1,28 @@
+{
+  "cert_type": "IO-CERT",
+  "cert_version": "v1",
+  "map_O_theta": "Given theta=(H0,Om,w0,gdot/G,delta_w_bound) compute H(z) and enforce local + fit + informativeness locks.",
+  "theta_effective_list": [
+    "H0",
+    "Om",
+    "w0",
+    "gdot_over_G",
+    "delta_w_bound"
+  ],
+  "observables_list": [
+    "H(z)",
+    "chi2_red",
+    "local gdot/G"
+  ],
+  "identifiability_metric": {
+    "name": "toy_fit_proxy",
+    "value": 0.2
+  },
+  "threshold_tau": 0.1,
+  "degeneracies_list": [
+    "Om-w0 degeneracy; IO judge flags weak identifiability if needed in real use."
+  ],
+  "dataset_equivalence": [
+    "mrd_cosmo_bridge_Hz_v1"
+  ]
+}

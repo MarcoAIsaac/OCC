@@ -1,0 +1,135 @@
+{
+  "input": "inputs/mrd_g0_dm/pass.yaml",
+  "artifact": {
+    "module": "g0_dm",
+    "baryons": {
+      "M0_Msun": 50000000000.0,
+      "r0_kpc": 2.0
+    },
+    "dm_profile": {
+      "rho0_Msun_kpc3": 50000000.0,
+      "rs_kpc": 10.0
+    },
+    "predictions": [
+      {
+        "r_kpc": 2.0,
+        "v_pred_kms": 273.73854317344467,
+        "alpha_pred_arcsec": 0.6878846555961413,
+        "Mb": 25000000000.0,
+        "Mdm": 9836257563.328613
+      },
+      {
+        "r_kpc": 5.0,
+        "v_pred_kms": 281.8282242070904,
+        "alpha_pred_arcsec": 0.7291429600527044,
+        "Mb": 46992481203.00752,
+        "Mdm": 45321730744.60057
+      },
+      {
+        "r_kpc": 10.0,
+        "v_pred_kms": 271.1963808139311,
+        "alpha_pred_arcsec": 0.6751674513984914,
+        "Mb": 49603174603.17461,
+        "Mdm": 121357952701.74109
+      },
+      {
+        "r_kpc": 20.0,
+        "v_pred_kms": 262.91115415630935,
+        "alpha_pred_arcsec": 0.6345440001183029,
+        "Mb": 49950049950.04995,
+        "Mdm": 271399438566.0015
+      }
+    ],
+    "notes": "Toy: single DM profile must fit both rotation and lensing simultaneously (multi-scale consistency)."
+  },
+  "locks": {
+    "G01_BARYONS_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "baryon model declared"
+    },
+    "G02_RHO_POS": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "rho0>0"
+    },
+    "G03_ROTATION_FIT": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "chi2_v=0 <= 50"
+    },
+    "G04_LENSING_FIT": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "chi2_a=0 <= 50"
+    }
+  },
+  "diagnostic": [],
+  "verdict": "PASS",
+  "first_reason": "",
+  "certificates": {
+    "RFS": {
+      "verdict": "PASS(RFS)",
+      "note": "RFS certificate checks passed (incl. RFS5)",
+      "cert": {
+        "cert_type": "RFS-CERT",
+        "cert_version": "v1",
+        "resource_budget": {
+          "compute_seconds": 30
+        },
+        "isaac_link": {
+          "OmegaI_max_resolution": "declared"
+        },
+        "pcn_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "pcd_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "idealizations": [
+          {
+            "name": "toy_rotation_lensing",
+            "finite_surrogate": "NFW + simple lensing"
+          }
+        ],
+        "audit_hashes": {
+          "code": "sha256:756769703de9445245686a48d2ad6ccc22dbbec2c5fedb68874826af23955761",
+          "data": "sha256:c6370eb1f05ba11b6e7383581c69ec200193957b8b288e9c35bc42180251309b",
+          "env": "sha256:62f0f3308d5872918fcd4500d2727a7847324c5d0cde3ec8739fb448d52fed85"
+        }
+      }
+    },
+    "IO": {
+      "verdict": "PASS(IO)",
+      "note": "IO certificate checks passed",
+      "cert": {
+        "cert_type": "IO-CERT",
+        "cert_version": "v1",
+        "map_O_theta": "Given (baryons, NFW dm_profile) compute v(r) and lensing alpha(r). Locks enforce positivity and joint fit.",
+        "theta_effective_list": [
+          "M0_Msun",
+          "r0_kpc",
+          "rho0_Msun_kpc3",
+          "rs_kpc"
+        ],
+        "observables_list": [
+          "v(r)",
+          "alpha(r)"
+        ],
+        "identifiability_metric": {
+          "name": "toy_joint_fit_proxy",
+          "value": 0.2
+        },
+        "threshold_tau": 0.1,
+        "degeneracies_list": [
+          "Baryon/DM degeneracy; multi-observable fit reduces it (toy)."
+        ],
+        "dataset_equivalence": [
+          "mrd_g0_dm_galaxy_v1"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RFS-CERT",
+  "type": "object",
+  "required": [
+    "cert_type",
+    "cert_version",
+    "resource_budget",
+    "isaac_link",
+    "pcn_sweep",
+    "pcd_sweep",
+    "idealizations",
+    "audit_hashes"
+  ],
+  "properties": {
+    "cert_type": {
+      "const": "RFS-CERT"
+    },
+    "cert_version": {
+      "type": "string"
+    },
+    "resource_budget": {
+      "type": "object"
+    },
+    "isaac_link": {
+      "type": "object"
+    },
+    "pcn_sweep": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "flips"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "flips": {
+          "type": "boolean"
+        }
+      }
+    },
+    "pcd_sweep": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "flips"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "flips": {
+          "type": "boolean"
+        }
+      }
+    },
+    "idealizations": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "audit_hashes": {
+      "type": "object",
+      "required": [
+        "code",
+        "data",
+        "env"
+      ],
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "data": {
+          "type": "string"
+        },
+        "env": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

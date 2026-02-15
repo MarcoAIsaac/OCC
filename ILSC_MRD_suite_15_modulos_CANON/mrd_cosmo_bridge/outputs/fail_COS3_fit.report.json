@@ -1,0 +1,423 @@
+{
+  "input": "inputs/mrd_cosmo_bridge/fail_COS3_fit.yaml",
+  "artifact": {
+    "module": "cosmo_bridge",
+    "params": {
+      "H0": 70.0,
+      "Om": 0.3,
+      "w0": -0.2,
+      "gdot_over_G": 0.0
+    },
+    "predictions": [
+      {
+        "z": 0.07,
+        "H_pred": 76.39077036411913
+      },
+      {
+        "z": 0.09,
+        "H_pred": 78.24193775404915
+      },
+      {
+        "z": 0.12,
+        "H_pred": 81.03929510951986
+      },
+      {
+        "z": 0.17,
+        "H_pred": 85.75562868534003
+      },
+      {
+        "z": 0.1791,
+        "H_pred": 86.62117018975374
+      },
+      {
+        "z": 0.1993,
+        "H_pred": 88.55027594039608
+      },
+      {
+        "z": 0.2,
+        "H_pred": 88.61731792511748
+      },
+      {
+        "z": 0.27,
+        "H_pred": 95.38553249417923
+      },
+      {
+        "z": 0.28,
+        "H_pred": 96.36264892693445
+      },
+      {
+        "z": 0.3519,
+        "H_pred": 103.46182935634519
+      },
+      {
+        "z": 0.3802,
+        "H_pred": 106.2910581190868
+      },
+      {
+        "z": 0.4,
+        "H_pred": 108.28208206885856
+      },
+      {
+        "z": 0.4004,
+        "H_pred": 108.32240227361723
+      },
+      {
+        "z": 0.4247,
+        "H_pred": 110.77905676870438
+      },
+      {
+        "z": 0.4497,
+        "H_pred": 113.32117710442132
+      },
+      {
+        "z": 0.4783,
+        "H_pred": 116.24747024041791
+      },
+      {
+        "z": 0.47,
+        "H_pred": 115.39625198945272
+      },
+      {
+        "z": 0.48,
+        "H_pred": 116.422015130853
+      },
+      {
+        "z": 0.5929,
+        "H_pred": 128.16314076797778
+      },
+      {
+        "z": 0.6797,
+        "H_pred": 137.38551235552453
+      },
+      {
+        "z": 0.75,
+        "H_pred": 144.97579405569763
+      },
+      {
+        "z": 0.7812,
+        "H_pred": 148.37848819588336
+      },
+      {
+        "z": 0.8754,
+        "H_pred": 158.77654560726185
+      },
+      {
+        "z": 0.88,
+        "H_pred": 159.28903881717162
+      },
+      {
+        "z": 0.9,
+        "H_pred": 161.5223367502207
+      },
+      {
+        "z": 1.037,
+        "H_pred": 177.03873703746655
+      },
+      {
+        "z": 1.3,
+        "H_pred": 207.85610942989152
+      },
+      {
+        "z": 1.363,
+        "H_pred": 215.43204317538684
+      },
+      {
+        "z": 1.43,
+        "H_pred": 223.56878592985453
+      },
+      {
+        "z": 1.53,
+        "H_pred": 235.86369658594572
+      },
+      {
+        "z": 1.75,
+        "H_pred": 263.53062817335086
+      },
+      {
+        "z": 1.965,
+        "H_pred": 291.36240434372604
+      }
+    ],
+    "DeltaPi": {
+      "delta_w_bound": 0.02,
+      "delta_H_bound": [
+        {
+          "z": 0.07,
+          "delta_H_bound": 0.09472210786334082
+        },
+        {
+          "z": 0.09,
+          "delta_H_bound": 0.12064877473747339
+        },
+        {
+          "z": 0.12,
+          "delta_H_bound": 0.15866015942980458
+        },
+        {
+          "z": 0.17,
+          "delta_H_bound": 0.21980524833353057
+        },
+        {
+          "z": 0.1791,
+          "delta_H_bound": 0.2306520098406869
+        },
+        {
+          "z": 0.1993,
+          "delta_H_bound": 0.2544332745577537
+        },
+        {
+          "z": 0.2,
+          "delta_H_bound": 0.25525017951153645
+        },
+        {
+          "z": 0.27,
+          "delta_H_bound": 0.33462366065869986
+        },
+        {
+          "z": 0.28,
+          "delta_H_bound": 0.34560410910413614
+        },
+        {
+          "z": 0.3519,
+          "delta_H_bound": 0.4221154145435118
+        },
+        {
+          "z": 0.3802,
+          "delta_H_bound": 0.4511197826861101
+        },
+        {
+          "z": 0.4,
+          "delta_H_bound": 0.47106113126969806
+        },
+        {
+          "z": 0.4004,
+          "delta_H_bound": 0.47146107413772287
+        },
+        {
+          "z": 0.4247,
+          "delta_H_bound": 0.4955457713374684
+        },
+        {
+          "z": 0.4497,
+          "delta_H_bound": 0.5198992938646007
+        },
+        {
+          "z": 0.4783,
+          "delta_H_bound": 0.5472498904948699
+        },
+        {
+          "z": 0.47,
+          "delta_H_bound": 0.5393673611069029
+        },
+        {
+          "z": 0.48,
+          "delta_H_bound": 0.5488589228864331
+        },
+        {
+          "z": 0.5929,
+          "delta_H_bound": 0.6517787560458378
+        },
+        {
+          "z": 0.6797,
+          "delta_H_bound": 0.7260612884571483
+        },
+        {
+          "z": 0.75,
+          "delta_H_bound": 0.7834621031095917
+        },
+        {
+          "z": 0.7812,
+          "delta_H_bound": 0.8082022122515743
+        },
+        {
+          "z": 0.8754,
+          "delta_H_bound": 0.8803507580047427
+        },
+        {
+          "z": 0.88,
+          "delta_H_bound": 0.8837804875786008
+        },
+        {
+          "z": 0.9,
+          "delta_H_bound": 0.8985954406413525
+        },
+        {
+          "z": 1.037,
+          "delta_H_bound": 0.9960693921425362
+        },
+        {
+          "z": 1.3,
+          "delta_H_bound": 1.1660727721091453
+        },
+        {
+          "z": 1.363,
+          "delta_H_bound": 1.2039047974866792
+        },
+        {
+          "z": 1.43,
+          "delta_H_bound": 1.24304776029344
+        },
+        {
+          "z": 1.53,
+          "delta_H_bound": 1.2995070238352004
+        },
+        {
+          "z": 1.75,
+          "delta_H_bound": 1.416241276349872
+        },
+        {
+          "z": 1.965,
+          "delta_H_bound": 1.5216278454295642
+        }
+      ]
+    },
+    "notes": "Toy bridge: requires local bound on gdot and fit to H(z) with projection bound."
+  },
+  "locks": {
+    "COS1_PARAMS_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "params declared"
+    },
+    "COS2_LOCAL_GDOT": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "|gdot/G|=0 <= 0.001"
+    },
+    "COS3_FIT": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "chi2_red=6.57 <= 10"
+    },
+    "COS4_DW_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "delta_w_bound declared"
+    },
+    "COS4_INFORMATIVE": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "ΔH below κσ at all z"
+    }
+  },
+  "diagnostic": [],
+  "verdict": "PASS",
+  "first_reason": "",
+  "certificates": {
+    "PA": {
+      "verdict": "PASS(PA)",
+      "note": "PA certificate checks passed (incl. PA5)",
+      "cert": {
+        "cert_type": "PA-CERT",
+        "cert_version": "v1",
+        "projection_version": "COSMO-BRIDGE-toy-v1",
+        "Pi_signature": "H(z)=H0 sqrt(Om(1+z)^3+(1-Om)(1+z)^{3(1+w0)}) with bounded Δw",
+        "assumptions": [
+          "Flat universe toy",
+          "w(z) truncated to constant w0",
+          "Missing structure bounded by delta_w_bound"
+        ],
+        "delta_proj_method": "delta_w_bound_to_delta_H_bound",
+        "delta_proj": {
+          "z": [
+            0.0,
+            0.5,
+            1.0
+          ],
+          "delta": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "E": [
+            0.0,
+            0.5,
+            1.0
+          ]
+        },
+        "kappa_rule": {
+          "kappa": 1.0
+        },
+        "sigma_data": {
+          "sigma": 8.0
+        },
+        "hashes": {
+          "code": "sha256:79b82156c53a20a4506e69b084b625508ab03f04017edee75fed88b1995c5e00",
+          "data": "sha256:156558b3e7afa64ee214c0533d30d3679f0307d57d5d002adab8bd87c6e9f114"
+        },
+        "seeds": {
+          "generator": 20260213
+        },
+        "run_log": {
+          "note": "AUTO hashes filled by validator",
+          "validated_at_utc": "2026-02-15T01:49:05Z"
+        }
+      }
+    },
+    "RFS": {
+      "verdict": "PASS(RFS)",
+      "note": "RFS certificate checks passed (incl. RFS5)",
+      "cert": {
+        "cert_type": "RFS-CERT",
+        "cert_version": "v1",
+        "resource_budget": {
+          "compute_seconds": 30
+        },
+        "isaac_link": {
+          "OmegaI_max_resolution": "declared"
+        },
+        "pcn_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "pcd_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "idealizations": [
+          {
+            "name": "toy_Hz_fit",
+            "finite_surrogate": "finite z grid"
+          }
+        ],
+        "audit_hashes": {
+          "code": "sha256:79b82156c53a20a4506e69b084b625508ab03f04017edee75fed88b1995c5e00",
+          "data": "sha256:156558b3e7afa64ee214c0533d30d3679f0307d57d5d002adab8bd87c6e9f114",
+          "env": "sha256:62f0f3308d5872918fcd4500d2727a7847324c5d0cde3ec8739fb448d52fed85"
+        }
+      }
+    },
+    "IO": {
+      "verdict": "PASS(IO)",
+      "note": "IO certificate checks passed",
+      "cert": {
+        "cert_type": "IO-CERT",
+        "cert_version": "v1",
+        "map_O_theta": "Given theta=(H0,Om,w0,gdot/G,delta_w_bound) compute H(z) and enforce local + fit + informativeness locks.",
+        "theta_effective_list": [
+          "H0",
+          "Om",
+          "w0",
+          "gdot_over_G",
+          "delta_w_bound"
+        ],
+        "observables_list": [
+          "H(z)",
+          "chi2_red",
+          "local gdot/G"
+        ],
+        "identifiability_metric": {
+          "name": "toy_fit_proxy",
+          "value": 0.2
+        },
+        "threshold_tau": 0.1,
+        "degeneracies_list": [
+          "Om-w0 degeneracy; IO judge flags weak identifiability if needed in real use."
+        ],
+        "dataset_equivalence": [
+          "mrd_cosmo_bridge_Hz_v1"
+        ]
+      }
+    }
+  }
+}

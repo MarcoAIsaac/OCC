@@ -1,0 +1,25 @@
+{
+  "cert_type": "IO-CERT",
+  "cert_version": "v1",
+  "map_O_theta": "For U(1): constraints are sums over charges (linear & cubic) and topological integer k.",
+  "theta_effective_list": [
+    "{q_i}",
+    "k"
+  ],
+  "observables_list": [
+    "sum q",
+    "sum q^3",
+    "k integer?"
+  ],
+  "identifiability_metric": {
+    "name": "toy_constraint_rank",
+    "value": 0.2
+  },
+  "threshold_tau": 0.1,
+  "degeneracies_list": [
+    "Multiple charge sets can satisfy sums; this MRD only checks necessary conditions."
+  ],
+  "dataset_equivalence": [
+    "mrd_sym_anom_topo_v1"
+  ]
+}

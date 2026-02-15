@@ -1,0 +1,19 @@
+{
+  "dataset_id": "mrd_4f_dict_spec_v1",
+  "created_utc": "2026-02-13T23:51:45Z",
+  "provenance": {
+    "type": "audited_minimal",
+    "note": "Toy SU(2) path/loop spec for 4F dictionary MRD. Replace with real lattice/path spec if needed."
+  },
+  "schema": {
+    "format": "row-wise spec",
+    "columns": [
+      "angle",
+      "axis",
+      "id",
+      "kind",
+      "obs_type",
+      "path_ids"
+    ]
+  }
+}

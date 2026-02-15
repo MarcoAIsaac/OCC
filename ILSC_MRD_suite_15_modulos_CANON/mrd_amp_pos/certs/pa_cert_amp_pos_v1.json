@@ -1,0 +1,31 @@
+{
+  "cert_type": "PA-CERT",
+  "cert_version": "v1",
+  "projection_version": "Pi-aQGC-v1",
+  "Pi_signature": "aQGC:Table4-sign + CMS95CL-anchor",
+  "assumptions": [
+    "EFT truncation at dim-8 with declared basis",
+    "Forward-limit positivity assumptions as in cited derivation",
+    "Observational interval used only as post-compile anchor"
+  ],
+  "delta_proj_method": "Not used (sign-positivity is inequality); observational interval is external.",
+  "delta_proj": {
+    "note": "N/A for sign-positivity; data interval is treated as external anchor."
+  },
+  "kappa_rule": {
+    "kappa": 1.0
+  },
+  "sigma_data": {
+    "note": "Provided by experimental 95% CL interval; mapped to Gaussian only in optional analysis."
+  },
+  "hashes": {
+    "code": "AUTO",
+    "data": "AUTO"
+  },
+  "seeds": {
+    "solver": 123
+  },
+  "run_log": {
+    "timestamp": "..."
+  }
+}

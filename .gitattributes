@@ -1,0 +1,5 @@
+# Normalize line endings for text files
+* text=auto
+
+# Treat PDFs as binary
+*.pdf binary

@@ -1,0 +1,26 @@
+case:
+  name: mrd_g0_dm_fail_G03
+  description: 'G0 MRD — FAIL(G03): wrong DM parameters -> rotation/lensing mismatch'
+dataset:
+  dataset_id: mrd_g0_dm_galaxy_v1
+  csv_path: data/mrd_g0_dm_galaxy_v1.csv
+  meta_path: data/mrd_g0_dm_galaxy_v1.meta.json
+baryons:
+  M0_Msun: 50000000000.0
+  r0_kpc: 2.0
+dm_profile:
+  rho0_Msun_kpc3: 1000000.0
+  rs_kpc: 10.0
+tolerances:
+  chi2_v_max: 50.0
+  chi2_a_max: 50.0
+judge_certs:
+  IO:
+    enabled: true
+    path: certs/io_cert_g0_dm_v1.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_g0_dm_v1.json
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json

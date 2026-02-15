@@ -1,0 +1,22 @@
+{
+  "dataset_id": "mrd_4f_unif_dyn_couplings_pass_v1",
+  "created_utc": "2026-02-14T03:04:59Z",
+  "provenance": {
+    "type": "synthetic_but_audited",
+    "seed": 20260214,
+    "note": "PASS dataset with near-unified couplings at reference scale (toy)."
+  },
+  "schema": {
+    "columns": [
+      "mu0_GeV",
+      "g1",
+      "g2",
+      "g3",
+      "sigma",
+      "source"
+    ],
+    "units": {
+      "mu0_GeV": "GeV"
+    }
+  }
+}

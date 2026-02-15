@@ -1,0 +1,178 @@
+{
+  "input": "inputs/mrd_amp_pos/fail_aqgc_outside_FT0.yaml",
+  "artifact": {
+    "module": "amp_pos",
+    "eft": {
+      "Lambda_GeV": 1000.0,
+      "c2": 1.0,
+      "c3": 0.0
+    },
+    "dispersion": {
+      "ir_safe": true,
+      "N_sub": 2
+    },
+    "omegaI": {
+      "Emin_GeV": 50.0,
+      "Emax_GeV": 300.0,
+      "grid_N": 6,
+      "frac_cutoff_max": 0.5
+    },
+    "series": [
+      {
+        "E_GeV": 50.0,
+        "A": 6.25e-06,
+        "a0_proxy": 1.2433979929054323e-07
+      },
+      {
+        "E_GeV": 100.0,
+        "A": 0.0001,
+        "a0_proxy": 1.9894367886486917e-06
+      },
+      {
+        "E_GeV": 150.0,
+        "A": 0.00050625,
+        "a0_proxy": 1.0071523742534001e-05
+      },
+      {
+        "E_GeV": 200.0,
+        "A": 0.0016,
+        "a0_proxy": 3.183098861837907e-05
+      },
+      {
+        "E_GeV": 250.0,
+        "A": 0.00390625,
+        "a0_proxy": 7.771237455658952e-05
+      },
+      {
+        "E_GeV": 300.0,
+        "A": 0.0081,
+        "a0_proxy": 0.00016114437988054401
+      }
+    ],
+    "notes": "Toy positivity + unitarity + crossing gating. Replace by full dispersion/SDP in production."
+  },
+  "locks": {
+    "AMP1_IR_SCHEME": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "IR-safe scheme declared"
+    },
+    "AMP2_OMEGAI_VALID": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "ΩI within cutoff fraction"
+    },
+    "AMP3_POSITIVITY": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "c2>0"
+    },
+    "AMP4_CROSSING": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "c3≈0"
+    },
+    "AMP5_UNITARITY": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "max|a0|=0.000161 <= 0.5"
+    },
+    "AMP5_AQGC_POSITIVITY_TABLE4": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "FT0 satisfies >=0",
+      "class": "C",
+      "witness": {
+        "op": "FT0",
+        "coeff_TeV4": 1.5,
+        "rule": ">=0",
+        "margin": 1.5
+      }
+    },
+    "AMP6_AQGC_DATA_95CL_ANCHOR": {
+      "pass": false,
+      "verdict": "FAIL(AMP6)",
+      "note": "outside observed 95% CL interval (anchor)",
+      "class": "E",
+      "witness": {
+        "op": "FT0",
+        "coeff_TeV4": 1.5,
+        "bounds_95CL": [
+          -0.46,
+          0.44
+        ],
+        "dataset_id": "cms_smp_17_006_aqgc_limits_v1",
+        "dataset_sha256": "d5b3e658849c595dc8f128998460563fb405678a7efc0031afbb22b25ba333da"
+      }
+    }
+  },
+  "diagnostic": [
+    "Outside experimental 95% CL interval for FT0 -> FAIL(AMP6)"
+  ],
+  "verdict": "FAIL(AMP6_AQGC_DATA_95CL_ANCHOR)",
+  "first_reason": "AMP6_AQGC_DATA_95CL_ANCHOR",
+  "certificates": {
+    "RFS": {
+      "verdict": "PASS(RFS)",
+      "note": "RFS certificate checks passed (incl. RFS5)",
+      "cert": {
+        "cert_type": "RFS-CERT",
+        "cert_version": "v1",
+        "resource_budget": {
+          "compute_seconds": 30,
+          "grid_N_max": 10000
+        },
+        "isaac_link": {
+          "OmegaI_max_resolution": "declared"
+        },
+        "pcn_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "pcd_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "idealizations": [
+          {
+            "name": "toy_amp_polynomial",
+            "finite_surrogate": "finite polynomial amplitude"
+          }
+        ],
+        "audit_hashes": {
+          "code": "sha256:ca6853e41274660c3a41f3a9fb27c29ce82f6923daf8d05f6069ffa025aca91d",
+          "data": "sha256:4e1c14299d57905cfe0adfed6dfcef6d864ea7b1daebc070c9e379171c48e5d5",
+          "env": "sha256:62f0f3308d5872918fcd4500d2727a7847324c5d0cde3ec8739fb448d52fed85"
+        }
+      }
+    },
+    "IO": {
+      "verdict": "PASS(IO)",
+      "note": "IO certificate checks passed",
+      "cert": {
+        "cert_type": "IO-CERT",
+        "cert_version": "v1",
+        "map_O_theta": "A(s)=c2(s/Λ^2)^2 + c3(s/Λ^2)^3; checks use positivity(c2>0), crossing(c3≈0) and unitarity proxy on grid.",
+        "theta_effective_list": [
+          "c2",
+          "c3",
+          "Lambda"
+        ],
+        "observables_list": [
+          "PASS/FAIL locks AMP3-AMP5"
+        ],
+        "identifiability_metric": {
+          "name": "toy_nonzero_sensitivity",
+          "value": 0.2
+        },
+        "threshold_tau": 0.1,
+        "degeneracies_list": [
+          "Toy; full program uses dispersion/SDP for stronger identifiability."
+        ],
+        "dataset_equivalence": [
+          "mrd_amp_pos_grid_v1"
+        ]
+      }
+    }
+  }
+}

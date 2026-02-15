@@ -1,0 +1,84 @@
+{
+  "input": "inputs/mrd_g0_dm/noeval_G03_missing_dataset.yaml",
+  "artifact": {
+    "module": "G0_DM",
+    "verdict": "NO-EVAL"
+  },
+  "locks": [
+    {
+      "id": "G03",
+      "verdict": "NO-EVAL",
+      "reason": "missing dataset (csv_path/meta_path)"
+    }
+  ],
+  "diagnostic": {
+    "note": "Dataset not provided; evaluation not possible without rotation+lens data."
+  },
+  "verdict": "NO-EVAL(G03)",
+  "first_reason": "G03",
+  "certificates": {
+    "RFS": {
+      "verdict": "PASS(RFS)",
+      "note": "RFS certificate checks passed (incl. RFS5)",
+      "cert": {
+        "cert_type": "RFS-CERT",
+        "cert_version": "v1",
+        "resource_budget": {
+          "compute_seconds": 30
+        },
+        "isaac_link": {
+          "OmegaI_max_resolution": "declared"
+        },
+        "pcn_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "pcd_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "idealizations": [
+          {
+            "name": "toy_rotation_lensing",
+            "finite_surrogate": "NFW + simple lensing"
+          }
+        ],
+        "audit_hashes": {
+          "code": "sha256:756769703de9445245686a48d2ad6ccc22dbbec2c5fedb68874826af23955761",
+          "data": "sha256:885dcfca5fb1c057179186fc9f22940caeaff48bdc9c335050e6321e2dc5c3c2",
+          "env": "sha256:62f0f3308d5872918fcd4500d2727a7847324c5d0cde3ec8739fb448d52fed85"
+        }
+      }
+    },
+    "IO": {
+      "verdict": "PASS(IO)",
+      "note": "IO certificate checks passed",
+      "cert": {
+        "cert_type": "IO-CERT",
+        "cert_version": "v1",
+        "map_O_theta": "Given (baryons, NFW dm_profile) compute v(r) and lensing alpha(r). Locks enforce positivity and joint fit.",
+        "theta_effective_list": [
+          "M0_Msun",
+          "r0_kpc",
+          "rho0_Msun_kpc3",
+          "rs_kpc"
+        ],
+        "observables_list": [
+          "v(r)",
+          "alpha(r)"
+        ],
+        "identifiability_metric": {
+          "name": "toy_joint_fit_proxy",
+          "value": 0.2
+        },
+        "threshold_tau": 0.1,
+        "degeneracies_list": [
+          "Baryon/DM degeneracy; multi-observable fit reduces it (toy)."
+        ],
+        "dataset_equivalence": [
+          "mrd_g0_dm_galaxy_v1"
+        ]
+      }
+    }
+  }
+}

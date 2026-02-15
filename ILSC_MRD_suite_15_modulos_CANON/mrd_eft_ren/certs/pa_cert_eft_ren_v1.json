@@ -1,0 +1,35 @@
+{
+  "cert_type": "PA-CERT",
+  "cert_version": "v1",
+  "projection_version": "EFT-REN-toy-v1",
+  "Pi_signature": "RG_running_C6 + truncation_dim8_bound",
+  "assumptions": [
+    "Toy RG: C6(mu)=C6(mu0)+gamma ln(mu/mu0)",
+    "Neglected dim-8 bounded by |c8|<=c8_max_abs"
+  ],
+  "delta_proj_method": "dim8_truncation_bound",
+  "delta_proj": {
+    "E": [
+      100.0
+    ],
+    "delta": [
+      0.0
+    ]
+  },
+  "kappa_rule": {
+    "kappa": 1.0
+  },
+  "sigma_data": {
+    "sigma": 0.02
+  },
+  "hashes": {
+    "code": "AUTO",
+    "data": "AUTO"
+  },
+  "seeds": {
+    "generator": 20260213
+  },
+  "run_log": {
+    "note": "AUTO hashes filled by validator"
+  }
+}

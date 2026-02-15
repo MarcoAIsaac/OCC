@@ -1,0 +1,102 @@
+{
+  "input": "/mnt/data/ILSC_hardening_work/suite_v6/mrd_rama_ef/inputs/mrd_rama_ef/noeval_RE0_pointer_missing.yaml",
+  "artifact": {
+    "module": "rama_ef",
+    "params": {
+      "Gamma_decoh": 2.0,
+      "N_fragments": 20
+    },
+    "times": {
+      "tau_read": 1.0,
+      "tau_stab": 10.0,
+      "tau_dec": 0.5
+    },
+    "redundancy": {
+      "D_read": 0.1353352832366127,
+      "R": 17.293294335267746,
+      "R_min": 5.0
+    },
+    "policy": {
+      "require_no_backflow": true,
+      "no_backflow": true
+    },
+    "pointer_basis": null,
+    "notes": "Toy decoherence/objectivity checks. Replace with SK-derived kernels and mutual information computations."
+  },
+  "locks": {
+    "RE0_POINTER_BASIS": {
+      "pass": false,
+      "verdict": "NO-EVAL(RE0)",
+      "note": "pointer_basis missing"
+    }
+  },
+  "diagnostic": [
+    "Missing pointer basis -> NO-EVAL(RE0)"
+  ],
+  "verdict": "NO-EVAL(RE0_POINTER_BASIS)",
+  "first_reason": "RE0_POINTER_BASIS",
+  "certificates": {
+    "RFS": {
+      "verdict": "PASS(RFS)",
+      "note": "RFS certificate checks passed (incl. RFS5)",
+      "cert": {
+        "cert_type": "RFS-CERT",
+        "cert_version": "v1",
+        "resource_budget": {
+          "compute_seconds": 30
+        },
+        "isaac_link": {
+          "OmegaI_max_resolution": "declared"
+        },
+        "pcn_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "pcd_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "idealizations": [
+          {
+            "name": "toy_decoherence",
+            "finite_surrogate": "exponential decoherence"
+          }
+        ],
+        "audit_hashes": {
+          "code": "sha256:1a255f106756a45c2c2ef3dba036a3aed235f9189d64b18e50c986c7985adaa9",
+          "data": "sha256:89c1cb52243c373725d8a2524c0d37b9a11116b7905fea4f686f88604d66cfd4",
+          "env": "sha256:62f0f3308d5872918fcd4500d2727a7847324c5d0cde3ec8739fb448d52fed85"
+        }
+      }
+    },
+    "IO": {
+      "verdict": "PASS(IO)",
+      "note": "IO certificate checks passed",
+      "cert": {
+        "cert_type": "IO-CERT",
+        "cert_version": "v1",
+        "map_O_theta": "Toy decoherence D(t)=exp(-Gamma t) gives redundancy R=N(1-D). Locks require fast decoherence, stability, redundancy, and no-backflow.",
+        "theta_effective_list": [
+          "Gamma_decoh",
+          "N_fragments"
+        ],
+        "observables_list": [
+          "tau_dec",
+          "R",
+          "PASS/FAIL locks"
+        ],
+        "identifiability_metric": {
+          "name": "toy_redundancy_proxy",
+          "value": 0.2
+        },
+        "threshold_tau": 0.1,
+        "degeneracies_list": [
+          "Toy; real objectivity uses mutual information over environment fragments."
+        ],
+        "dataset_equivalence": [
+          "mrd_rama_ef_times_v1"
+        ]
+      }
+    }
+  }
+}

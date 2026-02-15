@@ -1,0 +1,22 @@
+{
+  "dataset_id": "mrd_4f_unif_dyn_couplings_v1",
+  "created_utc": "2026-02-14T00:12:31Z",
+  "provenance": {
+    "type": "synthetic_but_audited",
+    "seed": 20260213,
+    "note": "Toy coupling values. Replace with extracted couplings at reference scale for a real study."
+  },
+  "schema": {
+    "columns": [
+      "mu0_GeV",
+      "g1",
+      "g2",
+      "g3",
+      "sigma",
+      "source"
+    ],
+    "units": {
+      "mu0_GeV": "GeV"
+    }
+  }
+}

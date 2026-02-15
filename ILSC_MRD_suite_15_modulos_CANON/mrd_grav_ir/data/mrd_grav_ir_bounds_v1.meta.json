@@ -1,0 +1,23 @@
+{
+  "dataset_id": "mrd_grav_ir_bounds_v1",
+  "sha256": "6eb31811afd7844900fc813765244bd64fd1ba16991cc8b28849c6d53eeb28e4",
+  "license": "Derived from published experimental bounds (bibliographic citations; numbers are not restricted by a separate dataset license).",
+  "citation": [
+    "B. Bertotti, L. Iess, P. Tortora, 'A test of general relativity using radio links with the Cassini spacecraft', Nature 425 (2003) 374–376. DOI: 10.1038/nature01997.",
+    "The LIGO Scientific Collaboration and the Virgo Collaboration et al., 'Multi-messenger Observations of a Binary Neutron Star Merger', ApJL 848 (2017) L12. DOI: 10.3847/2041-8213/aa91c9.",
+    "C. M. Will, 'The Confrontation between General Relativity and Experiment', Living Reviews in Relativity 17 (2014) 4. DOI: 10.12942/lrr-2014-4."
+  ],
+  "columns": [
+    "dgamma_max",
+    "dbeta_max",
+    "dcT_max",
+    "v_over_c_dataset",
+    "source"
+  ],
+  "source_accessed_utc": "2026-02-15",
+  "redistribution_policy": "derived_from_publications",
+  "notes": [
+    "This CSV provides a compact 'bounds dataset' used by the MRD; users may update the bounds by editing this file while keeping citations consistent.",
+    "The OCC standard distinguishes the conceptual judge from any particular numeric instantiation; numeric bounds evolve with experimental progress."
+  ]
+}

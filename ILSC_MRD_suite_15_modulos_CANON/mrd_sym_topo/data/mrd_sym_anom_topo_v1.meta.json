@@ -1,0 +1,15 @@
+{
+  "dataset_id": "mrd_sym_anom_topo_v1",
+  "created_utc": "2026-02-14T00:17:19Z",
+  "provenance": {
+    "type": "audited_minimal",
+    "note": "Toy chiral U(1) charges and topological integer k."
+  },
+  "schema": {
+    "columns": [
+      "type",
+      "name",
+      "charge_q"
+    ]
+  }
+}

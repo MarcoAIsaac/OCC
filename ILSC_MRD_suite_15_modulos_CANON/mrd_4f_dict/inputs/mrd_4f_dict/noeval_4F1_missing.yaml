@@ -1,0 +1,24 @@
+case:
+  name: mrd_4f_dict_noeval_4F1
+  description: '4F Dict MRD — NO-EVAL(4F1): missing dictionary declaration'
+gauge:
+  mode: conjugation
+  V:
+    axis:
+    - 0.0
+    - 0.0
+    - 1.0
+    angle: 0.333
+tolerances:
+  unitary_eps: 1.0e-10
+  closure_eps: 1.0e-10
+judge_certs:
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json
+  IO:
+    enabled: true
+    path: certs/io_cert_4f_dict_v1.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_4f_dict_v1.json

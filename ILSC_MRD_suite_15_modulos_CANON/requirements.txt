@@ -1,0 +1,5 @@
+numpy>=1.24
+PyYAML>=6.0
+jsonschema>=4.18
+reportlab>=3.6
+scipy>=1.10  # optional (audit version capture)

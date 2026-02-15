@@ -1,0 +1,130 @@
+{
+  "input": "/mnt/data/ILSC_hardening_work/suite_v6/mrd_sym_topo/inputs/mrd_sym_topo/fail_AN3_cubic.yaml",
+  "artifact": {
+    "module": "sym_anom_topo",
+    "symmetry": {
+      "group": "U1",
+      "notes": "toy U(1)"
+    },
+    "charges": [
+      1.0,
+      1.0,
+      -2.0
+    ],
+    "anomaly_sums": {
+      "sum_q": 0.0,
+      "sum_q3": -6.0
+    },
+    "topology": {
+      "chern_k": 1.0,
+      "tol_integer": 1e-08
+    },
+    "dataset": {
+      "dataset_id": "mrd_sym_anom_topo_v1",
+      "csv_path": "data/mrd_sym_anom_topo_v1.csv",
+      "meta_path": "data/mrd_sym_anom_topo_v1.meta.json"
+    },
+    "notes": "Toy symmetry/anomaly/topology module with dataset fallback (charges/k only)."
+  },
+  "locks": {
+    "SYM1_GROUP_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "group=U1"
+    },
+    "AN1_CHARGES_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "N=3 charges"
+    },
+    "AN2_LINEAR_CANCEL": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "|sum q|=0.000e+00 <= 1.0e-12"
+    },
+    "AN3_CUBIC_CANCEL": {
+      "pass": false,
+      "verdict": "FAIL(AN3)",
+      "note": "|sum q^3|=6.000e+00 > 1.0e-12"
+    },
+    "TOPO1_K_DECLARED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "chern_k declared"
+    },
+    "TOPO2_QUANTIZED": {
+      "pass": true,
+      "verdict": "PASS",
+      "note": "k≈1 within 1.0e-08"
+    }
+  },
+  "diagnostic": [
+    "Cubic anomaly condition violated -> FAIL(AN3)"
+  ],
+  "verdict": "FAIL(AN3_CUBIC_CANCEL)",
+  "first_reason": "AN3_CUBIC_CANCEL",
+  "certificates": {
+    "RFS": {
+      "verdict": "PASS(RFS)",
+      "note": "RFS certificate checks passed (incl. RFS5)",
+      "cert": {
+        "cert_type": "RFS-CERT",
+        "cert_version": "v1",
+        "resource_budget": {
+          "compute_seconds": 30
+        },
+        "isaac_link": {
+          "OmegaI_max_resolution": "declared"
+        },
+        "pcn_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "pcd_sweep": {
+          "enabled": true,
+          "flips": false
+        },
+        "idealizations": [
+          {
+            "name": "toy_U1_anomaly",
+            "finite_surrogate": "finite list of charges"
+          }
+        ],
+        "audit_hashes": {
+          "code": "sha256:bb236f7890718dbcbe3c983b29b4f168d077b300c10f144d1d1295e5b515dcc1",
+          "data": "sha256:4dde5c0fd5109da4b7eb19637bdae6127fcafc09a7b3d0e514aab8cd89920961",
+          "env": "sha256:62f0f3308d5872918fcd4500d2727a7847324c5d0cde3ec8739fb448d52fed85"
+        }
+      }
+    },
+    "IO": {
+      "verdict": "PASS(IO)",
+      "note": "IO certificate checks passed",
+      "cert": {
+        "cert_type": "IO-CERT",
+        "cert_version": "v1",
+        "map_O_theta": "For U(1): constraints are sums over charges (linear & cubic) and topological integer k.",
+        "theta_effective_list": [
+          "{q_i}",
+          "k"
+        ],
+        "observables_list": [
+          "sum q",
+          "sum q^3",
+          "k integer?"
+        ],
+        "identifiability_metric": {
+          "name": "toy_constraint_rank",
+          "value": 0.2
+        },
+        "threshold_tau": 0.1,
+        "degeneracies_list": [
+          "Multiple charge sets can satisfy sums; this MRD only checks necessary conditions."
+        ],
+        "dataset_equivalence": [
+          "mrd_sym_anom_topo_v1"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+case:
+  name: mrd_obs_isaac_pass
+  description: 'OBS/ISAAC MRD — PASS: requested resolution above ISAAC floor'
+obs:
+  instrument:
+    type: interferometer
+    wavelength_m: 5.0e-07
+    aperture_m: 1.0
+    baseline_m: 100.0
+    note: toy spec
+  requested_resolution_m: 1.0e-06
+  safety_factor: 10.0
+  domain:
+    OmegaI:
+      E_max_GeV: 1000.0
+      L_min_declared_m: 1.0e-06
+      notes: toy OmegaI
+dataset:
+  dataset_id: mrd_obs_isaac_instrument_v1
+  csv_path: data/mrd_obs_isaac_instrument_v1.csv
+  meta_path: data/mrd_obs_isaac_instrument_v1.meta.json
+judge_certs:
+  PA:
+    enabled: false
+    path: certs/pa_cert_example.json
+  IO:
+    enabled: false
+    path: certs/io_cert_example.json
+  RFS:
+    enabled: true
+    path: certs/rfs_cert_example.json
+resources:
+  budget:
+    compute_seconds: 30
+    notes: toy

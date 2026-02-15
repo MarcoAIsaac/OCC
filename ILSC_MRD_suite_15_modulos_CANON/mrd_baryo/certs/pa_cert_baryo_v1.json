@@ -1,0 +1,36 @@
+{
+  "cert_type": "PA-CERT",
+  "cert_version": "v1",
+  "projection_version": "BARYO-umbrella-toy-v1",
+  "Pi_signature": "Y_B = kY * theta_CPV * strength; d_e = kE * theta_CPV; GW = kO*(alpha/(1+alpha))^2*(100/betaH)^2",
+  "assumptions": [
+    "Toy mapping from CPV EFT operator to baryon asymmetry",
+    "Higher operators bounded implicitly (demo)"
+  ],
+  "delta_proj_method": "toy_higher_operator_bound",
+  "delta_proj": {
+    "note": "Set by c8_max-like bound in full model",
+    "delta": [
+      0.0
+    ],
+    "E": [
+      100.0
+    ]
+  },
+  "kappa_rule": {
+    "kappa": 1.0
+  },
+  "sigma_data": {
+    "sigma": 5e-12
+  },
+  "hashes": {
+    "code": "AUTO",
+    "data": "AUTO"
+  },
+  "seeds": {
+    "generator": 20260213
+  },
+  "run_log": {
+    "note": "AUTO hashes filled by validator"
+  }
+}
