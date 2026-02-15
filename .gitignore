@@ -8,6 +8,8 @@ __pycache__/
 .eggs/
 .pytest_cache/
 .mypy_cache/
+.ruff_cache/
+.cache/
 
 # Virtual environments
 .venv/
@@ -17,9 +19,14 @@ venv/
 build/
 dist/
 
-# Temporary
-.tmp_release/
+# Runtime outputs
 out/
-_out/
 runs/
+artifacts/
+reports/
 tmp/
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
