@@ -12,6 +12,7 @@ The format is based on *Keep a Changelog* and this project adheres to *Semantic 
 - Windows packaging script `scripts/build_windows_desktop.ps1` generating:
   - `OCCDesktop-windows-x64.exe`
   - `OCCDesktop-windows-x64.zip`
+  - `OCCDesktop-windows-x64.sha256`
 - Release workflow `.github/workflows/windows_desktop_release.yml` to build/upload desktop assets on published releases.
 - New desktop entry smoke test (`tests/test_desktop_entry.py`).
 
@@ -20,6 +21,8 @@ The format is based on *Keep a Changelog* and this project adheres to *Semantic 
 - Version bump to `1.3.0` across runtime/citation metadata (`pyproject.toml`, `CITATION.cff`, `.zenodo.json`).
 - README EN/ES now include direct download links to latest Windows desktop assets on GitHub Releases.
 - Releasing docs EN/ES now document automatic Windows desktop asset publication.
+- Desktop UI upgraded with Fluent-style workbench improvements, execution telemetry (last run + PASS/FAIL/NO-EVAL counters), and improved dark-theme consistency.
+- Windows release pipeline now supports optional Authenticode signing when code-sign secrets are configured.
 
 ## [1.2.0] - 2026-02-16
 

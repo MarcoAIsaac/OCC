@@ -95,8 +95,23 @@ occ-desktop
 
 Descargar paquete preconstruido más reciente para Windows:
 
+- Página de release (siempre disponible): [Último release](https://github.com/MarcoAIsaac/OCC/releases/latest)
 - ZIP (recomendado): [`OCCDesktop-windows-x64.zip`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.zip)
 - EXE: [`OCCDesktop-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.exe)
+- Checksums: [`OCCDesktop-windows-x64.sha256`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.sha256)
+
+Si los enlaces directos devuelven `404`, abre la página del release y espera a que el workflow
+`Windows desktop release` termine de subir los assets.
+Si hace falta, ejecuta ese workflow manualmente y usa `release_tag` con la versión
+(ejemplo `v1.3.0`) para adjuntar assets a un release ya existente.
+
+Verificación SHA256 en Windows:
+
+```powershell
+certutil -hashfile .\OCCDesktop-windows-x64.exe SHA256
+```
+
+Compara con `OCCDesktop-windows-x64.sha256`.
 
 Desde código fuente sin entrypoint instalado:
 
@@ -109,6 +124,11 @@ Construir `.exe` en Windows (PowerShell):
 ```powershell
 .\scripts\build_windows_desktop.ps1
 ```
+
+Para reducir avisos de SmartScreen en binarios distribuidos, configura secretos del repositorio:
+
+- `WINDOWS_CODESIGN_PFX_B64`: certificado `.pfx` codificado en base64.
+- `WINDOWS_CODESIGN_PFX_PASSWORD`: contraseña del `.pfx`.
 
 ## Utilidades de mantenimiento
 

@@ -1,20 +1,32 @@
 """OCC desktop app (Windows-friendly Tkinter frontend).
 
-This GUI wraps the existing OCC command-line workflows so users can operate the
-project without terminal usage.
+Design goals inspired by Fluent-style principles:
+- clear hierarchy and focus
+- low-clutter workbench with explicit command preview
+- persistent settings and run history
+- fast access to core OCC workflows
 """
 
 from __future__ import annotations
 
+import argparse
+import json
 import os
 import queue
+import re
+import shlex
 import subprocess
 import sys
 import threading
+import time
 import tkinter as tk
+import webbrowser
+from datetime import datetime
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
-from typing import Callable, List, Optional, Sequence
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+
+from .version import get_version
 
 
 def _detect_language() -> str:
@@ -43,18 +55,44 @@ def _tr(en: str, es: str) -> str:
     return es if APP_LANGUAGE == "es" else en
 
 
+def _now_text() -> str:
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _fmt_cmd(cmd: Sequence[str]) -> str:
+    if os.name == "nt":
+        return subprocess.list2cmdline(list(cmd))
+    return " ".join(shlex.quote(x) for x in cmd)
+
+
 class OCCDesktopApp(tk.Tk):
+    BG = "#0b1220"
+    SURFACE = "#111827"
+    PANEL = "#0f172a"
+    BORDER = "#1f2937"
+    TEXT = "#e5e7eb"
+    MUTED = "#94a3b8"
+    ACCENT = "#0ea5e9"
+    ACCENT_ACTIVE = "#0284c7"
+    SUCCESS = "#22c55e"
+    WARNING = "#f59e0b"
+    DANGER = "#ef4444"
+
+    VERDICT_RE = re.compile(r"\b(PASS|FAIL|NO-EVAL)(?:\([^)]+\))?\b")
+
     def __init__(self) -> None:
         super().__init__()
-        self.title("OCC Desktop")
-        self.geometry("1120x760")
-        self.minsize(980, 640)
 
-        repo_root = Path(__file__).resolve().parents[1]
-        self.repo_root = repo_root
-        self.workspace_var = tk.StringVar(value=str(repo_root))
+        self.title("OCC Desktop")
+        self.geometry("1280x840")
+        self.minsize(1080, 700)
+
+        self.repo_root = Path(__file__).resolve().parents[1]
+        self.settings_file = Path.home() / ".occ_desktop" / "settings.json"
+
+        self.workspace_var = tk.StringVar(value=str(self.repo_root))
         self.claim_var = tk.StringVar(
-            value=str(repo_root / "examples" / "claim_specs" / "minimal_pass.yaml")
+            value=str(self.repo_root / "examples" / "claim_specs" / "minimal_pass.yaml")
         )
         self.profile_var = tk.StringVar(value="core")
         self.suite_var = tk.StringVar(value="extensions")
@@ -63,171 +101,830 @@ class OCCDesktopApp(tk.Tk):
         self.verify_generated_var = tk.BooleanVar(value=False)
 
         self.status_var = tk.StringVar(value=_tr("Ready", "Listo"))
-        self._queue: "queue.Queue[tuple[str, str]]" = queue.Queue()
+        self.command_preview_var = tk.StringVar(value="-")
+        self.verdict_var = tk.StringVar(value="-")
+        self.last_run_var = tk.StringVar(value="-")
+        self.metrics_var = tk.StringVar(
+            value=_tr(
+                "Runs: 0 | PASS: 0 | FAIL: 0 | NO-EVAL: 0",
+                "Ejecuciones: 0 | PASS: 0 | FAIL: 0 | NO-EVAL: 0",
+            )
+        )
+        self.version_var = tk.StringVar(value=f"v{get_version()}")
+
+        self._queue: "queue.Queue[Tuple[str, Dict[str, Any]]]" = queue.Queue()
         self._proc: Optional[subprocess.Popen[str]] = None
         self._running = False
-        self._buttons: List[ttk.Button] = []
+        self._running_label = ""
+        self._running_started_at = 0.0
+        self._current_verdict = ""
+        self._last_cmd: List[str] = []
+        self._stats_total_runs = 0
+        self._stats_pass = 0
+        self._stats_fail = 0
+        self._stats_no_eval = 0
 
+        self._buttons: List[ttk.Button] = []
+        self._history_commands: Dict[str, List[str]] = {}
+
+        self._load_settings()
+        self._configure_style()
         self._build_ui()
+        self._bind_shortcuts()
+
+        self.protocol("WM_DELETE_WINDOW", self._on_close)
         self.after(120, self._drain_queue)
 
-    def _build_ui(self) -> None:
-        outer = ttk.Frame(self, padding=12)
-        outer.pack(fill=tk.BOTH, expand=True)
+    def _configure_style(self) -> None:
+        self.configure(bg=self.BG)
+        style = ttk.Style(self)
+        style.theme_use("clam")
 
-        top = ttk.LabelFrame(
-            outer,
-            text=_tr("Project Context", "Contexto del proyecto"),
-            padding=10,
+        style.configure("App.TFrame", background=self.BG)
+        style.configure("Surface.TFrame", background=self.SURFACE)
+        style.configure("Panel.TFrame", background=self.PANEL)
+
+        style.configure(
+            "Header.TLabel",
+            background=self.BG,
+            foreground=self.TEXT,
+            font=("Segoe UI Semibold", 17),
         )
-        top.pack(fill=tk.X)
+        style.configure(
+            "SubHeader.TLabel",
+            background=self.BG,
+            foreground=self.MUTED,
+            font=("Segoe UI", 10),
+        )
+        style.configure(
+            "CardTitle.TLabel",
+            background=self.PANEL,
+            foreground=self.TEXT,
+            font=("Segoe UI Semibold", 10),
+        )
+        style.configure(
+            "Body.TLabel",
+            background=self.PANEL,
+            foreground=self.TEXT,
+            font=("Segoe UI", 10),
+        )
+        style.configure(
+            "Muted.TLabel",
+            background=self.PANEL,
+            foreground=self.MUTED,
+            font=("Segoe UI", 9),
+        )
+        style.configure(
+            "SidebarTitle.TLabel",
+            background=self.SURFACE,
+            foreground=self.TEXT,
+            font=("Segoe UI Semibold", 11),
+        )
 
-        ttk.Label(top, text=_tr("Workspace", "Workspace")).grid(
+        style.configure(
+            "TNotebook",
+            background=self.BG,
+            borderwidth=0,
+            tabmargins=[0, 0, 0, 0],
+        )
+        style.configure(
+            "TNotebook.Tab",
+            background=self.SURFACE,
+            foreground=self.TEXT,
+            padding=(12, 8),
+            font=("Segoe UI", 10),
+        )
+        style.map(
+            "TNotebook.Tab",
+            background=[("selected", self.PANEL), ("active", self.SURFACE)],
+            foreground=[("selected", self.TEXT), ("active", self.TEXT)],
+        )
+
+        style.configure(
+            "Primary.TButton",
+            background=self.ACCENT,
+            foreground="#ffffff",
+            borderwidth=0,
+            focusthickness=0,
+            padding=(12, 8),
+            font=("Segoe UI Semibold", 10),
+        )
+        style.map(
+            "Primary.TButton",
+            background=[("pressed", self.ACCENT_ACTIVE), ("active", self.ACCENT_ACTIVE)],
+            foreground=[("disabled", "#9ca3af")],
+        )
+
+        style.configure(
+            "Ghost.TButton",
+            background=self.PANEL,
+            foreground=self.TEXT,
+            bordercolor=self.BORDER,
+            borderwidth=1,
+            padding=(10, 8),
+            font=("Segoe UI", 10),
+        )
+        style.map(
+            "Ghost.TButton",
+            background=[("active", self.SURFACE)],
+            foreground=[("disabled", "#6b7280")],
+        )
+
+        style.configure(
+            "Danger.TButton",
+            background=self.DANGER,
+            foreground="#ffffff",
+            borderwidth=0,
+            padding=(10, 8),
+            font=("Segoe UI Semibold", 10),
+        )
+        style.map(
+            "Danger.TButton",
+            background=[("pressed", "#dc2626"), ("active", "#dc2626")],
+            foreground=[("disabled", "#9ca3af")],
+        )
+
+        style.configure(
+            "Sidebar.TButton",
+            background=self.SURFACE,
+            foreground=self.TEXT,
+            borderwidth=0,
+            anchor="w",
+            padding=(12, 10),
+            font=("Segoe UI", 10),
+        )
+        style.map(
+            "Sidebar.TButton",
+            background=[("active", self.PANEL)],
+            foreground=[("disabled", "#6b7280")],
+        )
+
+        style.configure(
+            "Input.TEntry",
+            fieldbackground="#0f1a2b",
+            foreground=self.TEXT,
+            insertcolor=self.TEXT,
+            bordercolor=self.BORDER,
+            lightcolor=self.BORDER,
+            darkcolor=self.BORDER,
+            padding=6,
+        )
+        style.configure(
+            "Input.TCombobox",
+            fieldbackground="#0f1a2b",
+            foreground=self.TEXT,
+            bordercolor=self.BORDER,
+            lightcolor=self.BORDER,
+            darkcolor=self.BORDER,
+            arrowsize=14,
+            padding=5,
+        )
+
+        style.configure(
+            "Status.Horizontal.TProgressbar",
+            troughcolor=self.BORDER,
+            background=self.ACCENT,
+            borderwidth=0,
+            lightcolor=self.ACCENT,
+            darkcolor=self.ACCENT,
+        )
+        style.configure(
+            "Card.TLabelframe",
+            background=self.PANEL,
+            bordercolor=self.BORDER,
+            borderwidth=1,
+            relief=tk.SOLID,
+        )
+        style.configure(
+            "Card.TLabelframe.Label",
+            background=self.PANEL,
+            foreground=self.TEXT,
+            font=("Segoe UI Semibold", 10),
+        )
+        style.configure(
+            "TCheckbutton",
+            background=self.PANEL,
+            foreground=self.TEXT,
+            font=("Segoe UI", 10),
+        )
+        style.map(
+            "TCheckbutton",
+            background=[("active", self.PANEL)],
+            foreground=[("disabled", "#6b7280")],
+        )
+        style.configure(
+            "Treeview",
+            background="#0b1324",
+            foreground=self.TEXT,
+            fieldbackground="#0b1324",
+            bordercolor=self.BORDER,
+            rowheight=26,
+        )
+        style.configure(
+            "Treeview.Heading",
+            background=self.SURFACE,
+            foreground=self.TEXT,
+            relief=tk.FLAT,
+            font=("Segoe UI Semibold", 9),
+        )
+        style.map(
+            "Treeview",
+            background=[("selected", "#1d4ed8")],
+            foreground=[("selected", "#ffffff")],
+        )
+
+    def _build_ui(self) -> None:
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+
+        header = ttk.Frame(self, style="App.TFrame", padding=(14, 12))
+        header.grid(row=0, column=0, sticky="ew")
+        header.grid_columnconfigure(0, weight=1)
+
+        ttk.Label(
+            header,
+            text=_tr("OCC Desktop Workbench", "OCC Workbench Escritorio"),
+            style="Header.TLabel",
+        ).grid(row=0, column=0, sticky="w")
+        ttk.Label(
+            header,
+            text=_tr(
+                "Operational runtime dashboard for judge, verify, module flow and release ops",
+                "Panel operacional para judge, verify, flujo de modulo y operaciones release",
+            ),
+            style="SubHeader.TLabel",
+        ).grid(row=1, column=0, sticky="w", pady=(2, 0))
+        ttk.Label(
+            header,
+            textvariable=self.version_var,
+            style="SubHeader.TLabel",
+        ).grid(row=0, column=1, sticky="e")
+
+        main = ttk.Frame(self, style="App.TFrame", padding=(12, 0, 12, 12))
+        main.grid(row=1, column=0, sticky="nsew")
+        main.grid_rowconfigure(0, weight=1)
+        main.grid_columnconfigure(1, weight=1)
+
+        self._build_sidebar(main)
+        self._build_content(main)
+
+        status = ttk.Frame(self, style="Panel.TFrame", padding=(10, 8))
+        status.grid(row=2, column=0, sticky="ew")
+        status.grid_columnconfigure(0, weight=1)
+        ttk.Label(status, textvariable=self.status_var, style="Body.TLabel").grid(
             row=0,
             column=0,
-            sticky=tk.W,
+            sticky="w",
+        )
+
+    def _build_sidebar(self, parent: ttk.Frame) -> None:
+        sidebar = ttk.Frame(parent, style="Surface.TFrame", padding=10)
+        sidebar.grid(row=0, column=0, sticky="nsw")
+
+        ttk.Label(sidebar, text=_tr("Actions", "Acciones"), style="SidebarTitle.TLabel").pack(
+            fill=tk.X,
+            pady=(4, 8),
+        )
+
+        self._add_sidebar_button(sidebar, _tr("Judge claim", "Evaluar claim"), "judge")
+        self._add_sidebar_button(sidebar, _tr("Verify suite", "Verificar suite"), "verify")
+        self._add_sidebar_button(sidebar, _tr("Module flow", "Flujo de modulo"), "module_flow")
+
+        ttk.Separator(sidebar, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=10)
+        ttk.Label(
+            sidebar,
+            text=_tr("Maintenance", "Mantenimiento"),
+            style="SidebarTitle.TLabel",
+        ).pack(
+            fill=tk.X,
+            pady=(0, 8),
+        )
+
+        self._add_sidebar_button(
+            sidebar,
+            _tr("Release doctor", "Release doctor"),
+            "release_doctor",
+            primary=False,
+        )
+        self._add_sidebar_button(
+            sidebar,
+            _tr("Docs i18n audit", "Auditar docs i18n"),
+            "docs_i18n",
+            primary=False,
+        )
+        self._add_sidebar_button(sidebar, _tr("CI doctor", "CI doctor"), "ci_doctor", primary=False)
+        self._add_sidebar_button(
+            sidebar,
+            _tr("Generate release notes", "Generar release notes"),
+            "release_notes",
+            primary=False,
+        )
+
+        ttk.Separator(sidebar, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=10)
+        stop_btn = ttk.Button(
+            sidebar,
+            text=_tr("Stop running command", "Detener comando"),
+            command=self._stop_running,
+            style="Danger.TButton",
+        )
+        stop_btn.pack(fill=tk.X, pady=(2, 6))
+        self._buttons.append(stop_btn)
+
+        link_row = ttk.Frame(sidebar, style="Surface.TFrame")
+        link_row.pack(fill=tk.X, pady=(6, 0))
+        ttk.Button(
+            link_row,
+            text=_tr("Open latest release", "Abrir ultimo release"),
+            command=lambda: webbrowser.open("https://github.com/MarcoAIsaac/OCC/releases/latest"),
+            style="Ghost.TButton",
+        ).pack(fill=tk.X)
+
+    def _add_sidebar_button(
+        self,
+        parent: ttk.Frame,
+        label: str,
+        action: str,
+        primary: bool = True,
+    ) -> None:
+        style = "Primary.TButton" if primary else "Ghost.TButton"
+        btn = ttk.Button(
+            parent,
+            text=label,
+            command=self._make_action_handler(action),
+            style=style,
+        )
+        btn.pack(fill=tk.X, pady=4)
+        self._buttons.append(btn)
+
+    def _make_action_handler(self, action: str) -> Callable[[], None]:
+        def _handler() -> None:
+            self._run_action(action)
+
+        return _handler
+
+    def _build_content(self, parent: ttk.Frame) -> None:
+        content = ttk.Frame(parent, style="App.TFrame")
+        content.grid(row=0, column=1, sticky="nsew", padx=(12, 0))
+        content.grid_rowconfigure(0, weight=1)
+        content.grid_columnconfigure(0, weight=1)
+
+        notebook = ttk.Notebook(content)
+        notebook.grid(row=0, column=0, sticky="nsew")
+
+        workbench = ttk.Frame(notebook, style="Panel.TFrame", padding=12)
+        history = ttk.Frame(notebook, style="Panel.TFrame", padding=12)
+        security = ttk.Frame(notebook, style="Panel.TFrame", padding=12)
+
+        notebook.add(workbench, text=_tr("Workbench", "Workbench"))
+        notebook.add(history, text=_tr("History", "Historial"))
+        notebook.add(security, text=_tr("Security", "Seguridad"))
+
+        self._build_workbench_tab(workbench)
+        self._build_history_tab(history)
+        self._build_security_tab(security)
+
+    def _build_workbench_tab(self, tab: ttk.Frame) -> None:
+        tab.grid_columnconfigure(0, weight=1)
+        tab.grid_rowconfigure(3, weight=1)
+
+        context = ttk.LabelFrame(
+            tab,
+            text=_tr("Context", "Contexto"),
+            style="Card.TLabelframe",
+            padding=10,
+        )
+        context.grid(row=0, column=0, sticky="ew")
+        for c in (1, 3):
+            context.grid_columnconfigure(c, weight=1)
+
+        ttk.Label(context, text=_tr("Workspace", "Workspace"), style="Body.TLabel").grid(
+            row=0,
+            column=0,
+            sticky="w",
             padx=(0, 8),
         )
-        workspace_entry = ttk.Entry(top, textvariable=self.workspace_var)
-        workspace_entry.grid(row=0, column=1, sticky=tk.EW, pady=2)
-        ttk.Button(top, text=_tr("Browse", "Buscar"), command=self._pick_workspace).grid(
-            row=0, column=2, sticky=tk.W, padx=(8, 0)
+        ttk.Entry(context, textvariable=self.workspace_var, style="Input.TEntry").grid(
+            row=0,
+            column=1,
+            sticky="ew",
         )
+        ttk.Button(
+            context,
+            text=_tr("Browse", "Buscar"),
+            command=self._pick_workspace,
+            style="Ghost.TButton",
+        ).grid(row=0, column=2, sticky="w", padx=(8, 0))
 
-        ttk.Label(top, text=_tr("Claim file", "Archivo claim")).grid(
-            row=1, column=0, sticky=tk.W, padx=(0, 8)
+        ttk.Label(context, text=_tr("Claim file", "Archivo claim"), style="Body.TLabel").grid(
+            row=1,
+            column=0,
+            sticky="w",
+            padx=(0, 8),
+            pady=(8, 0),
         )
-        claim_entry = ttk.Entry(top, textvariable=self.claim_var)
-        claim_entry.grid(row=1, column=1, sticky=tk.EW, pady=2)
-        ttk.Button(top, text=_tr("Browse", "Buscar"), command=self._pick_claim).grid(
-            row=1, column=2, sticky=tk.W, padx=(8, 0)
+        ttk.Entry(context, textvariable=self.claim_var, style="Input.TEntry").grid(
+            row=1,
+            column=1,
+            sticky="ew",
+            pady=(8, 0),
         )
+        ttk.Button(
+            context,
+            text=_tr("Browse", "Buscar"),
+            command=self._pick_claim,
+            style="Ghost.TButton",
+        ).grid(row=1, column=2, sticky="w", padx=(8, 0), pady=(8, 0))
 
-        ttk.Label(top, text=_tr("Judge profile", "Perfil de jueces")).grid(
-            row=2, column=0, sticky=tk.W, padx=(0, 8)
+        ttk.Label(context, text=_tr("Profile", "Perfil"), style="Body.TLabel").grid(
+            row=0,
+            column=3,
+            sticky="w",
+            padx=(12, 8),
         )
         ttk.Combobox(
-            top,
+            context,
             textvariable=self.profile_var,
             values=["core", "nuclear"],
             state="readonly",
-        ).grid(
-            row=2, column=1, sticky=tk.W, pady=2
-        )
+            style="Input.TCombobox",
+            width=12,
+        ).grid(row=0, column=4, sticky="w")
 
-        ttk.Label(top, text=_tr("Verify suite", "Suite verify")).grid(
-            row=2, column=2, sticky=tk.W, padx=(8, 8)
+        ttk.Label(context, text=_tr("Suite", "Suite"), style="Body.TLabel").grid(
+            row=1,
+            column=3,
+            sticky="w",
+            padx=(12, 8),
+            pady=(8, 0),
         )
         ttk.Combobox(
-            top,
+            context,
             textvariable=self.suite_var,
             values=["canon", "extensions", "all"],
             state="readonly",
+            style="Input.TCombobox",
             width=12,
-        ).grid(row=2, column=3, sticky=tk.W, pady=2)
+        ).grid(row=1, column=4, sticky="w", pady=(8, 0))
 
-        ttk.Label(top, text=_tr("Module name (optional)", "Nombre módulo (opcional)")).grid(
-            row=3, column=0, sticky=tk.W, padx=(0, 8)
+        options = ttk.Frame(tab, style="Panel.TFrame")
+        options.grid(row=1, column=0, sticky="ew", pady=(10, 0))
+        options.grid_columnconfigure(0, weight=1)
+
+        ttk.Label(options, text=_tr("Module name", "Nombre modulo"), style="Body.TLabel").grid(
+            row=0,
+            column=0,
+            sticky="w",
+            padx=(0, 8),
         )
-        ttk.Entry(top, textvariable=self.module_name_var).grid(
-            row=3,
+        ttk.Entry(options, textvariable=self.module_name_var, style="Input.TEntry", width=30).grid(
+            row=0,
             column=1,
-            sticky=tk.EW,
-            pady=2,
+            sticky="w",
         )
-
         ttk.Checkbutton(
-            top,
-            text=_tr("Create prediction draft", "Crear borrador de predicción"),
+            options,
+            text=_tr("Create prediction draft", "Crear borrador de prediccion"),
             variable=self.create_prediction_var,
-        ).grid(row=3, column=2, sticky=tk.W, padx=(8, 8))
+        ).grid(row=0, column=2, sticky="w", padx=(14, 0))
         ttk.Checkbutton(
-            top,
-            text=_tr(
-                "Verify generated module once",
-                "Verificar módulo generado una vez",
-            ),
+            options,
+            text=_tr("Verify generated module", "Verificar modulo generado"),
             variable=self.verify_generated_var,
-        ).grid(row=3, column=3, sticky=tk.W)
+        ).grid(row=0, column=3, sticky="w", padx=(14, 0))
 
-        top.columnconfigure(1, weight=1)
+        preview = ttk.Frame(tab, style="Panel.TFrame")
+        preview.grid(row=2, column=0, sticky="ew", pady=(8, 0))
+        preview.grid_columnconfigure(1, weight=1)
 
-        cmd = ttk.LabelFrame(
-            outer,
-            text=_tr("Actions", "Acciones"),
-            padding=10,
+        ttk.Label(
+            preview,
+            text=_tr("Command preview", "Preview del comando"),
+            style="Muted.TLabel",
+        ).grid(row=0, column=0, sticky="w", padx=(0, 8))
+        ttk.Label(preview, textvariable=self.command_preview_var, style="Body.TLabel").grid(
+            row=0,
+            column=1,
+            sticky="w",
         )
-        cmd.pack(fill=tk.X, pady=(10, 0))
+        ttk.Label(preview, text=_tr("Last run", "Ultima ejecucion"), style="Muted.TLabel").grid(
+            row=1,
+            column=0,
+            sticky="w",
+            padx=(0, 8),
+            pady=(4, 0),
+        )
+        ttk.Label(preview, textvariable=self.last_run_var, style="Body.TLabel").grid(
+            row=1,
+            column=1,
+            sticky="w",
+            pady=(4, 0),
+        )
+        ttk.Label(preview, text=_tr("Pipeline stats", "Metricas"), style="Muted.TLabel").grid(
+            row=2,
+            column=0,
+            sticky="w",
+            padx=(0, 8),
+            pady=(4, 0),
+        )
+        ttk.Label(preview, textvariable=self.metrics_var, style="Muted.TLabel").grid(
+            row=2,
+            column=1,
+            sticky="w",
+            pady=(4, 0),
+        )
 
-        self._add_button(cmd, _tr("Judge Claim", "Evaluar Claim"), self._run_judge, 0, 0)
-        self._add_button(cmd, _tr("Verify Suite", "Verificar Suite"), self._run_verify, 0, 1)
-        self._add_button(
-            cmd,
-            _tr("Module Flow", "Flujo de módulo"),
-            self._run_module_flow,
-            0,
-            2,
-        )
-        self._add_button(
-            cmd,
-            _tr("Release Doctor", "Release Doctor"),
-            self._run_release_doctor,
-            1,
-            0,
-        )
-        self._add_button(
-            cmd,
-            _tr("Docs i18n Audit", "Auditar docs i18n"),
-            self._run_docs_i18n,
-            1,
-            1,
-        )
-        self._add_button(cmd, _tr("CI Doctor", "CI Doctor"), self._run_ci_doctor, 1, 2)
-        self._add_button(
-            cmd,
-            _tr("Generate Release Notes", "Generar release notes"),
-            self._run_release_notes,
-            1,
-            3,
-        )
-        self._add_button(cmd, _tr("Stop", "Detener"), self._stop_running, 0, 3)
-
-        out_frame = ttk.LabelFrame(
-            outer,
+        out_card = ttk.LabelFrame(
+            tab,
             text=_tr("Output", "Salida"),
+            style="Card.TLabelframe",
             padding=8,
         )
-        out_frame.pack(fill=tk.BOTH, expand=True, pady=(10, 0))
+        out_card.grid(row=3, column=0, sticky="nsew", pady=(8, 0))
+        out_card.grid_rowconfigure(0, weight=1)
+        out_card.grid_columnconfigure(0, weight=1)
 
         self.output = tk.Text(
-            out_frame,
+            out_card,
             wrap=tk.WORD,
-            height=20,
             font=("Consolas", 10),
-            background="#0f172a",
-            foreground="#e2e8f0",
-            insertbackground="#e2e8f0",
+            background="#0b1324",
+            foreground="#dbeafe",
+            insertbackground="#dbeafe",
+            relief=tk.FLAT,
+            borderwidth=0,
         )
-        self.output.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.output.grid(row=0, column=0, sticky="nsew")
 
-        scrollbar = ttk.Scrollbar(out_frame, orient=tk.VERTICAL, command=self.output.yview)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        scrollbar = ttk.Scrollbar(out_card, orient=tk.VERTICAL, command=self.output.yview)
+        scrollbar.grid(row=0, column=1, sticky="ns")
         self.output.configure(yscrollcommand=scrollbar.set)
 
-        status = ttk.Label(outer, textvariable=self.status_var, anchor=tk.W)
-        status.pack(fill=tk.X, pady=(8, 0))
+        self.output.tag_configure("info", foreground="#dbeafe")
+        self.output.tag_configure("command", foreground="#7dd3fc")
+        self.output.tag_configure("success", foreground="#86efac")
+        self.output.tag_configure("error", foreground="#fca5a5")
+        self.output.tag_configure("warning", foreground="#fcd34d")
 
-    def _add_button(
-        self,
-        parent: ttk.LabelFrame,
-        text: str,
-        command: Callable[[], None],
-        row: int,
-        col: int,
-    ) -> None:
-        btn = ttk.Button(parent, text=text, command=command)
-        btn.grid(row=row, column=col, sticky=tk.W, padx=(0, 8), pady=4)
-        self._buttons.append(btn)
+        footer = ttk.Frame(tab, style="Panel.TFrame")
+        footer.grid(row=4, column=0, sticky="ew", pady=(8, 0))
+        footer.grid_columnconfigure(0, weight=1)
+
+        self.progress = ttk.Progressbar(
+            footer,
+            mode="indeterminate",
+            style="Status.Horizontal.TProgressbar",
+        )
+        self.progress.grid(row=0, column=0, sticky="ew", padx=(0, 10))
+
+        ttk.Label(footer, text=_tr("Verdict", "Veredicto"), style="Muted.TLabel").grid(
+            row=0,
+            column=1,
+            sticky="e",
+            padx=(0, 6),
+        )
+        self.verdict_label = ttk.Label(footer, textvariable=self.verdict_var, style="Body.TLabel")
+        self.verdict_label.grid(row=0, column=2, sticky="e")
+
+        action_row = ttk.Frame(tab, style="Panel.TFrame")
+        action_row.grid(row=5, column=0, sticky="ew", pady=(8, 0))
+
+        clear_btn = ttk.Button(
+            action_row,
+            text=_tr("Clear output", "Limpiar salida"),
+            command=self._clear_output,
+            style="Ghost.TButton",
+        )
+        clear_btn.pack(side=tk.LEFT)
+
+        save_btn = ttk.Button(
+            action_row,
+            text=_tr("Save output", "Guardar salida"),
+            command=self._save_output,
+            style="Ghost.TButton",
+        )
+        save_btn.pack(side=tk.LEFT, padx=(8, 0))
+
+        copy_cmd_btn = ttk.Button(
+            action_row,
+            text=_tr("Copy command", "Copiar comando"),
+            command=self._copy_last_command,
+            style="Ghost.TButton",
+        )
+        copy_cmd_btn.pack(side=tk.LEFT, padx=(8, 0))
+
+    def _build_history_tab(self, tab: ttk.Frame) -> None:
+        tab.grid_rowconfigure(1, weight=1)
+        tab.grid_columnconfigure(0, weight=1)
+
+        ttk.Label(
+            tab,
+            text=_tr(
+                "Executed commands and outcomes",
+                "Comandos ejecutados y resultados",
+            ),
+            style="Muted.TLabel",
+        ).grid(row=0, column=0, sticky="w", pady=(0, 8))
+
+        cols = ("time", "action", "rc", "duration", "verdict")
+        self.history_tree = ttk.Treeview(tab, columns=cols, show="headings", height=16)
+        self.history_tree.grid(row=1, column=0, sticky="nsew")
+
+        self.history_tree.heading("time", text=_tr("Time", "Hora"))
+        self.history_tree.heading("action", text=_tr("Action", "Accion"))
+        self.history_tree.heading("rc", text="RC")
+        self.history_tree.heading("duration", text=_tr("Duration", "Duracion"))
+        self.history_tree.heading("verdict", text=_tr("Verdict", "Veredicto"))
+
+        self.history_tree.column("time", width=180, anchor=tk.W)
+        self.history_tree.column("action", width=180, anchor=tk.W)
+        self.history_tree.column("rc", width=60, anchor=tk.CENTER)
+        self.history_tree.column("duration", width=100, anchor=tk.E)
+        self.history_tree.column("verdict", width=160, anchor=tk.W)
+
+        self.history_tree.bind("<Double-1>", self._rerun_selected_history)
+
+        actions = ttk.Frame(tab, style="Panel.TFrame")
+        actions.grid(row=2, column=0, sticky="ew", pady=(8, 0))
+
+        ttk.Button(
+            actions,
+            text=_tr("Rerun selected", "Re-ejecutar seleccionado"),
+            command=self._rerun_selected_history,
+            style="Primary.TButton",
+        ).pack(side=tk.LEFT)
+        ttk.Button(
+            actions,
+            text=_tr("Copy selected command", "Copiar comando seleccionado"),
+            command=self._copy_selected_history_command,
+            style="Ghost.TButton",
+        ).pack(side=tk.LEFT, padx=(8, 0))
+
+    def _build_security_tab(self, tab: ttk.Frame) -> None:
+        tab.grid_columnconfigure(0, weight=1)
+
+        ttk.Label(
+            tab,
+            text=_tr("Security and distribution", "Seguridad y distribucion"),
+            style="CardTitle.TLabel",
+        ).grid(row=0, column=0, sticky="w")
+
+        ttk.Label(
+            tab,
+            text=_tr(
+                "To reduce Windows SmartScreen warnings, publish signed binaries with a "
+                "trusted code "
+                "signing certificate, timestamp signatures, and distribute via official "
+                "releases.",
+                "Para reducir avisos de SmartScreen, publica binarios firmados con certificado "
+                "de firma confiable, agrega timestamp y distribuye por releases oficiales.",
+            ),
+            style="Body.TLabel",
+            wraplength=840,
+            justify=tk.LEFT,
+        ).grid(row=1, column=0, sticky="w", pady=(8, 12))
+
+        link_frame = ttk.Frame(tab, style="Panel.TFrame")
+        link_frame.grid(row=2, column=0, sticky="w")
+
+        ttk.Button(
+            link_frame,
+            text=_tr("Open latest release", "Abrir ultimo release"),
+            command=lambda: webbrowser.open("https://github.com/MarcoAIsaac/OCC/releases/latest"),
+            style="Primary.TButton",
+        ).pack(side=tk.LEFT)
+
+        ttk.Button(
+            link_frame,
+            text=_tr("Open latest ZIP", "Abrir ultimo ZIP"),
+            command=lambda: webbrowser.open(
+                "https://github.com/MarcoAIsaac/OCC/releases/latest/download/"
+                "OCCDesktop-windows-x64.zip"
+            ),
+            style="Ghost.TButton",
+        ).pack(side=tk.LEFT, padx=(8, 0))
+
+        ttk.Button(
+            link_frame,
+            text=_tr("Open latest EXE", "Abrir ultimo EXE"),
+            command=lambda: webbrowser.open(
+                "https://github.com/MarcoAIsaac/OCC/releases/latest/download/"
+                "OCCDesktop-windows-x64.exe"
+            ),
+            style="Ghost.TButton",
+        ).pack(side=tk.LEFT, padx=(8, 0))
+
+        ttk.Button(
+            tab,
+            text=_tr(
+                "Check local EXE Authenticode signature",
+                "Verificar firma Authenticode local",
+            ),
+            command=self._check_local_signature,
+            style="Ghost.TButton",
+        ).grid(row=3, column=0, sticky="w", pady=(16, 0))
+
+        ttk.Label(
+            tab,
+            text=_tr(
+                "Tip: SmartScreen reputation is reputation-based. "
+                "Even validly signed new files may "
+                "still show warnings until reputation builds.",
+                "Tip: SmartScreen se basa en reputacion. Incluso archivos nuevos firmados pueden "
+                "mostrar aviso hasta acumular reputacion.",
+            ),
+            style="Muted.TLabel",
+            wraplength=840,
+            justify=tk.LEFT,
+        ).grid(row=4, column=0, sticky="w", pady=(10, 0))
+
+    def _bind_shortcuts(self) -> None:
+        self.bind("<Control-Return>", lambda _e: self._run_action("judge"))
+        self.bind("<Control-l>", lambda _e: self._clear_output())
+        self.bind("<Control-s>", lambda _e: self._save_output())
+
+    def _load_settings(self) -> None:
+        try:
+            if not self.settings_file.is_file():
+                return
+            raw = json.loads(self.settings_file.read_text(encoding="utf-8"))
+            if not isinstance(raw, dict):
+                return
+
+            def _set_str(var: tk.StringVar, key: str) -> None:
+                val = raw.get(key)
+                if isinstance(val, str) and val.strip():
+                    var.set(val)
+
+            def _set_bool(var: tk.BooleanVar, key: str) -> None:
+                val = raw.get(key)
+                if isinstance(val, bool):
+                    var.set(val)
+
+            _set_str(self.workspace_var, "workspace")
+            _set_str(self.claim_var, "claim")
+            _set_str(self.profile_var, "profile")
+            _set_str(self.suite_var, "suite")
+            _set_str(self.module_name_var, "module_name")
+            _set_bool(self.create_prediction_var, "create_prediction")
+            _set_bool(self.verify_generated_var, "verify_generated")
+        except Exception:
+            pass
+
+    def _save_settings(self) -> None:
+        payload = {
+            "workspace": self.workspace_var.get().strip(),
+            "claim": self.claim_var.get().strip(),
+            "profile": self.profile_var.get().strip(),
+            "suite": self.suite_var.get().strip(),
+            "module_name": self.module_name_var.get().strip(),
+            "create_prediction": bool(self.create_prediction_var.get()),
+            "verify_generated": bool(self.verify_generated_var.get()),
+        }
+        self.settings_file.parent.mkdir(parents=True, exist_ok=True)
+        self.settings_file.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    def _on_close(self) -> None:
+        self._save_settings()
+        if self._proc is not None:
+            try:
+                self._proc.terminate()
+            except Exception:
+                pass
+        self.destroy()
+
+    def _workspace(self) -> Optional[Path]:
+        raw = self.workspace_var.get().strip()
+        if not raw:
+            messagebox.showerror(
+                "OCC Desktop",
+                _tr("Workspace is required.", "Workspace es obligatorio."),
+            )
+            return None
+        path = Path(raw).resolve()
+        if not path.is_dir():
+            messagebox.showerror(
+                "OCC Desktop",
+                _tr("Workspace folder does not exist.", "La carpeta workspace no existe."),
+            )
+            return None
+        return path
+
+    def _claim(self) -> Optional[Path]:
+        raw = self.claim_var.get().strip()
+        if not raw:
+            messagebox.showerror(
+                "OCC Desktop",
+                _tr("Claim file is required.", "El claim es obligatorio."),
+            )
+            return None
+        path = Path(raw).resolve()
+        if not path.is_file():
+            messagebox.showerror(
+                "OCC Desktop",
+                _tr("Claim file does not exist.", "El archivo claim no existe."),
+            )
+            return None
+        return path
 
     def _pick_workspace(self) -> None:
         selected = filedialog.askdirectory(initialdir=self.workspace_var.get() or ".")
@@ -250,59 +947,117 @@ class OCCDesktopApp(tk.Tk):
         candidate = workspace / "scripts" / script_name
         if candidate.is_file():
             return candidate
-        fallback = self.repo_root / "scripts" / script_name
-        return fallback
-
-    def _append_output(self, text: str) -> None:
-        self.output.insert(tk.END, text)
-        self.output.see(tk.END)
+        return self.repo_root / "scripts" / script_name
 
     def _set_running(self, running: bool) -> None:
         self._running = running
-        for b in self._buttons:
-            if b["text"] in {_tr("Stop", "Detener")}:
+        for button in self._buttons:
+            if str(button.cget("text")) == _tr("Stop running command", "Detener comando"):
                 continue
-            b.configure(state=tk.DISABLED if running else tk.NORMAL)
+            button.configure(state=tk.DISABLED if running else tk.NORMAL)
+        if running:
+            self.progress.start(8)
+        else:
+            self.progress.stop()
 
-    def _workspace(self) -> Optional[Path]:
-        raw = self.workspace_var.get().strip()
-        if not raw:
-            messagebox.showerror(
-                "OCC Desktop",
-                _tr("Workspace is required.", "Workspace es obligatorio."),
-            )
-            return None
-        p = Path(raw).resolve()
-        if not p.is_dir():
-            messagebox.showerror(
-                "OCC Desktop",
-                _tr("Workspace folder does not exist.", "La carpeta workspace no existe."),
-            )
-            return None
-        return p
+    def _append_output(self, text: str, tag: str = "info") -> None:
+        self.output.insert(tk.END, text, tag)
+        self.output.see(tk.END)
 
-    def _claim(self) -> Optional[Path]:
-        raw = self.claim_var.get().strip()
-        if not raw:
-            messagebox.showerror(
-                "OCC Desktop",
-                _tr("Claim file is required.", "El claim es obligatorio."),
+    def _clear_output(self) -> None:
+        self.output.delete("1.0", tk.END)
+
+    def _save_output(self) -> None:
+        selected = filedialog.asksaveasfilename(
+            defaultextension=".log",
+            filetypes=[(_tr("Log files", "Archivos log"), "*.log"), (_tr("All", "Todos"), "*.*")],
+        )
+        if not selected:
+            return
+        Path(selected).write_text(self.output.get("1.0", tk.END), encoding="utf-8")
+        self.status_var.set(_tr("Output saved", "Salida guardada"))
+
+    def _copy_last_command(self) -> None:
+        if not self._last_cmd:
+            return
+        cmd_text = _fmt_cmd(self._last_cmd)
+        self.clipboard_clear()
+        self.clipboard_append(cmd_text)
+        self.status_var.set(_tr("Command copied", "Comando copiado"))
+
+    def _record_history(
+        self,
+        action: str,
+        rc: int,
+        duration_s: float,
+        verdict: str,
+        command: Sequence[str],
+    ) -> None:
+        iid = self.history_tree.insert(
+            "",
+            tk.END,
+            values=(
+                _now_text(),
+                action,
+                rc,
+                f"{duration_s:.2f}s",
+                verdict or "-",
+            ),
+        )
+        self._history_commands[str(iid)] = list(command)
+        self._update_stats(action, rc, duration_s, verdict)
+
+    def _update_stats(self, action: str, rc: int, duration_s: float, verdict: str) -> None:
+        self._stats_total_runs += 1
+        normalized = verdict.upper().strip()
+        if normalized.startswith("PASS"):
+            self._stats_pass += 1
+        elif normalized.startswith("FAIL"):
+            self._stats_fail += 1
+        elif normalized.startswith("NO-EVAL"):
+            self._stats_no_eval += 1
+
+        self.last_run_var.set(
+            _tr(
+                f"{action} | exit {rc} | {duration_s:.2f}s | {verdict or '-'}",
+                f"{action} | salida {rc} | {duration_s:.2f}s | {verdict or '-'}",
             )
-            return None
-        p = Path(raw).resolve()
-        if not p.is_file():
-            messagebox.showerror(
-                "OCC Desktop",
-                _tr("Claim file does not exist.", "El archivo claim no existe."),
+        )
+        self.metrics_var.set(
+            _tr(
+                f"Runs: {self._stats_total_runs} | PASS: {self._stats_pass} | "
+                f"FAIL: {self._stats_fail} | NO-EVAL: {self._stats_no_eval}",
+                f"Ejecuciones: {self._stats_total_runs} | PASS: {self._stats_pass} | "
+                f"FAIL: {self._stats_fail} | NO-EVAL: {self._stats_no_eval}",
             )
-            return None
-        return p
+        )
+
+    def _rerun_selected_history(self, _event: Optional[tk.Event[Any]] = None) -> None:
+        selected = self.history_tree.selection()
+        if not selected:
+            return
+        iid = str(selected[0])
+        cmd = self._history_commands.get(iid)
+        if not cmd:
+            return
+        self._start_command("history-rerun", cmd)
+
+    def _copy_selected_history_command(self) -> None:
+        selected = self.history_tree.selection()
+        if not selected:
+            return
+        cmd = self._history_commands.get(str(selected[0]))
+        if not cmd:
+            return
+        self.clipboard_clear()
+        self.clipboard_append(_fmt_cmd(cmd))
+        self.status_var.set(_tr("History command copied", "Comando del historial copiado"))
 
     def _start_command(self, label: str, cmd: Sequence[str]) -> None:
         if self._running:
             messagebox.showwarning(
                 "OCC Desktop",
-                _tr("A command is already running.", "Ya hay un comando ejecutándose."),
+                _tr("A command is already running.", "Ya hay un comando ejecutandose."),
             )
             return
 
@@ -310,10 +1065,19 @@ class OCCDesktopApp(tk.Tk):
         if workspace is None:
             return
 
+        self._running_label = label
+        self._running_started_at = time.monotonic()
+        self._current_verdict = ""
+        self._last_cmd = list(cmd)
+        self.verdict_var.set("-")
+
+        cmd_text = _fmt_cmd(cmd)
+        self.command_preview_var.set(cmd_text)
+
         self._set_running(True)
         self.status_var.set(_tr(f"Running: {label}", f"Ejecutando: {label}"))
-        self._append_output("\n" + "=" * 90 + "\n")
-        self._append_output(f"$ {' '.join(cmd)}\n\n")
+        self._append_output("\n" + "=" * 88 + "\n", "command")
+        self._append_output(f"[{_now_text()}] $ {cmd_text}\n\n", "command")
 
         def worker() -> None:
             try:
@@ -328,12 +1092,13 @@ class OCCDesktopApp(tk.Tk):
                 self._proc = proc
                 assert proc.stdout is not None
                 for line in proc.stdout:
-                    self._queue.put(("line", line))
-                rc = proc.wait()
-                self._queue.put(("done", str(rc)))
+                    self._queue.put(("line", {"text": line}))
+                rc = int(proc.wait())
+                duration = time.monotonic() - self._running_started_at
+                self._queue.put(("done", {"rc": rc, "duration": duration, "label": label}))
             except Exception as e:
-                self._queue.put(("line", f"[ERROR] {e}\n"))
-                self._queue.put(("done", "-1"))
+                self._queue.put(("line", {"text": f"[ERROR] {e}\n"}))
+                self._queue.put(("done", {"rc": -1, "duration": 0.0, "label": label}))
 
         threading.Thread(target=worker, daemon=True).start()
 
@@ -343,107 +1108,195 @@ class OCCDesktopApp(tk.Tk):
                 kind, payload = self._queue.get_nowait()
             except queue.Empty:
                 break
+
             if kind == "line":
-                self._append_output(payload)
+                text = str(payload.get("text") or "")
+                self._handle_output_line(text)
             elif kind == "done":
                 self._proc = None
                 self._set_running(False)
-                rc = int(payload)
+
+                rc = int(payload.get("rc") or -1)
+                duration = float(payload.get("duration") or 0.0)
+                label = str(payload.get("label") or self._running_label)
+                verdict = self._current_verdict
+
+                self._record_history(label, rc, duration, verdict, self._last_cmd)
+
                 if rc == 0:
                     self.status_var.set(_tr("Done (exit 0)", "Terminado (salida 0)"))
+                    self._append_output(f"\n[exit {rc}]\n", "success")
                 else:
                     self.status_var.set(
                         _tr(f"Finished with exit {rc}", f"Terminado con salida {rc}")
                     )
-                self._append_output(f"\n[exit {rc}]\n")
+                    self._append_output(f"\n[exit {rc}]\n", "error")
+
         self.after(120, self._drain_queue)
+
+    def _handle_output_line(self, line: str) -> None:
+        verdict_hit = self.VERDICT_RE.search(line)
+        if verdict_hit:
+            self._current_verdict = verdict_hit.group(0)
+            self.verdict_var.set(self._current_verdict)
+            if self._current_verdict.startswith("PASS"):
+                tag = "success"
+            elif self._current_verdict.startswith("NO-EVAL"):
+                tag = "warning"
+            else:
+                tag = "error"
+            self._append_output(line, tag)
+            return
+
+        if "error" in line.lower() or "traceback" in line.lower():
+            self._append_output(line, "error")
+        else:
+            self._append_output(line, "info")
 
     def _stop_running(self) -> None:
         if self._proc is None:
-            self.status_var.set(_tr("No process running", "No hay proceso ejecutándose"))
+            self.status_var.set(_tr("No process running", "No hay proceso ejecutandose"))
             return
         try:
             self._proc.terminate()
-            self._append_output("\n[terminated by user]\n")
+            self._append_output("\n[terminated by user]\n", "warning")
         except Exception as e:
-            self._append_output(f"\n[terminate failed] {e}\n")
+            self._append_output(f"\n[terminate failed] {e}\n", "error")
 
-    def _run_judge(self) -> None:
-        claim = self._claim()
-        if claim is None:
+    def _check_local_signature(self) -> None:
+        if os.name != "nt":
+            messagebox.showinfo(
+                "OCC Desktop",
+                _tr(
+                    "Authenticode check is available on Windows only.",
+                    "La verificacion Authenticode solo esta disponible en Windows.",
+                ),
+            )
             return
-        cmd = [
-            sys.executable,
-            "-m",
-            "occ.cli",
-            "judge",
-            str(claim),
-            "--profile",
-            self.profile_var.get().strip() or "core",
-        ]
-        self._start_command("judge", cmd)
 
-    def _run_verify(self) -> None:
-        suite = self.suite_var.get().strip() or "extensions"
-        timeout = "180" if suite == "all" else "60"
-        cmd = [
-            sys.executable,
-            "-m",
-            "occ.cli",
-            "verify",
-            "--suite",
-            suite,
-            "--strict",
-            "--timeout",
-            timeout,
-        ]
-        self._start_command("verify", cmd)
-
-    def _run_module_flow(self) -> None:
-        claim = self._claim()
-        if claim is None:
+        selected = filedialog.askopenfilename(
+            title=_tr("Select EXE", "Seleccionar EXE"),
+            filetypes=[("Executable", "*.exe"), (_tr("All", "Todos"), "*.*")],
+        )
+        if not selected:
             return
-        script = self._resolve_script("mrd_flow.py")
-        cmd: List[str] = [
-            sys.executable,
-            str(script),
-            str(claim),
-            "--generate-module",
+
+        exe = Path(selected).resolve()
+        cmd = [
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            (
+                "Get-AuthenticodeSignature -FilePath "
+                f"'{exe}' | Select-Object Status,StatusMessage,SignerCertificate "
+                "| Format-List"
+            ),
         ]
-        module_name = self.module_name_var.get().strip()
-        if module_name:
-            cmd.extend(["--module-name", module_name])
-        if self.create_prediction_var.get():
-            cmd.append("--create-prediction")
-        if self.verify_generated_var.get():
-            cmd.append("--verify-generated")
-        self._start_command("module-flow", cmd)
+        self._start_command("signature-check", cmd)
 
-    def _run_release_doctor(self) -> None:
-        script = self._resolve_script("release_doctor.py")
-        cmd = [sys.executable, str(script), "--strict", "--no-resolve-doi"]
-        self._start_command("release-doctor", cmd)
+    def _run_action(self, action: str) -> None:
+        command = self._build_action_command(action)
+        if command is None:
+            return
+        label, cmd = command
+        self._start_command(label, cmd)
 
-    def _run_docs_i18n(self) -> None:
-        script = self._resolve_script("check_docs_i18n.py")
-        cmd = [sys.executable, str(script), "--strict"]
-        self._start_command("docs-i18n", cmd)
+    def _build_action_command(self, action: str) -> Optional[Tuple[str, List[str]]]:
+        py = sys.executable
 
-    def _run_ci_doctor(self) -> None:
-        script = self._resolve_script("ci_doctor.py")
-        cmd = [sys.executable, str(script), "--workflow", "CI", "--limit", "12"]
-        self._start_command("ci-doctor", cmd)
+        if action in {"judge", "module_flow"}:
+            claim = self._claim()
+            if claim is None:
+                return None
+        else:
+            claim = None
 
-    def _run_release_notes(self) -> None:
-        script = self._resolve_script("generate_release_notes.py")
-        cmd = [sys.executable, str(script)]
-        self._start_command("release-notes", cmd)
+        if action == "judge":
+            cmd = [
+                py,
+                "-m",
+                "occ.cli",
+                "judge",
+                str(claim),
+                "--profile",
+                self.profile_var.get().strip() or "core",
+            ]
+            return ("judge", cmd)
+
+        if action == "verify":
+            suite = self.suite_var.get().strip() or "extensions"
+            timeout = "180" if suite == "all" else "60"
+            cmd = [
+                py,
+                "-m",
+                "occ.cli",
+                "verify",
+                "--suite",
+                suite,
+                "--strict",
+                "--timeout",
+                timeout,
+            ]
+            return ("verify", cmd)
+
+        if action == "module_flow":
+            script = self._resolve_script("mrd_flow.py")
+            module_cmd = [py, str(script), str(claim), "--generate-module"]
+            module_name = self.module_name_var.get().strip()
+            if module_name:
+                module_cmd.extend(["--module-name", module_name])
+            if self.create_prediction_var.get():
+                module_cmd.append("--create-prediction")
+            if self.verify_generated_var.get():
+                module_cmd.append("--verify-generated")
+            return ("module-flow", module_cmd)
+
+        if action == "release_doctor":
+            script = self._resolve_script("release_doctor.py")
+            return ("release-doctor", [py, str(script), "--strict", "--no-resolve-doi"])
+
+        if action == "docs_i18n":
+            script = self._resolve_script("check_docs_i18n.py")
+            return ("docs-i18n", [py, str(script), "--strict"])
+
+        if action == "ci_doctor":
+            script = self._resolve_script("ci_doctor.py")
+            return ("ci-doctor", [py, str(script), "--workflow", "CI", "--limit", "12"])
+
+        if action == "release_notes":
+            script = self._resolve_script("generate_release_notes.py")
+            return ("release-notes", [py, str(script)])
+
+        return None
 
 
-def main() -> int:
-    app = OCCDesktopApp()
-    app.mainloop()
-    return 0
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    parser = argparse.ArgumentParser(description="Launch OCC desktop application")
+    parser.add_argument(
+        "--headless-check",
+        action="store_true",
+        help="Validate module import without opening GUI",
+    )
+    args = parser.parse_args(list(argv) if argv is not None else None)
+
+    if args.headless_check:
+        print("ok")
+        return 0
+
+    try:
+        app = OCCDesktopApp()
+        app.mainloop()
+        return 0
+    except tk.TclError as e:
+        print(
+            _tr(
+                "OCC Desktop requires a graphical desktop session.",
+                "OCC Desktop requiere una sesion grafica de escritorio.",
+            ),
+            file=sys.stderr,
+        )
+        print(f"details: {e}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":

@@ -15,8 +15,20 @@ Este repositorio ya está técnicamente listo. Para maximizar alcance científic
    `.github/workflows/windows_desktop_release.yml` y se adjuntan al release:
    - `OCCDesktop-windows-x64.zip`
    - `OCCDesktop-windows-x64.exe`
+   - `OCCDesktop-windows-x64.sha256`
+   - Si falla la carga, ejecuta el workflow manualmente con `release_tag` (ejemplo `v1.3.0`).
 4. Espera a que Zenodo archive la versión y asigne DOI.
 5. Actualiza `README` con el distintivo del DOI.
+
+### Opcional: firma Authenticode (recomendado)
+
+Para reducir avisos de SmartScreen en Windows, configura estos secretos:
+
+- `WINDOWS_CODESIGN_PFX_B64`: certificado de firma `.pfx` codificado en base64.
+- `WINDOWS_CODESIGN_PFX_PASSWORD`: contraseña del certificado.
+
+Cuando esos secretos existen, el workflow `windows_desktop_release.yml` firma el EXE,
+aplica timestamp y valida el estado de la firma.
 
 ### Plantilla de distintivo
 
@@ -45,3 +57,5 @@ Estructura sugerida:
 - No guardar ZIPs grandes en `main`.
 - Usar GitHub Releases para binarios/artefactos.
 - Mantener docs y código en el árbol normal del repositorio.
+- Publicar y verificar checksums SHA256 en los assets del release.
+- Para enlaces directos `/releases/latest/download/...`, esperar a que los assets estén subidos.

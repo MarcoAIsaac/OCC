@@ -4,6 +4,11 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Existing release tag to upload assets to (example: v1.3.0)"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -25,7 +30,12 @@ jobs:
       - name: Build Windows desktop assets
         shell: pwsh
         run: |
-          .\scripts\build_windows_desktop.ps1 -Python python -Name OCCDesktop
+          .\scripts\build_windows_desktop.ps1 `
+            -Python python `
+            -Name OCCDesktop `
+            -CodeSignPfxBase64 "${{ secrets.WINDOWS_CODESIGN_PFX_B64 }}" `
+            -CodeSignPassword "${{ secrets.WINDOWS_CODESIGN_PFX_PASSWORD }}" `
+            -TimestampServer "http://timestamp.digicert.com"
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
@@ -35,9 +45,11 @@ jobs:
           if-no-files-found: error
 
       - name: Upload assets to GitHub Release
-        if: github.event_name == 'release'
+        if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.release_tag }}
           files: |
             release-windows/OCCDesktop-windows-x64.exe
             release-windows/OCCDesktop-windows-x64.zip
+            release-windows/OCCDesktop-windows-x64.sha256

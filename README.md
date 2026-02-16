@@ -95,8 +95,23 @@ occ-desktop
 
 Download latest prebuilt Windows package:
 
+- Release page (always available): [Latest release](https://github.com/MarcoAIsaac/OCC/releases/latest)
 - ZIP (recommended): [`OCCDesktop-windows-x64.zip`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.zip)
 - EXE: [`OCCDesktop-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.exe)
+- Checksums: [`OCCDesktop-windows-x64.sha256`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.sha256)
+
+If direct download links return `404`, open the release page and wait for workflow
+`Windows desktop release` to finish uploading assets.
+If needed, trigger that workflow manually and set `release_tag` to your version
+(example `v1.3.0`) to attach assets to an existing release.
+
+Windows checksum verification:
+
+```powershell
+certutil -hashfile .\OCCDesktop-windows-x64.exe SHA256
+```
+
+Compare with `OCCDesktop-windows-x64.sha256`.
 
 From source without install entrypoint:
 
@@ -109,6 +124,11 @@ Build `.exe` on Windows (PowerShell):
 ```powershell
 .\scripts\build_windows_desktop.ps1
 ```
+
+To reduce SmartScreen warnings in distributed binaries, configure repository secrets:
+
+- `WINDOWS_CODESIGN_PFX_B64`: base64-encoded `.pfx` certificate.
+- `WINDOWS_CODESIGN_PFX_PASSWORD`: password for the `.pfx`.
 
 ## Maintenance helpers
 
