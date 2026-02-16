@@ -110,7 +110,7 @@ If direct download links return `404`, open the release page and wait for workfl
 `Windows desktop release` to finish uploading assets.
 This pipeline runs automatically when you push a version tag (for example `1.3.1` or `v1.3.1`).
 If needed, trigger that workflow manually and set `release_tag` to your version
-(example `1.3.0`) to attach assets to an existing release.
+(example `1.3.1`) to attach assets to an existing release.
 
 Windows checksum verification:
 

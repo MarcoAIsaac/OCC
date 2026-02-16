@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on *Keep a Changelog* and this project adheres to *Semantic Versioning*.
 
+## [1.3.1] - 2026-02-16
+
+### Changed
+
+- Desktop release workflow now creates/updates releases from pushed tags `1.3.1` or `v1.3.1`.
+- Release asset upload now overwrites stale files, preventing old EXE links after rebuilds.
+- Documentation examples updated to use the current patch release (`1.3.1`).
+- Version metadata bumped to `1.3.1` (`pyproject.toml`, `CITATION.cff`, `.zenodo.json`).
+
 ## [1.3.0] - 2026-02-16
 
 ### Added
@@ -26,7 +35,7 @@ The format is based on *Keep a Changelog* and this project adheres to *Semantic 
 - Windows release pipeline now supports optional Authenticode signing when code-sign secrets are configured.
 - Desktop app now persists run history in local SQLite (`~/.occ_desktop/occ_desktop.db`) with CSV export and history reset.
 - Windows desktop release pipeline now auto-runs on pushed `v*` tags and auto-attaches artifacts to the release.
-- Windows desktop release pipeline now also supports numeric tags (`1.3.1`) and overwrites stale assets on re-run.
+- Windows desktop release pipeline now also supports numeric tags and overwrites stale assets on re-run.
 
 ## [1.2.0] - 2026-02-16
 

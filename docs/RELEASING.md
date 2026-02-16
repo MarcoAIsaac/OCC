@@ -17,7 +17,7 @@ This repository is technically ready. To maximize scientific reach, two publicat
    - `OCCDesktop-windows-x64.zip`
    - `OCCDesktop-windows-x64.exe`
    - `OCCDesktop-windows-x64.sha256`
-   - If needed, run workflow manually with input `release_tag` (example `1.3.0`).
+   - If needed, run workflow manually with input `release_tag` (example `1.3.1`).
 4. Wait for Zenodo to archive the release and assign a DOI.
 5. Update README with DOI badge.
 
