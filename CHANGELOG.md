@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on *Keep a Changelog* and this project adheres to *Semantic Versioning*.
 
+## [1.3.2] - 2026-02-16
+
+### Fixed
+
+- Windows desktop runtime import bug in packaged/script execution:
+  `ImportError: attempted relative import with no known parent package`.
+- Added regression test for direct script startup:
+  `python occ/desktop.py --headless-check`.
+
 ## [1.3.1] - 2026-02-16
 
 ### Changed

@@ -28,7 +28,11 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
-from .version import get_version
+try:
+    from .version import get_version
+except ImportError:
+    # Support direct script execution (e.g., PyInstaller entry as desktop.py).
+    from occ.version import get_version
 
 
 def _detect_language() -> str:
