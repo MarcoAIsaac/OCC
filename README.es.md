@@ -5,7 +5,7 @@ Español | [English](README.md)
 [![CI](https://github.com/MarcoAIsaac/OCC/actions/workflows/ci.yml/badge.svg)](https://github.com/MarcoAIsaac/OCC/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/python-%3E%3D3.10-blue)
-[![DOI: pending](https://img.shields.io/badge/DOI-pending-lightgrey)](docs/RELEASING.es.md)
+[![DOI](https://zenodo.org/badge/1158388233.svg)](https://doi.org/10.5281/zenodo.18656426)
 [![arXiv: pending](https://img.shields.io/badge/arXiv-pending-b31b1b)](docs/RELEASING.es.md)
 
 **OCC** es un runtime reproducible con CLI estable (`occ`) para ejecutar módulos MRD
