@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Mapping
 
 from .version import get_version
 
-USER_AGENT = f"occ-mrd-runner/{get_version('1.3.3')} (+https://github.com/MarcoAIsaac/OCC)"
+USER_AGENT = f"occ-mrd-runner/{get_version('1.4.0')} (+https://github.com/MarcoAIsaac/OCC)"
 
 
 def _now_iso() -> str:

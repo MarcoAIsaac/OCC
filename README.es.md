@@ -100,10 +100,18 @@ La app de escritorio guarda datos persistentes en:
 
 Asistente IA integrado (pestaña Assistant):
 
-- Proveedor: `OpenAI` (API oficial).
+- Proveedores: `offline` (copiloto OCC determinista) y `OpenAI` (API oficial).
 - Fuente de API key: variable de entorno `OPENAI_API_KEY` (recomendado) o campo de clave solo para la sesión.
 - Modelo configurable (por defecto: `gpt-4.1-mini`).
 - Inyección opcional de contexto del runtime OCC para soporte técnico más preciso.
+
+Experiment Lab (nuevo en 1.4.0):
+
+- Ejecuta matrices de claims por perfiles (`core` / `nuclear`) y detecta divergencia de veredictos.
+- Exporta artefactos auditables: `lab_report.json`, `lab_results.csv`,
+  `lab_profile_summary.csv`, `lab_verdict_matrix.md`.
+- CLI:
+  `occ lab run --claims-dir examples/claim_specs --profiles core nuclear --out .occ_lab/latest`
 
 Descargar paquete preconstruido más reciente para Windows:
 
@@ -115,9 +123,9 @@ Descargar paquete preconstruido más reciente para Windows:
 
 Si los enlaces directos devuelven `404`, abre la página del release y espera a que el workflow
 `Windows desktop release` termine de subir los assets.
-Ese pipeline corre automáticamente cuando empujas un tag de versión (por ejemplo `1.3.3` o `v1.3.3`).
+Ese pipeline corre automáticamente cuando empujas un tag de versión (por ejemplo `1.4.0` o `v1.4.0`).
 Si hace falta, ejecuta ese workflow manualmente y usa `release_tag` con la versión
-(ejemplo `1.3.3`) para adjuntar assets a un release ya existente.
+(ejemplo `1.4.0`) para adjuntar assets a un release ya existente.
 
 Verificación SHA256 en Windows:
 
@@ -217,8 +225,8 @@ Para ejecuciones largas, conviene usar el flujo manual de verificación completa
 
 ## Expansiones de dominio
 
-`v1.3.3` mantiene el conjunto de candados nucleares (`nuclear_guard`, `NUC*`) y agrega
-distribución de escritorio para Windows vía GitHub Releases
+`v1.4.0` mantiene el conjunto de candados nucleares (`nuclear_guard`, `NUC*`) y agrega
+flujos matriciales de Experiment Lab junto con distribución de escritorio para Windows vía GitHub Releases
 (`OCCDesktop-windows-x64.exe/.zip`).
 
 ## Estructura del repositorio

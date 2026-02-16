@@ -23,7 +23,7 @@ import threading
 import time
 import tkinter as tk
 import webbrowser
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
@@ -38,6 +38,11 @@ try:
     from .ai_assistant import AssistantError, ask_openai
 except ImportError:
     from occ.ai_assistant import AssistantError, ask_openai
+
+try:
+    from .offline_assistant import ask_offline
+except ImportError:
+    from occ.offline_assistant import ask_offline
 
 
 def _detect_language() -> str:
@@ -68,6 +73,10 @@ def _tr(en: str, es: str) -> str:
 
 def _now_text() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _now_utc_stamp() -> str:
+    return datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
 
 
 def _fmt_cmd(cmd: Sequence[str]) -> str:
@@ -118,7 +127,7 @@ class OCCDesktopApp(tk.Tk):
         self.module_name_var = tk.StringVar(value="")
         self.create_prediction_var = tk.BooleanVar(value=True)
         self.verify_generated_var = tk.BooleanVar(value=False)
-        self.ai_provider_var = tk.StringVar(value="openai")
+        self.ai_provider_var = tk.StringVar(value="offline")
         self.ai_model_var = tk.StringVar(value="gpt-4.1-mini")
         self.ai_timeout_var = tk.StringVar(value="45")
         self.ai_include_context_var = tk.BooleanVar(value=True)
@@ -128,6 +137,17 @@ class OCCDesktopApp(tk.Tk):
                 "judges, locks, module flow, and reproducible execution."
             )
         )
+        self.lab_claims_dir_var = tk.StringVar(
+            value=str(self.repo_root / "examples" / "claim_specs")
+        )
+        self.lab_out_dir_var = tk.StringVar(
+            value=str(self.repo_root / ".occ_lab" / "latest")
+        )
+        self.lab_recursive_var = tk.BooleanVar(value=False)
+        self.lab_profile_core_var = tk.BooleanVar(value=True)
+        self.lab_profile_nuclear_var = tk.BooleanVar(value=True)
+        self.lab_strict_trace_var = tk.BooleanVar(value=False)
+        self.lab_fail_on_non_pass_var = tk.BooleanVar(value=False)
 
         self.status_var = tk.StringVar(value=_tr("Ready", "Listo"))
         self.command_preview_var = tk.StringVar(value="-")
@@ -142,8 +162,14 @@ class OCCDesktopApp(tk.Tk):
         self.assistant_status_var = tk.StringVar(
             value=_tr("Assistant idle", "Asistente inactivo")
         )
+        self.lab_status_var = tk.StringVar(value=_tr("Lab idle", "Lab inactivo"))
         self.version_var = tk.StringVar(value=f"v{get_version()}")
         self.clock_var = tk.StringVar(value=_now_text())
+        self.lab_runs_var = tk.StringVar(value="0")
+        self.lab_pass_var = tk.StringVar(value="0")
+        self.lab_fail_var = tk.StringVar(value="0")
+        self.lab_no_eval_var = tk.StringVar(value="0")
+        self.lab_divergence_var = tk.StringVar(value="0")
 
         self._queue: "queue.Queue[Tuple[str, Dict[str, Any]]]" = queue.Queue()
         self._proc: Optional[subprocess.Popen[str]] = None
@@ -168,6 +194,7 @@ class OCCDesktopApp(tk.Tk):
         self._assistant_send_button: Optional[tk.Button] = None
         self._assistant_copy_button: Optional[tk.Button] = None
         self._assistant_clear_button: Optional[tk.Button] = None
+        self._lab_output_text: Optional[tk.Text] = None
 
         self._buttons: List[Any] = []
         self._history_commands: Dict[str, List[str]] = {}
@@ -452,6 +479,10 @@ class OCCDesktopApp(tk.Tk):
         run_menu.add_command(
             label=_tr("Module flow", "Flujo de modulo"),
             command=lambda: self._run_action("module_flow"),
+        )
+        run_menu.add_command(
+            label=_tr("Run experiment lab", "Ejecutar experiment lab"),
+            command=lambda: self._run_action("lab_run"),
         )
         run_menu.add_separator()
         run_menu.add_command(
@@ -740,6 +771,7 @@ class OCCDesktopApp(tk.Tk):
         self._add_sidebar_button(sidebar, _tr("Judge claim", "Evaluar claim"), "judge")
         self._add_sidebar_button(sidebar, _tr("Verify suite", "Verificar suite"), "verify")
         self._add_sidebar_button(sidebar, _tr("Module flow", "Flujo de modulo"), "module_flow")
+        self._add_sidebar_button(sidebar, _tr("Experiment lab", "Experiment lab"), "lab_run")
 
         ttk.Separator(sidebar, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=10)
         ttk.Label(
@@ -895,16 +927,19 @@ class OCCDesktopApp(tk.Tk):
 
         workbench = ttk.Frame(notebook, style="Panel.TFrame", padding=12)
         history = ttk.Frame(notebook, style="Panel.TFrame", padding=12)
+        lab = ttk.Frame(notebook, style="Panel.TFrame", padding=12)
         assistant = ttk.Frame(notebook, style="Panel.TFrame", padding=12)
         security = ttk.Frame(notebook, style="Panel.TFrame", padding=12)
 
         notebook.add(workbench, text=_tr("Workbench", "Workbench"))
         notebook.add(history, text=_tr("History", "Historial"))
+        notebook.add(lab, text=_tr("Lab", "Lab"))
         notebook.add(assistant, text=_tr("Assistant", "Asistente"))
         notebook.add(security, text=_tr("Security", "Seguridad"))
 
         self._build_workbench_tab(workbench)
         self._build_history_tab(history)
+        self._build_lab_tab(lab)
         self._build_assistant_tab(assistant)
         self._build_security_tab(security)
 
@@ -1235,6 +1270,197 @@ class OCCDesktopApp(tk.Tk):
             style="Ghost.TButton",
         ).pack(side=tk.LEFT, padx=(8, 0))
 
+    def _build_lab_tab(self, tab: ttk.Frame) -> None:
+        tab.grid_columnconfigure(0, weight=1)
+        tab.grid_rowconfigure(3, weight=1)
+
+        intro = ttk.LabelFrame(
+            tab,
+            text=_tr("Experiment Lab", "Experiment Lab"),
+            style="Card.TLabelframe",
+            padding=10,
+        )
+        intro.grid(row=0, column=0, sticky="ew")
+        intro.grid_columnconfigure(1, weight=1)
+
+        ttk.Label(intro, text=_tr("Claims folder", "Carpeta de claims"), style="Body.TLabel").grid(
+            row=0,
+            column=0,
+            sticky="w",
+            padx=(0, 8),
+        )
+        ttk.Entry(intro, textvariable=self.lab_claims_dir_var, style="Input.TEntry").grid(
+            row=0,
+            column=1,
+            sticky="ew",
+        )
+        ttk.Button(
+            intro,
+            text=_tr("Browse", "Buscar"),
+            command=self._pick_lab_claims_dir,
+            style="Ghost.TButton",
+        ).grid(row=0, column=2, sticky="w", padx=(8, 0))
+
+        ttk.Label(intro, text=_tr("Output folder", "Carpeta de salida"), style="Body.TLabel").grid(
+            row=1,
+            column=0,
+            sticky="w",
+            padx=(0, 8),
+            pady=(8, 0),
+        )
+        ttk.Entry(intro, textvariable=self.lab_out_dir_var, style="Input.TEntry").grid(
+            row=1,
+            column=1,
+            sticky="ew",
+            pady=(8, 0),
+        )
+        ttk.Button(
+            intro,
+            text=_tr("Browse", "Buscar"),
+            command=self._pick_lab_out_dir,
+            style="Ghost.TButton",
+        ).grid(row=1, column=2, sticky="w", padx=(8, 0), pady=(8, 0))
+
+        options = ttk.Frame(tab, style="Panel.TFrame")
+        options.grid(row=1, column=0, sticky="ew", pady=(10, 0))
+
+        ttk.Checkbutton(
+            options,
+            text=_tr("Core profile", "Perfil core"),
+            variable=self.lab_profile_core_var,
+        ).pack(side=tk.LEFT)
+        ttk.Checkbutton(
+            options,
+            text=_tr("Nuclear profile", "Perfil nuclear"),
+            variable=self.lab_profile_nuclear_var,
+        ).pack(side=tk.LEFT, padx=(12, 0))
+        ttk.Checkbutton(
+            options,
+            text=_tr("Recursive scan", "Escaneo recursivo"),
+            variable=self.lab_recursive_var,
+        ).pack(side=tk.LEFT, padx=(12, 0))
+        ttk.Checkbutton(
+            options,
+            text=_tr("Strict trace", "Trace estricto"),
+            variable=self.lab_strict_trace_var,
+        ).pack(side=tk.LEFT, padx=(12, 0))
+        ttk.Checkbutton(
+            options,
+            text=_tr("Fail on non-pass", "Fallar en no-pass"),
+            variable=self.lab_fail_on_non_pass_var,
+        ).pack(side=tk.LEFT, padx=(12, 0))
+
+        controls = ttk.Frame(tab, style="Panel.TFrame")
+        controls.grid(row=2, column=0, sticky="ew", pady=(8, 0))
+
+        run_btn = self._create_modern_button(
+            controls,
+            label=_tr("Run lab matrix", "Ejecutar matriz lab"),
+            command=lambda: self._run_action("lab_run"),
+            variant="primary",
+        )
+        run_btn.pack(side=tk.LEFT)
+        self._buttons.append(run_btn)
+
+        open_btn = self._create_modern_button(
+            controls,
+            label=_tr("Open output folder", "Abrir carpeta salida"),
+            command=self._open_lab_output_folder,
+            variant="ghost",
+        )
+        open_btn.pack(side=tk.LEFT, padx=(8, 0))
+        self._buttons.append(open_btn)
+
+        ttk.Label(
+            controls,
+            textvariable=self.lab_status_var,
+            style="Muted.TLabel",
+        ).pack(side=tk.LEFT, padx=(14, 0))
+
+        metrics = ttk.Frame(tab, style="Panel.TFrame")
+        metrics.grid(row=3, column=0, sticky="ew", pady=(8, 0))
+        for idx in range(10):
+            metrics.grid_columnconfigure(idx, weight=0)
+        metrics.grid_columnconfigure(9, weight=1)
+
+        ttk.Label(metrics, text="Runs", style="Muted.TLabel").grid(row=0, column=0, sticky="w")
+        ttk.Label(metrics, textvariable=self.lab_runs_var, style="Metric.TLabel").grid(
+            row=0,
+            column=1,
+            sticky="w",
+            padx=(6, 18),
+        )
+        ttk.Label(metrics, text="PASS", style="Muted.TLabel").grid(row=0, column=2, sticky="w")
+        ttk.Label(metrics, textvariable=self.lab_pass_var, style="Metric.TLabel").grid(
+            row=0,
+            column=3,
+            sticky="w",
+            padx=(6, 18),
+        )
+        ttk.Label(metrics, text="FAIL", style="Muted.TLabel").grid(row=0, column=4, sticky="w")
+        ttk.Label(metrics, textvariable=self.lab_fail_var, style="Metric.TLabel").grid(
+            row=0,
+            column=5,
+            sticky="w",
+            padx=(6, 18),
+        )
+        ttk.Label(metrics, text="NO-EVAL", style="Muted.TLabel").grid(
+            row=0,
+            column=6,
+            sticky="w",
+        )
+        ttk.Label(metrics, textvariable=self.lab_no_eval_var, style="Metric.TLabel").grid(
+            row=0,
+            column=7,
+            sticky="w",
+            padx=(6, 18),
+        )
+        ttk.Label(metrics, text=_tr("Divergence", "Divergencia"), style="Muted.TLabel").grid(
+            row=0,
+            column=8,
+            sticky="w",
+        )
+        ttk.Label(metrics, textvariable=self.lab_divergence_var, style="Metric.TLabel").grid(
+            row=0,
+            column=9,
+            sticky="w",
+            padx=(6, 0),
+        )
+
+        out_card = ttk.LabelFrame(
+            tab,
+            text=_tr("Lab output", "Salida del lab"),
+            style="Card.TLabelframe",
+            padding=8,
+        )
+        out_card.grid(row=4, column=0, sticky="nsew", pady=(8, 0))
+        out_card.grid_rowconfigure(0, weight=1)
+        out_card.grid_columnconfigure(0, weight=1)
+        tab.grid_rowconfigure(4, weight=1)
+
+        self._lab_output_text = tk.Text(
+            out_card,
+            wrap=tk.WORD,
+            font=("Consolas", 10),
+            background="#031124",
+            foreground="#bfdbfe",
+            insertbackground="#bfdbfe",
+            relief=tk.FLAT,
+            borderwidth=0,
+        )
+        self._lab_output_text.grid(row=0, column=0, sticky="nsew")
+        self._lab_output_text.tag_configure("meta", foreground="#7dd3fc")
+        self._lab_output_text.tag_configure("warn", foreground="#fcd34d")
+        self._lab_output_text.tag_configure("error", foreground="#fca5a5")
+
+        lab_scroll = ttk.Scrollbar(
+            out_card,
+            orient=tk.VERTICAL,
+            command=self._lab_output_text.yview,
+        )
+        lab_scroll.grid(row=0, column=1, sticky="ns")
+        self._lab_output_text.configure(yscrollcommand=lab_scroll.set)
+
     def _build_assistant_tab(self, tab: ttk.Frame) -> None:
         tab.grid_columnconfigure(0, weight=1)
         tab.grid_rowconfigure(3, weight=1)
@@ -1258,7 +1484,7 @@ class OCCDesktopApp(tk.Tk):
         ttk.Combobox(
             intro,
             textvariable=self.ai_provider_var,
-            values=["openai"],
+            values=["offline", "openai"],
             state="readonly",
             style="Input.TCombobox",
             width=14,
@@ -1552,6 +1778,13 @@ class OCCDesktopApp(tk.Tk):
             _set_str(self.ai_timeout_var, "ai_timeout")
             _set_bool(self.ai_include_context_var, "ai_include_context")
             _set_str(self.ai_system_prompt_var, "ai_system_prompt")
+            _set_str(self.lab_claims_dir_var, "lab_claims_dir")
+            _set_str(self.lab_out_dir_var, "lab_out_dir")
+            _set_bool(self.lab_recursive_var, "lab_recursive")
+            _set_bool(self.lab_profile_core_var, "lab_profile_core")
+            _set_bool(self.lab_profile_nuclear_var, "lab_profile_nuclear")
+            _set_bool(self.lab_strict_trace_var, "lab_strict_trace")
+            _set_bool(self.lab_fail_on_non_pass_var, "lab_fail_on_non_pass")
         except Exception:
             pass
 
@@ -1573,6 +1806,13 @@ class OCCDesktopApp(tk.Tk):
             "ai_timeout": self.ai_timeout_var.get().strip(),
             "ai_include_context": bool(self.ai_include_context_var.get()),
             "ai_system_prompt": system_prompt,
+            "lab_claims_dir": self.lab_claims_dir_var.get().strip(),
+            "lab_out_dir": self.lab_out_dir_var.get().strip(),
+            "lab_recursive": bool(self.lab_recursive_var.get()),
+            "lab_profile_core": bool(self.lab_profile_core_var.get()),
+            "lab_profile_nuclear": bool(self.lab_profile_nuclear_var.get()),
+            "lab_strict_trace": bool(self.lab_strict_trace_var.get()),
+            "lab_fail_on_non_pass": bool(self.lab_fail_on_non_pass_var.get()),
         }
         self.settings_file.parent.mkdir(parents=True, exist_ok=True)
         self.settings_file.write_text(json.dumps(payload, indent=2), encoding="utf-8")
@@ -1640,6 +1880,105 @@ class OCCDesktopApp(tk.Tk):
         )
         if selected:
             self.claim_var.set(str(Path(selected).resolve()))
+
+    def _pick_lab_claims_dir(self) -> None:
+        selected = filedialog.askdirectory(initialdir=self.lab_claims_dir_var.get() or ".")
+        if selected:
+            self.lab_claims_dir_var.set(str(Path(selected).resolve()))
+
+    def _pick_lab_out_dir(self) -> None:
+        selected = filedialog.askdirectory(initialdir=self.lab_out_dir_var.get() or ".")
+        if selected:
+            self.lab_out_dir_var.set(str(Path(selected).resolve()))
+
+    def _open_lab_output_folder(self) -> None:
+        out_dir = Path(self.lab_out_dir_var.get().strip() or ".").resolve()
+        if not out_dir.exists():
+            messagebox.showwarning(
+                "OCC Desktop",
+                _tr(
+                    f"Lab output folder does not exist yet: {out_dir}",
+                    f"La carpeta de salida del lab no existe todavia: {out_dir}",
+                ),
+            )
+            return
+
+        if os.name == "nt":
+            os.startfile(str(out_dir))  # type: ignore[attr-defined]
+            return
+        webbrowser.open(out_dir.as_uri())
+
+    def _load_lab_report(self, path: Path) -> None:
+        if not path.is_file():
+            self.lab_status_var.set(_tr("Lab report not found", "Reporte lab no encontrado"))
+            return
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except Exception as e:
+            self.lab_status_var.set(_tr(f"Lab report parse error: {e}", f"Error parse lab: {e}"))
+            return
+
+        totals = payload.get("totals", {}) if isinstance(payload, dict) else {}
+        self.lab_runs_var.set(str(int(totals.get("runs", 0))))
+        self.lab_pass_var.set(str(int(totals.get("pass", 0))))
+        self.lab_fail_var.set(str(int(totals.get("fail", 0))))
+        self.lab_no_eval_var.set(str(int(totals.get("no_eval", 0))))
+        self.lab_divergence_var.set(str(int(payload.get("divergence_count", 0))))
+        self.lab_status_var.set(_tr("Lab report loaded", "Reporte lab cargado"))
+
+        if self._lab_output_text is None:
+            return
+        self._lab_output_text.delete("1.0", tk.END)
+        self._lab_output_text.insert(
+            tk.END,
+            f"[{_now_text()}] lab_report.json\n",
+            "meta",
+        )
+        self._lab_output_text.insert(
+            tk.END,
+            _tr(
+                f"Runs: {self.lab_runs_var.get()} | PASS: {self.lab_pass_var.get()} | "
+                f"FAIL: {self.lab_fail_var.get()} | NO-EVAL: {self.lab_no_eval_var.get()} | "
+                f"Divergence: {self.lab_divergence_var.get()}\n\n",
+                f"Ejecuciones: {self.lab_runs_var.get()} | PASS: {self.lab_pass_var.get()} | "
+                f"FAIL: {self.lab_fail_var.get()} | NO-EVAL: {self.lab_no_eval_var.get()} | "
+                f"Divergencia: {self.lab_divergence_var.get()}\n\n",
+            ),
+        )
+        divergence = payload.get("divergence", [])
+        if isinstance(divergence, list) and divergence:
+            self._lab_output_text.insert(
+                tk.END,
+                _tr("Diverging claims:\n", "Claims divergentes:\n"),
+                "warn",
+            )
+            for row in divergence[:20]:
+                if not isinstance(row, dict):
+                    continue
+                claim_id = str(row.get("claim_id") or "unknown")
+                profiles = row.get("profiles", [])
+                parts: List[str] = []
+                if isinstance(profiles, list):
+                    for item in profiles:
+                        if not isinstance(item, dict):
+                            continue
+                        parts.append(
+                            f"{item.get('profile', '')}:{item.get('verdict', '')}"
+                        )
+                self._lab_output_text.insert(
+                    tk.END,
+                    f"- {claim_id} -> {', '.join(parts)}\n",
+                )
+        else:
+            self._lab_output_text.insert(
+                tk.END,
+                _tr(
+                    "No profile divergence detected in this matrix.",
+                    "No se detecto divergencia de perfiles en esta matriz.",
+                ),
+                "meta",
+            )
+        self._lab_output_text.see(tk.END)
 
     def _set_api_key_from_env(self) -> None:
         key = str(os.getenv("OPENAI_API_KEY") or "").strip()
@@ -1758,13 +2097,13 @@ class OCCDesktopApp(tk.Tk):
             )
             return
 
-        provider = self.ai_provider_var.get().strip().lower() or "openai"
-        if provider != "openai":
+        provider = self.ai_provider_var.get().strip().lower() or "offline"
+        if provider not in {"offline", "openai"}:
             messagebox.showwarning(
                 "OCC Desktop",
                 _tr(
-                    "Only OpenAI provider is currently implemented.",
-                    "Solo el proveedor OpenAI esta implementado por ahora.",
+                    "Unsupported assistant provider.",
+                    "Proveedor de asistente no soportado.",
                 ),
             )
             return
@@ -1791,13 +2130,18 @@ class OCCDesktopApp(tk.Tk):
         model = self.ai_model_var.get().strip() or "gpt-4.1-mini"
         api_key = self._assistant_api_key_var.get().strip()
         self._set_assistant_busy(True)
-        self.assistant_status_var.set(
-            _tr("Calling OpenAI assistant...", "Consultando asistente OpenAI...")
-        )
+        if provider == "offline":
+            self.assistant_status_var.set(
+                _tr("Running offline assistant...", "Ejecutando asistente offline...")
+            )
+        else:
+            self.assistant_status_var.set(
+                _tr("Calling OpenAI assistant...", "Consultando asistente OpenAI...")
+            )
         if self._assistant_output_text is not None:
             self._assistant_output_text.insert(
                 tk.END,
-                f"\n[{_now_text()}] {model}\n",
+                f"\n[{_now_text()}] {provider}:{model}\n",
                 "meta",
             )
             self._assistant_output_text.insert(
@@ -1809,13 +2153,16 @@ class OCCDesktopApp(tk.Tk):
 
         def worker() -> None:
             try:
-                reply = ask_openai(
-                    prompt=full_prompt,
-                    model=model,
-                    api_key=api_key or None,
-                    system_prompt=system_prompt,
-                    timeout_s=timeout_s,
-                )
+                if provider == "offline":
+                    reply = ask_offline(prompt=prompt, context=full_prompt)
+                else:
+                    reply = ask_openai(
+                        prompt=full_prompt,
+                        model=model,
+                        api_key=api_key or None,
+                        system_prompt=system_prompt,
+                        timeout_s=timeout_s,
+                    )
                 self._queue.put(("assistant_done", {"reply": reply}))
             except AssistantError as e:
                 self._queue.put(("assistant_error", {"error": str(e)}))
@@ -2073,6 +2420,8 @@ class OCCDesktopApp(tk.Tk):
 
         self._set_running(True)
         self.status_var.set(_tr(f"Running: {label}", f"Ejecutando: {label}"))
+        if label == "lab-run":
+            self.lab_status_var.set(_tr("Running lab matrix...", "Ejecutando matriz lab..."))
         self._append_output("\n" + "=" * 88 + "\n", "command")
         self._append_output(f"[{self._running_started_text}] $ {cmd_text}\n\n", "command")
 
@@ -2137,6 +2486,12 @@ class OCCDesktopApp(tk.Tk):
                         _tr(f"Finished with exit {rc}", f"Terminado con salida {rc}")
                     )
                     self._append_output(f"\n[exit {rc}]\n", "error")
+
+                if label == "lab-run":
+                    report_path = (
+                        Path(self.lab_out_dir_var.get().strip() or ".") / "lab_report.json"
+                    )
+                    self._load_lab_report(report_path)
             elif kind == "assistant_done":
                 reply = str(payload.get("reply") or "")
                 self._assistant_last_reply = reply
@@ -2282,6 +2637,66 @@ class OCCDesktopApp(tk.Tk):
             if self.verify_generated_var.get():
                 module_cmd.append("--verify-generated")
             return ("module-flow", module_cmd)
+
+        if action == "lab_run":
+            claims_dir = Path(self.lab_claims_dir_var.get().strip() or ".").resolve()
+            if not claims_dir.is_dir():
+                messagebox.showerror(
+                    "OCC Desktop",
+                    _tr(
+                        f"Claims folder does not exist: {claims_dir}",
+                        f"La carpeta de claims no existe: {claims_dir}",
+                    ),
+                )
+                return None
+
+            profiles: List[str] = []
+            if self.lab_profile_core_var.get():
+                profiles.append("core")
+            if self.lab_profile_nuclear_var.get():
+                profiles.append("nuclear")
+            if not profiles:
+                messagebox.showwarning(
+                    "OCC Desktop",
+                    _tr(
+                        "Select at least one lab profile.",
+                        "Selecciona al menos un perfil de lab.",
+                    ),
+                )
+                return None
+
+            out_dir = Path(self.lab_out_dir_var.get().strip() or "").resolve()
+            if not str(out_dir).strip():
+                out_dir = (
+                    Path(self.workspace_var.get().strip() or ".").resolve()
+                    / ".occ_lab"
+                    / "latest"
+                )
+                self.lab_out_dir_var.set(str(out_dir))
+            out_dir.mkdir(parents=True, exist_ok=True)
+
+            cmd = [
+                py,
+                "-m",
+                "occ.cli",
+                "lab",
+                "run",
+                "--claims-dir",
+                str(claims_dir),
+                "--profiles",
+                *profiles,
+                "--out",
+                str(out_dir),
+                "--json",
+            ]
+            if self.lab_recursive_var.get():
+                cmd.append("--recursive")
+            if self.lab_strict_trace_var.get():
+                cmd.append("--strict-trace")
+            if self.lab_fail_on_non_pass_var.get():
+                cmd.append("--fail-on-non-pass")
+
+            return ("lab-run", cmd)
 
         if action == "release_doctor":
             script = self._resolve_script("release_doctor.py")

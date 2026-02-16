@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on *Keep a Changelog* and this project adheres to *Semantic Versioning*.
 
+## [1.4.0] - 2026-02-16
+
+### Added
+
+- New **Experiment Lab** engine (`occ lab run`) to evaluate batches of claim specs across
+  multiple judge profiles and generate comparative artifacts:
+  `lab_report.json`, `lab_results.csv`, `lab_profile_summary.csv`, `lab_verdict_matrix.md`.
+- New **Lab tab** in OCC Desktop with profile matrix controls, one-click batch execution,
+  divergence metrics, and artifact summary viewer.
+- New **offline assistant provider** for OCC Desktop (`offline`) with deterministic guidance
+  for judge outcomes, CI/release triage, module flow, and lab workflows.
+
+### Changed
+
+- Desktop sidebar and run menu now include direct Experiment Lab execution.
+- Assistant provider selection now supports both `offline` and `openai`.
+
 ## [1.3.3] - 2026-02-16
 
 ### Changed

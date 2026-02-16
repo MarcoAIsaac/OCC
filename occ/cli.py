@@ -24,6 +24,7 @@ except ModuleNotFoundError:
 from . import get_version
 from .catalog import build_catalog
 from .judges.pipeline import default_judges, run_pipeline
+from .lab import LabConfig, discover_claim_files, run_experiment_lab
 from .module_autogen import auto_generate_module, load_claim_file
 from .predictions.registry import find_registry_path, load_registry
 from .runner import extract_verdict_from_report, run_bundle, run_verify
@@ -455,6 +456,88 @@ def cmd_module_auto(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_lab_run(args: argparse.Namespace) -> int:
+    claims: List[Path] = []
+    if args.claims:
+        for raw in args.claims:
+            p = Path(raw).resolve()
+            if not p.is_file():
+                raise SystemExit(
+                    _tr(
+                        f"Claim file not found: {p}",
+                        f"No se encontró archivo claim: {p}",
+                    )
+                )
+            claims.append(p)
+    elif args.claims_dir:
+        claims = discover_claim_files(
+            Path(args.claims_dir).resolve(),
+            recursive=bool(args.recursive),
+        )
+    else:
+        raise SystemExit(
+            _tr(
+                "Provide --claims ... or --claims-dir ...",
+                "Proporciona --claims ... o --claims-dir ...",
+            )
+        )
+
+    if not claims:
+        raise SystemExit(_tr("No claims selected.", "No se seleccionaron claims."))
+
+    profiles = [str(p).strip() for p in args.profiles if str(p).strip()]
+    if not profiles:
+        raise SystemExit(_tr("No profiles selected.", "No se seleccionaron perfiles."))
+
+    out_dir = Path(args.out).resolve() if args.out else (Path.cwd() / ".occ_lab" / "latest")
+    payload = run_experiment_lab(
+        LabConfig(
+            claim_paths=claims,
+            profiles=profiles,
+            strict_trace=bool(args.strict_trace),
+            out_dir=out_dir,
+        )
+    )
+
+    if args.json:
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+    else:
+        totals = payload.get("totals", {})
+        RPRINT(
+            _tr(
+                f"Lab run complete: {totals.get('runs', 0)} runs",
+                f"Lab completado: {totals.get('runs', 0)} ejecuciones",
+            )
+        )
+        RPRINT(
+            _tr(
+                f"PASS={totals.get('pass', 0)} FAIL={totals.get('fail', 0)} "
+                f"NO-EVAL={totals.get('no_eval', 0)}",
+                f"PASS={totals.get('pass', 0)} FAIL={totals.get('fail', 0)} "
+                f"NO-EVAL={totals.get('no_eval', 0)}",
+            )
+        )
+        RPRINT(
+            _tr(
+                f"Divergence: {payload.get('divergence_count', 0)} claim(s)",
+                f"Divergencia: {payload.get('divergence_count', 0)} claim(s)",
+            )
+        )
+        artifacts = payload.get("artifacts", {})
+        if isinstance(artifacts, dict):
+            RPRINT(_tr("Artifacts:", "Artefactos:"))
+            for key in ("json", "results_csv", "profile_csv", "matrix_md"):
+                value = artifacts.get(key)
+                if isinstance(value, str) and value:
+                    RPRINT(f"- {key}: {value}")
+
+    totals = payload.get("totals", {})
+    non_pass = int(totals.get("fail", 0)) + int(totals.get("no_eval", 0))
+    if bool(args.fail_on_non_pass) and non_pass > 0:
+        return 1
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="occ",
@@ -655,6 +738,61 @@ def build_parser() -> argparse.ArgumentParser:
     )
     pma.add_argument("--json", action="store_true", help="Emit JSON")
     pma.set_defaults(func=cmd_module_auto)
+
+    plab = sub.add_parser(
+        "lab",
+        help=_tr(
+            "Batch claim evaluation across profiles with comparative artifacts",
+            "Evaluación batch de claims por perfiles con artefactos comparativos",
+        ),
+    )
+    plab_sub = plab.add_subparsers(dest="lab_cmd", required=True)
+
+    plr = plab_sub.add_parser(
+        "run",
+        help=_tr(
+            "Run an experiment matrix for claim specs",
+            "Ejecuta una matriz experimental para claims",
+        ),
+    )
+    group = plr.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        "--claims",
+        nargs="+",
+        help="Explicit claim files (.yaml/.yml/.json)",
+    )
+    group.add_argument(
+        "--claims-dir",
+        help="Directory containing claim files",
+    )
+    plr.add_argument(
+        "--recursive",
+        action="store_true",
+        help="When using --claims-dir, scan subfolders recursively",
+    )
+    plr.add_argument(
+        "--profiles",
+        nargs="+",
+        default=["core", "nuclear"],
+        choices=["core", "nuclear"],
+        help="Judge profiles to evaluate (default: core nuclear)",
+    )
+    plr.add_argument(
+        "--strict-trace",
+        action="store_true",
+        help="Require declared source paths to exist",
+    )
+    plr.add_argument(
+        "--out",
+        help="Output directory for lab artifacts (default: .occ_lab/latest)",
+    )
+    plr.add_argument(
+        "--fail-on-non-pass",
+        action="store_true",
+        help="Return exit code 1 if any FAIL/NO-EVAL is produced",
+    )
+    plr.add_argument("--json", action="store_true", help="Emit JSON")
+    plr.set_defaults(func=cmd_lab_run)
 
     return p
 

@@ -10,14 +10,14 @@ Este repositorio ya está técnicamente listo. Para maximizar alcance científic
 ### Pasos
 
 1. Conecta GitHub con Zenodo y habilita este repositorio.
-2. Empuja un tag de versión (por ejemplo `1.3.3` o `v1.3.3`).
+2. Empuja un tag de versión (por ejemplo `1.4.0` o `v1.4.0`).
 3. Los assets de escritorio para Windows se construyen automáticamente con
    `.github/workflows/windows_desktop_release.yml` y se adjuntan al release:
    - `OCCDesktop-Setup-windows-x64.exe`
    - `OCCDesktop-windows-x64.zip`
    - `OCCDesktop-windows-x64.exe`
    - `OCCDesktop-windows-x64.sha256`
-   - Si hace falta, ejecuta el workflow manualmente con `release_tag` (ejemplo `1.3.3`).
+   - Si hace falta, ejecuta el workflow manualmente con `release_tag` (ejemplo `1.4.0`).
 4. Espera a que Zenodo archive la versión y asigne DOI.
 5. Actualiza `README` con el distintivo del DOI.
 

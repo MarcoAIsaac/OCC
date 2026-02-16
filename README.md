@@ -100,10 +100,18 @@ Desktop stores persistent local data in:
 
 Built-in AI assistant (Assistant tab):
 
-- Provider: `OpenAI` (official API).
+- Providers: `offline` (deterministic OCC copilot) and `OpenAI` (official API).
 - API key source: `OPENAI_API_KEY` environment variable (recommended) or session-only key field.
 - Model is configurable (default: `gpt-4.1-mini`).
 - Optional runtime-context injection for OCC-aware troubleshooting.
+
+Experiment Lab (new in 1.4.0):
+
+- Run claim matrices across profiles (`core` / `nuclear`) and detect verdict divergence.
+- Export auditable artifacts: `lab_report.json`, `lab_results.csv`,
+  `lab_profile_summary.csv`, `lab_verdict_matrix.md`.
+- CLI:
+  `occ lab run --claims-dir examples/claim_specs --profiles core nuclear --out .occ_lab/latest`
 
 Download latest prebuilt Windows package:
 
@@ -115,9 +123,9 @@ Download latest prebuilt Windows package:
 
 If direct download links return `404`, open the release page and wait for workflow
 `Windows desktop release` to finish uploading assets.
-This pipeline runs automatically when you push a version tag (for example `1.3.3` or `v1.3.3`).
+This pipeline runs automatically when you push a version tag (for example `1.4.0` or `v1.4.0`).
 If needed, trigger that workflow manually and set `release_tag` to your version
-(example `1.3.3`) to attach assets to an existing release.
+(example `1.4.0`) to attach assets to an existing release.
 
 Windows checksum verification:
 
@@ -217,8 +225,9 @@ For long runs, prefer the manual full-suite workflow in GitHub Actions.
 
 ## Domain expansions
 
-`v1.3.3` keeps the nuclear-domain lock set (`nuclear_guard`, `NUC*`) and adds
-Windows desktop distribution via GitHub Releases (`OCCDesktop-windows-x64.exe/.zip`).
+`v1.4.0` keeps the nuclear-domain lock set (`nuclear_guard`, `NUC*`) and adds
+Experiment Lab matrix workflows plus Windows desktop distribution via GitHub Releases
+(`OCCDesktop-windows-x64.exe/.zip`).
 
 ## Repository layout
 
