@@ -1,0 +1,14 @@
+# Minimal claim spec for `occ judge`
+
+claim_id: "CLAIM-DEMO-0001"
+title: "Demo claim (minimal PASS)"
+
+domain:
+  omega_I: "Demo operational domain Ω_I"
+  observables:
+    - "O1: demo observable"
+
+parameters:
+  - name: "theta"
+    accessible: true
+    affects_observables: true

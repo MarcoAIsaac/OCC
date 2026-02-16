@@ -1,0 +1,15 @@
+# Copy this file into predictions/registry.yaml as a new entry.
+# Keep entries short, falsifiable, and operationally testable.
+
+id: P-XXXX
+title: "Short title"
+status: draft  # draft | featured | deprecated
+summary: "1–2 sentence falsifiable statement."
+domain: "Which area / Ω_I context"
+observables:
+  - "Observable 1"
+tests:
+  - "Concrete test channel / dataset / experiment"
+timeframe: "Near-term / Mid-term / Long-term"
+references:
+  - "docs/OCC_Compendio_Canonico_Completo.pdf"

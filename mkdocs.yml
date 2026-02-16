@@ -1,0 +1,38 @@
+site_name: OCC — Operational Consistency Compiler
+site_description: "OCC runtime + MRD suite (PASS/FAIL/NO‑EVAL)"
+repo_url: "https://github.com/MarcoAIsaac/OCC"
+repo_name: "MarcoAIsaac/OCC"
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - navigation.tabs
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - tables
+  - fenced_code
+  - codehilite
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Start here: START_HERE.md
+  - Executive summary: EXECUTIVE_SUMMARY.md
+  - Glossary: GLOSSARY.md
+  - CLI: CLI.md
+  - Judges & locks: JUDGES_LOCKS.md
+  - Predictions registry: PREDICTIONS_REGISTRY.md
+  - MRD suite: MRD_SUITE.md
+  - Extensions suite: MRD_EXTENSIONS.md
+  - Canonical index: INDEX_CANONICAL.md
+  - FAQ: FAQ.md
+  - Troubleshooting: TROUBLESHOOTING.md

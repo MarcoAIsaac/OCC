@@ -1,0 +1,14 @@
+# Example: UV reinjection -> NO-EVAL(UV1)
+
+claim_id: "CLAIM-DEMO-UV-0001"
+title: "Demo claim (UV NO-EVAL)"
+
+domain:
+  omega_I: "Demo operational domain Ω_I"
+  observables:
+    - "O1: demo observable"
+
+parameters:
+  - name: "lambda_UV"
+    accessible: false
+    affects_observables: true

@@ -1,0 +1,12 @@
+claim_id: "MRD-CLAIMSPEC-PASS"
+title: "Meta claim spec PASS"
+
+domain:
+  omega_I: "Meta Ω_I"
+  observables:
+    - "O1"
+
+parameters:
+  - name: "theta"
+    accessible: true
+    affects_observables: true

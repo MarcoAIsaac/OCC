@@ -1,0 +1,12 @@
+# Example: Traceability missing source -> NO-EVAL(TR2) (or TR1 with --strict-trace)
+
+claim_id: "CLAIM-DEMO-TRACE-0001"
+title: "Demo claim (trace incomplete)"
+
+domain:
+  omega_I: "Demo operational domain Ω_I"
+  observables:
+    - "O1: demo observable"
+
+sources:
+  - "this/file/does/not/exist.txt"

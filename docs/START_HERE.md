@@ -13,7 +13,9 @@ Si estás viendo este repositorio por primera vez, esta página es el **punto de
 **OCC** (Operational Consistency Compiler) es un runtime reproducible con CLI (`occ`) para:
 
 - Ejecutar módulos MRD individuales (**`occ run`**) a partir de bundles YAML.
-- Verificar la suite completa de 15 módulos MRD (**`occ verify`**) de forma determinista.
+- Verificar suites MRD (**`occ verify`**) de forma determinista.
+- Descubrir contenido rápidamente (**`occ list`**, **`occ predict`**, **`occ doctor`**).
+- Hacer *triage* operacional sobre un claim spec (**`occ judge`**).
 
 El objetivo práctico del repo es doble:
 
@@ -62,6 +64,8 @@ cat out/report.json
 
 ```bash
 occ verify
+occ verify --suite extensions
+occ verify --suite all
 ```
 
 ## Cómo leer el compendio sin morir en el intento
@@ -84,9 +88,12 @@ Recomendación:
 
 - `occ/` → runtime Python + CLI
 - `ILSC_MRD_suite_15_modulos_CANON/` → suite MRD canónica (15 módulos)
+- `ILSC_MRD_suite_extensions/` → suite extra (meta‑MRDs de UX/tooling)
 - `docs/` → documentación y PDFs
+- `predictions/` → registry YAML de predicciones (discoverability)
 - `tests/` → smoke tests (CI)
 - `.github/workflows/` → CI (smoke) + verificación completa manual
+- `mkdocs.yml` → portal de documentación (MkDocs Material)
 
 ## Siguiente paso
 

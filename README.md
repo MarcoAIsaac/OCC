@@ -94,6 +94,31 @@ pytest -q
 
 > Nota (PowerShell): usar comillas en `".[dev]"` evita problemas con los brackets.
 
+## Descubrimiento rápido (UX)
+
+Una vez instalado, estos comandos te permiten orientarte sin leer todo el canon primero:
+
+```bash
+occ doctor
+occ list
+occ predict list
+occ judge examples/claim_specs/minimal_pass.yaml
+```
+
+> Tip: para un output más legible en terminal puedes instalar el extra opcional:
+> `python -m pip install -e ".[dev,cli]"`
+
+## Docs portal (MkDocs)
+
+El repo incluye un portal de documentación (MkDocs Material).
+
+Local:
+
+```bash
+python -m pip install -e ".[docs]"
+mkdocs serve
+```
+
 ## Ejecutar un módulo
 
 Ejemplo mínimo (escribe `out/report.json`):

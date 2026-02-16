@@ -3,12 +3,12 @@
 The runtime is intentionally lightweight:
 
 - ``occ run`` executes a single module runner script based on a bundle YAML.
-- ``occ verify`` executes the full MRD regression suite via ``RUN_ALL.py``.
+- ``occ verify`` executes a suite runner script (canonical or extensions).
 
-The MRD suite is expected to live in the repository folder
-``ILSC_MRD_suite_15_modulos_CANON``. This module discovers that folder by
-walking up the filesystem from the bundle path or the current working
-directory.
+Suites:
+
+- Canonical suite (15 modules): ``ILSC_MRD_suite_15_modulos_CANON``
+- Extensions suite (meta-MRDs/tooling): ``ILSC_MRD_suite_extensions``
 """
 
 from __future__ import annotations
@@ -21,6 +21,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Tuple
 
+from .suites import SUITE_CANON, SUITE_EXTENSIONS, discover_suite_roots
+
 
 @dataclass
 class RunResult:
@@ -31,14 +33,9 @@ class RunResult:
     returncode: int
 
 
-def _suite_root(start: Path) -> Optional[Path]:
-    """Find ILSC_MRD_suite_15_modulos_CANON by walking up from start."""
-    p = start.resolve()
-    for parent in [p] + list(p.parents):
-        cand = parent / "ILSC_MRD_suite_15_modulos_CANON"
-        if cand.is_dir():
-            return cand
-    return None
+def _suite_roots(start: Path) -> Tuple[Optional[Path], Optional[Path]]:
+    roots = discover_suite_roots(start)
+    return roots.canon, roots.extensions
 
 
 def infer_module_from_yaml_path(yaml_path: Path) -> Optional[str]:
@@ -77,6 +74,7 @@ def run_bundle(
     module: Optional[str] = None,
     out_dir: Optional[Path] = None,
     strict: bool = False,
+    suite: str = "auto",  # auto|canon|extensions
 ) -> RunResult:
     bundle_yaml = bundle_yaml.resolve()
     if not bundle_yaml.is_file():
@@ -85,13 +83,14 @@ def run_bundle(
     if module is None:
         module = infer_module_from_yaml_path(bundle_yaml)
 
-    suite_root = _suite_root(bundle_yaml.parent)
-    if suite_root is None:
+    canon_root, ext_root = _suite_roots(bundle_yaml.parent)
+    if canon_root is None and ext_root is None:
         # allow running from repo root if cwd has suite
-        suite_root = _suite_root(Path.cwd())
-    if suite_root is None:
+        canon_root, ext_root = _suite_roots(Path.cwd())
+    if canon_root is None and ext_root is None:
         raise RuntimeError(
-            "Could not find ILSC_MRD_suite_15_modulos_CANON. "
+            "Could not find MRD suites. Expected folders: "
+            f"{SUITE_CANON} and/or {SUITE_EXTENSIONS}. "
             "Run from the OCC repo root (or any subfolder within it)."
         )
 
@@ -100,9 +99,25 @@ def run_bundle(
             "Could not infer module from YAML path. Provide --module mrd_xxx."
         )
 
-    module_dir = suite_root / module
-    if not module_dir.is_dir():
-        raise RuntimeError(f"Module not found: {module_dir}")
+    module_dir: Optional[Path] = None
+
+    def _try(root: Optional[Path]) -> Optional[Path]:
+        if root is None:
+            return None
+        cand = root / module
+        return cand if cand.is_dir() else None
+
+    if suite == "canon":
+        module_dir = _try(canon_root)
+    elif suite == "extensions":
+        module_dir = _try(ext_root)
+    else:  # auto
+        module_dir = _try(canon_root) or _try(ext_root)
+
+    if module_dir is None:
+        raise RuntimeError(
+            f"Module not found: {module}. Looked in suites: canon/extensions."
+        )
 
     runner = discover_module_runner(module_dir)
     if runner is None:
@@ -139,14 +154,33 @@ def run_bundle(
     )
 
 
-def run_verify(suite_root: Path, strict: bool = False) -> Tuple[int, Optional[Path]]:
+def run_verify(
+    suite_root: Path,
+    strict: bool = False,
+    timeout: int = 180,
+) -> Tuple[int, Optional[Path]]:
     suite_root = suite_root.resolve()
     run_all = suite_root / "RUN_ALL.py"
-    if not run_all.is_file():
-        raise RuntimeError(f"RUN_ALL.py not found at {run_all}")
+    run_all_ext = suite_root / "RUN_ALL_EXT.py"
+    if run_all.is_file():
+        runner = run_all
+    elif run_all_ext.is_file():
+        runner = run_all_ext
+    else:
+        raise RuntimeError(
+            f"No suite runner found at {suite_root} (expected RUN_ALL.py or RUN_ALL_EXT.py)"
+        )
 
     summary = suite_root / "verification_summary.json"
-    cmd = [sys.executable, str(run_all), "--root", str(suite_root), "--summary", str(summary)]
+    cmd = [
+        sys.executable,
+        str(runner),
+        "--root",
+        str(suite_root),
+        "--summary",
+        str(summary),
+    ]
+    cmd += ["--timeout", str(int(timeout))]
     if strict:
         cmd.append("--strict")
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "occ-mrd-runner"
-version = "1.0.0"
+version = "1.1.0"
 description = "OCC (Operational Consistency Compiler) runtime + MRD suite runner"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -33,6 +33,15 @@ dev = [
   "pre-commit>=3.5",
 ]
 
+# Optional quality-of-life extras
+cli = [
+  "rich>=13",
+]
+
+docs = [
+  "mkdocs-material>=9",
+]
+
 [project.urls]
 Homepage = "https://github.com/MarcoAIsaac/OCC"
 Repository = "https://github.com/MarcoAIsaac/OCC"
@@ -42,8 +51,11 @@ Issues = "https://github.com/MarcoAIsaac/OCC/issues"
 occ = "occ.cli:main"
 
 [tool.setuptools]
-packages = ["occ"]
 include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["occ*"]
 
 [tool.pytest.ini_options]
 addopts = "-q"
@@ -54,6 +66,7 @@ line-length = 100
 target-version = "py310"
 exclude = [
   "ILSC_MRD_suite_15_modulos_CANON",
+  "ILSC_MRD_suite_extensions",
   "docs",
 ]
 
