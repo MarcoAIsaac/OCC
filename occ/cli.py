@@ -15,7 +15,10 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import yaml
+try:
+    import yaml
+except ModuleNotFoundError:
+    from .util import simple_yaml as yaml
 
 from . import get_version
 from .catalog import build_catalog

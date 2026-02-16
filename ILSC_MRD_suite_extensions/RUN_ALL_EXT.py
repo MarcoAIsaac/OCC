@@ -16,7 +16,13 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import yaml
+try:
+    import yaml
+except ModuleNotFoundError:
+    repo_root = Path(__file__).resolve().parents[1]
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+    from occ.util import simple_yaml as yaml
 
 
 def newest_report(outputs_dir: Path) -> Optional[Path]:
