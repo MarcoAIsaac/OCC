@@ -1,4 +1,62 @@
 (() => {
+  const langKey = "occ-docs-lang";
+  const path = window.location.pathname;
+  const lowerPath = path.toLowerCase();
+  const isSpanishPath = lowerPath.includes("/es/");
+
+  const knownPages = new Set([
+    "index",
+    "start_here",
+    "cli",
+    "usage",
+    "troubleshooting",
+    "executive_summary",
+    "glossary",
+    "faq",
+    "judges_locks",
+    "mrd_suite",
+    "mrd_extensions",
+    "predictions_registry",
+    "index_canonical",
+    "releasing",
+    "search",
+    "404",
+  ]);
+
+  const segments = path.split("/").filter(Boolean);
+  const lastSegment = segments.length > 0 ? segments[segments.length - 1] : "";
+  const pageSlug = lastSegment.replace(/\\.html$/i, "").toLowerCase();
+  const isDefaultRoot = !isSpanishPath && (segments.length === 0 || !knownPages.has(pageSlug));
+
+  if (isSpanishPath) {
+    localStorage.setItem(langKey, "es");
+    return;
+  }
+  if (!isDefaultRoot) {
+    localStorage.setItem(langKey, "en");
+    return;
+  }
+
+  const stored = localStorage.getItem(langKey);
+  const browserLang = (navigator.languages && navigator.languages[0]) || navigator.language || "";
+  const prefersSpanish = stored === "es" || (stored === null && browserLang.toLowerCase().startsWith("es"));
+  if (!prefersSpanish) {
+    return;
+  }
+
+  const query = window.location.search || "";
+  const hash = window.location.hash || "";
+  if (path.endsWith("/index.html")) {
+    const target = path.replace(/index\\.html$/i, "es/index.html");
+    window.location.replace(`${target}${query}${hash}`);
+    return;
+  }
+
+  const base = path.endsWith("/") ? path : `${path}/`;
+  window.location.replace(`${base}es/${query}${hash}`);
+})();
+
+(() => {
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const revealNodes = Array.from(document.querySelectorAll(".reveal-on-scroll"));
   const observedCounters = new WeakSet();

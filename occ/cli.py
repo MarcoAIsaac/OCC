@@ -22,7 +22,6 @@ except ModuleNotFoundError:
     from .util import simple_yaml as yaml
 
 from . import get_version
-from .auth_system import SUPPORTED_BACKENDS, SUPPORTED_PROVIDERS, AuthStore, best_effort_gh_token
 from .catalog import build_catalog
 from .judges.pipeline import default_judges, run_pipeline
 from .module_autogen import auto_generate_module, load_claim_file
@@ -49,6 +48,32 @@ def _maybe_rich_print() -> Any:
 RPRINT = _maybe_rich_print()
 
 
+def _detect_language() -> str:
+    candidates = [
+        os.getenv("OCC_LANG"),
+        os.getenv("LC_ALL"),
+        os.getenv("LC_MESSAGES"),
+        os.getenv("LANG"),
+    ]
+    for raw in candidates:
+        norm = str(raw or "").strip().lower()
+        if not norm:
+            continue
+        if norm == "c" or norm.startswith("c.") or norm == "posix":
+            continue
+        if norm.startswith("es"):
+            return "es"
+        return "en"
+    return "en"
+
+
+CLI_LANGUAGE = _detect_language()
+
+
+def _tr(en: str, es: str) -> str:
+    return es if CLI_LANGUAGE == "es" else en
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     try:
         res = run_bundle(
@@ -68,9 +93,20 @@ def cmd_run(args: argparse.Namespace) -> int:
         if verdict:
             RPRINT(verdict)
         else:
-            RPRINT(f"Report written: {res.report_path}")
+            RPRINT(
+                _tr(
+                    f"Report written: {res.report_path}",
+                    f"Reporte escrito: {res.report_path}",
+                )
+            )
     else:
-        print("No report produced (or could not be found).", file=sys.stderr)
+        print(
+            _tr(
+                "No report produced (or could not be found).",
+                "No se produjo reporte (o no se pudo encontrar).",
+            ),
+            file=sys.stderr,
+        )
     return res.returncode
 
 
@@ -100,7 +136,7 @@ def cmd_verify(args: argparse.Namespace) -> int:
         _one("extensions", roots.extensions)
 
     for s in summaries:
-        RPRINT(f"Summary: {s}")
+        RPRINT(_tr(f"Summary: {s}", f"Resumen: {s}"))
     return rc
 
 
@@ -111,7 +147,7 @@ def cmd_list(args: argparse.Namespace) -> int:
         return 0
 
     if not items:
-        RPRINT("No MRD modules found.")
+        RPRINT(_tr("No MRD modules found.", "No se encontraron módulos MRD."))
         return 0
 
     # Compact table-like output without extra deps
@@ -125,7 +161,12 @@ def cmd_explain(args: argparse.Namespace) -> int:
     items = build_catalog(Path.cwd(), which="all")
     match = next((x for x in items if x.name == args.module), None)
     if not match:
-        raise SystemExit(f"Unknown module: {args.module}. Try: occ list")
+        raise SystemExit(
+            _tr(
+                f"Unknown module: {args.module}. Try: occ list",
+                f"Módulo desconocido: {args.module}. Prueba: occ list",
+            )
+        )
 
     mod_dir = Path(match.path)
     # Prefer MRD_README
@@ -136,14 +177,22 @@ def cmd_explain(args: argparse.Namespace) -> int:
             RPRINT(p.read_text(encoding="utf-8", errors="replace"))
             return 0
 
-    RPRINT(f"No README found for {match.name}.")
+    RPRINT(_tr(f"No README found for {match.name}.", f"No se encontró README para {match.name}."))
     return 0
 
 
 def cmd_predict_list(args: argparse.Namespace) -> int:
     reg_path = find_registry_path(Path.cwd())
     if not reg_path:
-        raise SystemExit("Predictions registry not found (expected predictions/registry.yaml)")
+        raise SystemExit(
+            _tr(
+                "Predictions registry not found (expected predictions/registry.yaml)",
+                (
+                    "No se encontró el registry de predicciones "
+                    "(se esperaba predictions/registry.yaml)"
+                ),
+            )
+        )
     reg = load_registry(reg_path)
     rows = reg.predictions
     if args.json:
@@ -173,11 +222,24 @@ def cmd_predict_list(args: argparse.Namespace) -> int:
 def cmd_predict_show(args: argparse.Namespace) -> int:
     reg_path = find_registry_path(Path.cwd())
     if not reg_path:
-        raise SystemExit("Predictions registry not found (expected predictions/registry.yaml)")
+        raise SystemExit(
+            _tr(
+                "Predictions registry not found (expected predictions/registry.yaml)",
+                (
+                    "No se encontró el registry de predicciones "
+                    "(se esperaba predictions/registry.yaml)"
+                ),
+            )
+        )
     reg = load_registry(reg_path)
     pred = reg.by_id().get(args.id)
     if not pred:
-        raise SystemExit(f"Unknown prediction id: {args.id}")
+        raise SystemExit(
+            _tr(
+                f"Unknown prediction id: {args.id}",
+                f"ID de predicción desconocido: {args.id}",
+            )
+        )
 
     out: Dict[str, Any] = {
         "id": pred.id,
@@ -197,11 +259,21 @@ def cmd_predict_show(args: argparse.Namespace) -> int:
 def cmd_judge(args: argparse.Namespace) -> int:
     claim_path = Path(args.claim).resolve()
     if not claim_path.is_file():
-        raise SystemExit(f"Claim spec not found: {claim_path}")
+        raise SystemExit(
+            _tr(
+                f"Claim spec not found: {claim_path}",
+                f"No se encontró claim spec: {claim_path}",
+            )
+        )
 
     claim = yaml.safe_load(claim_path.read_text(encoding="utf-8"))
     if not isinstance(claim, dict):
-        raise SystemExit("Claim spec must be a YAML mapping")
+        raise SystemExit(
+            _tr(
+                "Claim spec must be a YAML mapping",
+                "Claim spec debe ser un mapeo YAML",
+            )
+        )
 
     pipeline = default_judges(strict_trace=bool(args.strict_trace))
     report = run_pipeline(claim, pipeline)
@@ -213,7 +285,7 @@ def cmd_judge(args: argparse.Namespace) -> int:
         outp = Path(args.out)
         outp.parent.mkdir(parents=True, exist_ok=True)
         outp.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
-        RPRINT(f"Report: {outp}")
+        RPRINT(_tr(f"Report: {outp}", f"Reporte: {outp}"))
 
     if isinstance(verdict, str) and verdict.startswith("PASS"):
         return 0
@@ -240,10 +312,25 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
     RPRINT(f"OCC: {info['occ_version']}")
     RPRINT(f"Python: {info['python']}")
-    RPRINT(f"Platform: {info['platform']}")
-    RPRINT(f"Canon suite: {info['suite_roots']['canon']}")
-    RPRINT(f"Extensions suite: {info['suite_roots']['extensions']}")
-    RPRINT(f"Predictions registry: {info['predictions_registry']}")
+    RPRINT(_tr(f"Platform: {info['platform']}", f"Plataforma: {info['platform']}"))
+    RPRINT(
+        _tr(
+            f"Canon suite: {info['suite_roots']['canon']}",
+            f"Suite canon: {info['suite_roots']['canon']}",
+        )
+    )
+    RPRINT(
+        _tr(
+            f"Extensions suite: {info['suite_roots']['extensions']}",
+            f"Suite extensiones: {info['suite_roots']['extensions']}",
+        )
+    )
+    RPRINT(
+        _tr(
+            f"Predictions registry: {info['predictions_registry']}",
+            f"Registry de predicciones: {info['predictions_registry']}",
+        )
+    )
     return 0
 
 
@@ -265,7 +352,12 @@ def cmd_research(args: argparse.Namespace) -> int:
             rows = sources.get(source_name, [])
             if not isinstance(rows, list):
                 continue
-            RPRINT(f"\n[{source_name}] {len(rows)} resultado(s)")
+            RPRINT(
+                _tr(
+                    f"\n[{source_name}] {len(rows)} result(s)",
+                    f"\n[{source_name}] {len(rows)} resultado(s)",
+                )
+            )
             for item in rows[: max(1, int(args.show))]:
                 if not isinstance(item, dict):
                     continue
@@ -281,7 +373,7 @@ def cmd_research(args: argparse.Namespace) -> int:
 
     errors = res.get("errors", [])
     if isinstance(errors, list) and errors:
-        RPRINT("\nWarnings:")
+        RPRINT(_tr("\nWarnings:", "\nAdvertencias:"))
         for e in errors:
             RPRINT(f"- {e}")
     return 0
@@ -304,146 +396,43 @@ def cmd_module_auto(args: argparse.Namespace) -> int:
         return 0
 
     if res.get("matched_existing"):
-        RPRINT(f"Claim mapea a módulo existente: {res.get('module')}")
-        RPRINT("Usa `occ run <bundle> --module <módulo>` para ejecutarlo.")
+        RPRINT(
+            _tr(
+                f"Claim maps to an existing module: {res.get('module')}",
+                f"El claim mapea a un módulo existente: {res.get('module')}",
+            )
+        )
+        RPRINT(
+            _tr(
+                "Use `occ run <bundle> --module <module>` to execute it.",
+                "Usa `occ run <bundle> --module <módulo>` para ejecutarlo.",
+            )
+        )
         return 0
 
-    RPRINT(f"Módulo creado: {res.get('module')}")
+    RPRINT(_tr(f"Created module: {res.get('module')}", f"Módulo creado: {res.get('module')}"))
     RPRINT(f"Path: {res.get('module_dir')}")
-    RPRINT(f"Veredicto base: {res.get('verdict')}")
+    RPRINT(_tr(f"Base verdict: {res.get('verdict')}", f"Veredicto base: {res.get('verdict')}"))
     locks = res.get("locks_applied", [])
     if isinstance(locks, list) and locks:
-        RPRINT("Locks/Jueces aplicados: " + ", ".join(str(x) for x in locks))
+        RPRINT(
+            _tr("Applied locks/judges: ", "Locks/jueces aplicados: ")
+            + ", ".join(str(x) for x in locks)
+        )
 
     if res.get("prediction_draft"):
-        RPRINT(f"Borrador de predicción: {res.get('prediction_draft')}")
-    if res.get("prediction_registry"):
-        RPRINT(f"Predicción publicada en registry: {res.get('prediction_registry')}")
-    return 0
-
-
-def _read_json_metadata(raw: Optional[str]) -> Dict[str, Any]:
-    if not raw:
-        return {}
-    try:
-        obj = json.loads(raw)
-    except json.JSONDecodeError as e:
-        raise SystemExit(f"--metadata-json inválido: {e}") from e
-    if not isinstance(obj, dict):
-        raise SystemExit("--metadata-json debe ser un objeto JSON")
-    return obj
-
-
-def _resolve_auth_token(args: argparse.Namespace) -> Optional[str]:
-    if args.token:
-        return str(args.token)
-    if args.token_env:
-        val = os.getenv(str(args.token_env))
-        if val:
-            return val
-    if bool(args.use_gh_token) and args.provider == "github":
-        return best_effort_gh_token()
-    return None
-
-
-def _resolve_remote_token(args: argparse.Namespace) -> Optional[str]:
-    raw = getattr(args, "remote_token", None)
-    if raw:
-        return str(raw)
-    env_name = getattr(args, "remote_token_env", None)
-    if env_name:
-        val = os.getenv(str(env_name))
-        if val:
-            return str(val)
-    return None
-
-
-def _build_auth_store(args: argparse.Namespace) -> AuthStore:
-    store_path_raw = getattr(args, "store_path", None)
-    store_path = Path(store_path_raw).expanduser().resolve() if store_path_raw else None
-    backend = str(getattr(args, "backend", "auto"))
-    remote_url = getattr(args, "remote_url", None)
-    remote_token = _resolve_remote_token(args)
-    try:
-        return AuthStore(
-            path=store_path,
-            backend=backend,
-            remote_url=remote_url,
-            remote_token=remote_token,
-        )
-    except ValueError as e:
-        raise SystemExit(str(e)) from e
-
-
-def cmd_auth_login(args: argparse.Namespace) -> int:
-    store = _build_auth_store(args)
-    token = _resolve_auth_token(args)
-    metadata = _read_json_metadata(args.metadata_json)
-    try:
-        account = store.login(
-            provider=args.provider,
-            username=args.username,
-            token=token,
-            metadata=metadata,
-        )
-    except ValueError as e:
-        raise SystemExit(str(e)) from e
-
-    if args.json:
-        print(json.dumps(account, indent=2, ensure_ascii=False))
-        return 0
-    RPRINT(f"Login OK [{account.get('provider')}]: {account.get('username')}")
-    if account.get("token_preview"):
-        RPRINT(f"Token: {account.get('token_preview')}")
-    return 0
-
-
-def cmd_auth_logout(args: argparse.Namespace) -> int:
-    store = _build_auth_store(args)
-    out = store.logout(provider=args.provider)
-    if args.json:
-        print(json.dumps(out, indent=2, ensure_ascii=False))
-        return 0
-    RPRINT(f"Logout OK: {out.get('provider')}")
-    return 0
-
-
-def cmd_auth_status(args: argparse.Namespace) -> int:
-    store = _build_auth_store(args)
-    out = store.status()
-    if args.json:
-        print(json.dumps(out, indent=2, ensure_ascii=False))
-        return 0
-
-    RPRINT(f"Auth store: {out.get('store_path')}")
-    RPRINT(f"Active provider: {out.get('active_provider')}")
-    accounts = out.get("accounts", {})
-    if isinstance(accounts, dict):
-        if not accounts:
-            RPRINT("No accounts configured.")
-        for provider, raw in accounts.items():
-            if not isinstance(raw, dict):
-                continue
-            RPRINT(
-                f"- {provider}: {raw.get('username')} "
-                f"(last_login={raw.get('last_login_at')})"
-            )
-    return 0
-
-
-def cmd_auth_events(args: argparse.Namespace) -> int:
-    store = _build_auth_store(args)
-    events = store.events(limit=max(1, int(args.limit)))
-    if args.json:
-        print(json.dumps(events, indent=2, ensure_ascii=False))
-        return 0
-    if not events:
-        RPRINT("No auth events.")
-        return 0
-    for e in events:
         RPRINT(
-            f"- {e.get('ts')} {e.get('action')} "
-            f"provider={e.get('provider')} user={e.get('username')}"
+            _tr(
+                f"Prediction draft: {res.get('prediction_draft')}",
+                f"Borrador de predicción: {res.get('prediction_draft')}",
+            )
+        )
+    if res.get("prediction_registry"):
+        RPRINT(
+            _tr(
+                f"Prediction published to registry: {res.get('prediction_registry')}",
+                f"Predicción publicada en registry: {res.get('prediction_registry')}",
+            )
         )
     return 0
 
@@ -451,7 +440,10 @@ def cmd_auth_events(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="occ",
-        description="OCC runtime CLI (MRD suite runner + catalogs)",
+        description=_tr(
+            "OCC runtime CLI (MRD suite runner + catalogs)",
+            "CLI runtime de OCC (runner de suite MRD + catálogos)",
+        ),
     )
     p.add_argument(
         "--version",
@@ -463,7 +455,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     pr = sub.add_parser(
         "run",
-        help="Run a single bundle YAML through the appropriate MRD module",
+        help=_tr(
+            "Run a single bundle YAML through the appropriate MRD module",
+            "Ejecuta un bundle YAML en el módulo MRD correspondiente",
+        ),
     )
     pr.add_argument(
         "bundle",
@@ -498,7 +493,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     pv = sub.add_parser(
         "verify",
-        help="Run a full MRD suite verification (canonical/extensions)",
+        help=_tr(
+            "Run a full MRD suite verification (canonical/extensions)",
+            "Ejecuta verificación completa de suite MRD (canon/extensiones)",
+        ),
     )
     pv.add_argument(
         "--suite",
@@ -515,7 +513,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     pv.set_defaults(func=cmd_verify)
 
-    pl = sub.add_parser("list", help="List available MRD modules")
+    pl = sub.add_parser(
+        "list",
+        help=_tr("List available MRD modules", "Lista módulos MRD disponibles"),
+    )
     pl.add_argument(
         "--suite",
         default="all",
@@ -525,11 +526,20 @@ def build_parser() -> argparse.ArgumentParser:
     pl.add_argument("--json", action="store_true", help="Emit JSON")
     pl.set_defaults(func=cmd_list)
 
-    pe = sub.add_parser("explain", help="Print a module README to stdout")
+    pe = sub.add_parser(
+        "explain",
+        help=_tr("Print a module README to stdout", "Imprime el README de un módulo"),
+    )
     pe.add_argument("module", help="Module folder name (e.g. mrd_obs_isaac)")
     pe.set_defaults(func=cmd_explain)
 
-    pj = sub.add_parser("judge", help="Run built-in operational judges on a claim spec YAML")
+    pj = sub.add_parser(
+        "judge",
+        help=_tr(
+            "Run built-in operational judges on a claim spec YAML",
+            "Ejecuta jueces operacionales integrados sobre un claim YAML",
+        ),
+    )
     pj.add_argument("claim", help="Path to claim spec YAML")
     pj.add_argument(
         "--strict-trace",
@@ -539,11 +549,17 @@ def build_parser() -> argparse.ArgumentParser:
     pj.add_argument("--out", help="Write report JSON to this path")
     pj.set_defaults(func=cmd_judge)
 
-    pd = sub.add_parser("doctor", help="Environment & repo diagnostics")
+    pd = sub.add_parser(
+        "doctor",
+        help=_tr("Environment & repo diagnostics", "Diagnóstico de entorno y repositorio"),
+    )
     pd.add_argument("--json", action="store_true", help="Emit JSON")
     pd.set_defaults(func=cmd_doctor)
 
-    pp = sub.add_parser("predict", help="Predictions registry commands")
+    pp = sub.add_parser(
+        "predict",
+        help=_tr("Predictions registry commands", "Comandos de registry de predicciones"),
+    )
     pp_sub = pp.add_subparsers(dest="pred_cmd", required=True)
 
     ppl = pp_sub.add_parser("list", help="List predictions")
@@ -556,7 +572,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     prc = sub.add_parser(
         "research",
-        help="Run best-effort scientific web research from a claim YAML/JSON",
+        help=_tr(
+            "Run best-effort scientific web research from a claim YAML/JSON",
+            "Ejecuta investigación científica web (best effort) desde claim YAML/JSON",
+        ),
     )
     prc.add_argument("claim", help="Path to claim YAML/JSON")
     prc.add_argument("--max-results", default=5, type=int, help="Results per source")
@@ -567,13 +586,19 @@ def build_parser() -> argparse.ArgumentParser:
 
     pm = sub.add_parser(
         "module",
-        help="Module engineering commands (auto-generation from claims)",
+        help=_tr(
+            "Module engineering commands (auto-generation from claims)",
+            "Comandos de ingeniería de módulos (autogeneración desde claims)",
+        ),
     )
     pm_sub = pm.add_subparsers(dest="module_cmd", required=True)
 
     pma = pm_sub.add_parser(
         "auto",
-        help="Create a new extension module from claim data when no module fits",
+        help=_tr(
+            "Create a new extension module from claim data when no module fits",
+            "Crea un nuevo módulo de extensiones cuando no hay uno que encaje",
+        ),
     )
     pma.add_argument("claim", help="Path to claim YAML/JSON")
     pma.add_argument("--module-name", help="Explicit module name (e.g. mrd_auto_x)")
@@ -605,78 +630,6 @@ def build_parser() -> argparse.ArgumentParser:
     )
     pma.add_argument("--json", action="store_true", help="Emit JSON")
     pma.set_defaults(func=cmd_module_auto)
-
-    pa = sub.add_parser(
-        "auth",
-        help="Account/session management (local or remote backend)",
-    )
-    pa_sub = pa.add_subparsers(dest="auth_cmd", required=True)
-
-    def _add_auth_backend_args(parser: argparse.ArgumentParser) -> None:
-        parser.add_argument(
-            "--backend",
-            choices=sorted(SUPPORTED_BACKENDS),
-            default="auto",
-            help="Auth backend: auto (default), local, or remote.",
-        )
-        parser.add_argument(
-            "--remote-url",
-            help="Remote auth service base URL (e.g. https://auth.example.com).",
-        )
-        parser.add_argument(
-            "--remote-token",
-            help="Bearer token for remote auth service.",
-        )
-        parser.add_argument(
-            "--remote-token-env",
-            default="OCC_AUTH_REMOTE_TOKEN",
-            help="Environment variable for remote service token (default: OCC_AUTH_REMOTE_TOKEN).",
-        )
-        parser.add_argument(
-            "--store-path",
-            help="Local auth store path (used when backend=local).",
-        )
-
-    pal = pa_sub.add_parser("login", help="Login and activate provider account")
-    _add_auth_backend_args(pal)
-    pal.add_argument(
-        "--provider",
-        required=True,
-        choices=sorted(SUPPORTED_PROVIDERS),
-        help="Auth provider",
-    )
-    pal.add_argument("--username", help="Provider username/email")
-    pal.add_argument("--token", help="Access token / credential secret")
-    pal.add_argument("--token-env", help="Read token from this environment variable")
-    pal.add_argument(
-        "--use-gh-token",
-        action="store_true",
-        help="For github: attempt `gh auth token` when token not provided",
-    )
-    pal.add_argument("--metadata-json", help="Optional JSON metadata object")
-    pal.add_argument("--json", action="store_true", help="Emit JSON")
-    pal.set_defaults(func=cmd_auth_login)
-
-    pao = pa_sub.add_parser("logout", help="Logout provider (or active provider)")
-    _add_auth_backend_args(pao)
-    pao.add_argument(
-        "--provider",
-        choices=sorted(SUPPORTED_PROVIDERS),
-        help="Provider to logout (default: active)",
-    )
-    pao.add_argument("--json", action="store_true", help="Emit JSON")
-    pao.set_defaults(func=cmd_auth_logout)
-
-    pas = pa_sub.add_parser("status", help="Show auth status")
-    _add_auth_backend_args(pas)
-    pas.add_argument("--json", action="store_true", help="Emit JSON")
-    pas.set_defaults(func=cmd_auth_status)
-
-    pae = pa_sub.add_parser("events", help="Show auth event log")
-    _add_auth_backend_args(pae)
-    pae.add_argument("--limit", default=20, type=int, help="Max events")
-    pae.add_argument("--json", action="store_true", help="Emit JSON")
-    pae.set_defaults(func=cmd_auth_events)
 
     return p
 

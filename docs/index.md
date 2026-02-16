@@ -1,36 +1,36 @@
-# OCC: Runtime auditable para veredictos operacionales
+# OCC: Auditable runtime for operational verdicts
 
 <section class="occ-hero reveal-on-scroll">
   <p class="occ-eyebrow">Operational Consistency Compiler</p>
-  <p class="occ-title">Ejecuta claims, valida módulos MRD y genera veredictos reproducibles</p>
+  <p class="occ-title">Run claims, validate MRD modules, and emit reproducible verdicts</p>
   <p class="occ-lead">
-    OCC prioriza afirmaciones falsables con una salida simple y auditable:
-    <strong>PASS</strong>, <strong>FAIL</strong> o <strong>NO-EVAL</strong>.
+    OCC prioritizes falsifiable claims with a simple, auditable output:
+    <strong>PASS</strong>, <strong>FAIL</strong>, or <strong>NO-EVAL</strong>.
   </p>
   <div class="occ-cta-row">
-    <a class="md-button md-button--primary" href="START_HERE.md">Arrancar en 5 minutos</a>
-    <a class="md-button" href="USAGE.md">Ver comandos del CLI</a>
+    <a class="md-button md-button--primary" href="START_HERE.md">Get started in 5 minutes</a>
+    <a class="md-button" href="USAGE.md">See CLI commands</a>
   </div>
 </section>
 
 <section class="occ-metrics">
   <article class="occ-metric reveal-on-scroll">
     <span class="occ-metric-value" data-count-to="15">15</span>
-    <span class="occ-metric-label">Módulos MRD canónicos</span>
+    <span class="occ-metric-label">Canonical MRD modules</span>
   </article>
   <article class="occ-metric reveal-on-scroll">
     <span class="occ-metric-value" data-count-to="3">3</span>
-    <span class="occ-metric-label">Veredictos operacionales</span>
+    <span class="occ-metric-label">Operational verdicts</span>
   </article>
   <article class="occ-metric reveal-on-scroll">
     <span class="occ-metric-value" data-count-to="1">1</span>
-    <span class="occ-metric-label">CLI estable: <code>occ</code></span>
+    <span class="occ-metric-label">Stable CLI: <code>occ</code></span>
   </article>
 </section>
 
-## Inicio rápido del proyecto
+## Quick project bootstrap
 
-Ejecuta OCC localmente con un flujo corto y repetible:
+Run OCC locally with a short, reproducible flow:
 
 ```bash
 make bootstrap
@@ -38,37 +38,37 @@ make smoke
 make check
 ```
 
-Si quieres levantar la documentación con recarga en vivo:
+To launch docs with live reload:
 
 ```bash
 make docs-serve
 ```
 
-## Flujo recomendado
+## Recommended flow
 
 <section class="occ-card-grid">
   <article class="occ-card reveal-on-scroll">
-    <h3>1) Diagnóstico del entorno</h3>
-    <p>Verifica versión, rutas y suites detectadas.</p>
+    <h3>1) Diagnose your environment</h3>
+    <p>Check versions, paths, and discovered suites.</p>
     <pre><code>occ doctor</code></pre>
   </article>
   <article class="occ-card reveal-on-scroll">
-    <h3>2) Descubrir capacidades</h3>
-    <p>Inspecciona módulos MRD y predicciones sin entrar al código.</p>
+    <h3>2) Discover capabilities</h3>
+    <p>Inspect MRD modules and predictions before diving into code.</p>
     <pre><code>occ list --suite all
 occ predict list</code></pre>
   </article>
   <article class="occ-card reveal-on-scroll">
-    <h3>3) Ejecutar una evaluación real</h3>
-    <p>Lanza un bundle y genera reporte en JSON.</p>
+    <h3>3) Run a real evaluation</h3>
+    <p>Execute a bundle and generate a JSON report.</p>
     <pre><code>occ run ILSC_MRD_suite_15_modulos_CANON/mrd_obs_isaac/inputs/mrd_obs_isaac/pass.yaml --out out/</code></pre>
   </article>
 </section>
 
-## Navegación canónica
+## Canon navigation
 
-- [Start Here](START_HERE.md): entrada guiada para primera ejecución.
-- [Executive Summary](EXECUTIVE_SUMMARY.md): visión científica compacta.
-- [Glosario](GLOSSARY.md): términos clave y contexto para no expertos.
-- [Suite MRD](MRD_SUITE.md): estructura de módulos y lógica de veredictos.
-- [Índice Canónico](INDEX_CANONICAL.md): mapa completo de documentación y assets.
+- [Start Here](START_HERE.md): guided entry point for first execution.
+- [Executive Summary](EXECUTIVE_SUMMARY.md): compact scientific overview.
+- [Glossary](GLOSSARY.md): key terms and context for non-specialists.
+- [MRD Suite](MRD_SUITE.md): module layout and verdict logic.
+- [Canonical Index](INDEX_CANONICAL.md): full map of docs and assets.

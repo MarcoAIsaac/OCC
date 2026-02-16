@@ -1,0 +1,20 @@
+{
+  "title": "Operational Consistency Compiler (OCC) runtime and MRD suite",
+  "upload_type": "software",
+  "description": "OCC is a reproducible runtime and CLI (`occ`) for executing MRD modules (YAML/JSON inputs) and emitting PASS/FAIL/NO-EVAL verdicts with auditable reports.",
+  "creators": [
+    {
+      "name": "Isaac, Marco A."
+    }
+  ],
+  "license": "apache-2.0",
+  "access_right": "open",
+  "version": "1.0.0",
+  "keywords": [
+    "OCC",
+    "MRD",
+    "scientific-software",
+    "reproducibility",
+    "auditability"
+  ]
+}

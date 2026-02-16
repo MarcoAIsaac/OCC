@@ -1,28 +1,28 @@
-# Suite MRD (15 módulos)
+# MRD Suite (15 modules)
 
-La suite canónica vive en:
+The canonical suite lives in:
 
 - `ILSC_MRD_suite_15_modulos_CANON/`
 
-Cada módulo suele contener:
+Each module typically contains:
 
-- `inputs/` → bundles YAML de prueba (PASS/FAIL/NO‑EVAL)
-- `scripts/` → runner(s) Python (`run_mrd_*.py` o `run_*.py`)
-- `outputs/` → reportes `.report.json` canónicos (útiles para regresión)
+- `inputs/`: YAML bundles (PASS/FAIL/NO-EVAL cases)
+- `scripts/`: Python runners (`run_mrd_*.py` or `run_*.py`)
+- `outputs/`: canonical `.report.json` outputs for regression
 
-## Ejecutar un módulo
+## Run one module
 
-Forma recomendada:
+Recommended form:
 
 ```bash
-occ run ILSC_MRD_suite_15_modulos_CANON/<modulo>/inputs/<modulo>/<bundle>.yaml --out out/
+occ run ILSC_MRD_suite_15_modulos_CANON/<module>/inputs/<module>/<bundle>.yaml --out out/
 ```
 
-## Verificar todo
+## Verify all
 
 ```bash
 occ verify
 ```
 
-Esto ejecuta `ILSC_MRD_suite_15_modulos_CANON/RUN_ALL.py` y genera un resumen en
+This executes `ILSC_MRD_suite_15_modulos_CANON/RUN_ALL.py` and writes
 `verification_summary.json`.

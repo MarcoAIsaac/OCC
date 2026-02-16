@@ -1,21 +1,21 @@
 # FAQ
 
-## ¿Tengo que leer el PDF completo?
+## Do I need to read the full PDF first?
 
 No.
 
-Empieza por:
+Start with:
 
 - `EXECUTIVE_SUMMARY.md`
 - `START_HERE.md`
 - `GLOSSARY.md`
 
-Luego usa `occ list` y `occ run` para explorar MRDs.
+Then use `occ list` and `occ run` to explore the suite.
 
-## ¿Qué significa NO‑EVAL?
+## What does NO-EVAL mean?
 
-Que el claim todavía no está definido de forma operacional (Ω_I) o depende de knobs inaccesibles.
+It means the claim is not yet operationally defined (\\(\Omega_I\\)) or depends on inaccessible knobs.
 
-## ¿Por qué hay una suite “extensions”?
+## Why is there an extensions suite?
 
-Para mejorar UX (herramientas, meta‑MRDs) sin modificar el canon.
+To improve UX and tooling (meta-MRDs) without changing the canonical 15-module suite.

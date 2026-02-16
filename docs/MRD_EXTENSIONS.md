@@ -1,24 +1,24 @@
-# Suite de extensiones
+# Extensions suite
 
-El repo incluye una suite adicional:
+The repo includes an additional suite:
 
 `ILSC_MRD_suite_extensions/`
 
-Su propósito es **mejorar la usabilidad** sin tocar el canon (los 15 módulos).
+Its purpose is to improve usability without changing the canonical suite.
 
-Incluye meta‑MRDs de ejemplo para:
+It includes example meta-MRDs to:
 
-- Validar que un *claim spec* esté bien formado.
-- Demostrar el candado UV (NO‑EVAL si knobs inaccesibles afectan observables).
-- Validar el `predictions/registry.yaml`.
+- validate claim spec structure,
+- demonstrate UV guard behavior,
+- validate `predictions/registry.yaml`.
 
-## Ejecutar
+## Run
 
 ```bash
 occ verify --suite extensions
 ```
 
-## Diseño
+## Design principle
 
-La suite canónica no cambia.
-Las extensiones viven aparte para que el canon permanezca estable.
+Canonical suite remains unchanged.
+Extensions stay separate to keep the canon stable.

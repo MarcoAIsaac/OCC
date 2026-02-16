@@ -1,59 +1,61 @@
-# Glosario
+# Glossary
 
-Este glosario existe para que un lector (experimentalista, cosmólogo, o teórico de otra subárea)
-pueda navegar el canon sin atascarse en siglas internas.
+This glossary helps readers from adjacent fields navigate OCC terminology quickly.
 
----
+## Terms
 
-## Términos
+### OCC
 
-### **OCC**
-**Operational Consistency Compiler**. Marco + runtime (CLI) para evaluar afirmaciones físicas con un
-enfoque operacional: evaluabilidad, consistencia inevitable y reporte auditable.
+**Operational Consistency Compiler**. A framework + runtime CLI to evaluate claims through
+operational evaluability, unavoidable consistency checks, and auditable outputs.
 
-### **\(\Omega_I\) — Dominio operacional declarado**
-Conjunto explícito de operaciones/mediciones/regímenes en los que una afirmación pretende ser evaluable.
+### \\(\Omega_I\\) — Declared operational domain
 
-### **MRD**
-**Minimum Reproducible Demo**. “Módulo mínimo reproducible” que implementa una parte del criterio OCC
-con inputs simples (bundles YAML) y reportes deterministas.
+The explicit set of operations/measurements/regimes where a claim is intended to be evaluable.
 
-### **ISAAC**
-Sigla usada en el canon para referirse a *cierre operacional* (ej. anclajes operacionales provenientes de
-luz + mecánica cuántica + relatividad general, según el marco).
+### MRD
 
-> Si eres nuevo: trátalo como “el conjunto mínimo de restricciones operacionales” sobre lo que cuenta como medible.
+**Minimum Reproducible Demo**. A small, reproducible module implementing one part of the OCC criteria,
+with simple inputs (YAML bundles) and deterministic reports.
 
-### **PASS / FAIL / NO‑EVAL**
-Taxonomía de salida de OCC:
+### ISAAC
 
-- **PASS**: evaluable en \(\Omega_I\) y consistente con el módulo.
-- **FAIL**: evaluable pero inconsistente (con motivo en el reporte).
-- **NO‑EVAL**: no evaluable (falta especificación operacional, medición, o cierre).
+Canonical acronym related to operational closure constraints in the OCC framework.
 
-### **Malleabilidad UV**
-Situación donde los parámetros “UV” (alta energía / inaccesibles) permiten re‑ajustar un modelo para
-evitar falsación sin cambiar el núcleo de la propuesta.
+### PASS / FAIL / NO-EVAL
 
-### **Reinyección UV**
-Patrón donde, al enfrentar un fallo, se introduce libertad adicional en un régimen inobservable como
-salida (por ejemplo, agregando sectores inaccesibles para rescatar compatibilidad).
+Output taxonomy:
 
-### **EDM**
-**Electric Dipole Moment** (momento dipolar eléctrico). Observable sensible a CP‑violation y nueva física.
+- **PASS**: evaluable in \\(\Omega_I\\) and consistent with the module.
+- **FAIL**: evaluable but inconsistent.
+- **NO-EVAL**: not evaluable due to missing operational definition/measurement/closure.
 
-### **GW**
-**Gravitational Waves** (ondas gravitacionales). Incluye fondos estocásticos y señales cosmológicas.
+### UV malleability
 
-### **Bariogénesis**
-Mecanismos físicos propuestos para explicar el exceso bariónico del universo (asimetría materia/antimateria).
+Situation where inaccessible UV parameters let a model adapt repeatedly without clear falsification.
 
----
+### UV reinjection
 
-## Convenciones prácticas del repo
+Pattern where additional inaccessible freedom is introduced after failure to rescue compatibility.
 
-### Bundle YAML
-Archivo YAML bajo `ILSC_MRD_suite_15_modulos_CANON/<módulo>/inputs/...` usado como input mínimo.
+### EDM
 
-### Reporte
-Salida `.report.json` (o `out/report.json` si usas `--out`) que incluye veredicto y detalles.
+**Electric Dipole Moment**. Observable sensitive to CP violation and beyond-standard-model effects.
+
+### GW
+
+**Gravitational Waves**. Includes stochastic backgrounds and cosmological signals.
+
+### Baryogenesis
+
+Physical mechanisms proposed to explain matter-antimatter asymmetry.
+
+## Repository conventions
+
+### YAML bundle
+
+Input file under `ILSC_MRD_suite_15_modulos_CANON/<module>/inputs/...`.
+
+### Report
+
+Output `.report.json` (or `out/report.json` when using `--out`) containing verdict + details.

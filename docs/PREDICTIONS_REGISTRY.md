@@ -1,28 +1,29 @@
 # Predictions registry
 
-El archivo `predictions/registry.yaml` existe para que las predicciones sean **discoverable**.
+The file `predictions/registry.yaml` makes predictions discoverable.
 
-En física, el problema típico es que un trabajo puede estar bien, pero si la predicción falsable está enterrada en 300 páginas, nadie la encuentra.
+In practice, a prediction can be strong but still hard to find if buried in long documents.
+The registry addresses that discoverability gap.
 
-## Ver predicciones
+## Inspect predictions
 
 ```bash
 occ predict list
 occ predict show P-0003
 ```
 
-## Añadir una predicción nueva
+## Add a prediction
 
-1. Copia `predictions/TEMPLATE.yaml`.
-2. Añádelo como nueva entrada en `predictions/registry.yaml`.
-3. Asegúrate de que:
-   - el `id` sea único,
-   - la `summary` sea falsable,
-   - incluya al menos un canal de test (`tests`).
+1. Copy `predictions/TEMPLATE.yaml`.
+2. Add a new entry in `predictions/registry.yaml`.
+3. Ensure:
+   - unique `id`,
+   - falsifiable `summary`,
+   - at least one test channel under `tests`.
 
-## Validación
+## Validation
 
-La suite de extensiones incluye un meta‑MRD que valida el registry.
+The extensions suite includes a meta-MRD that validates the registry:
 
 ```bash
 occ verify --suite extensions

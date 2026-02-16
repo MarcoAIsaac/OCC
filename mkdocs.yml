@@ -1,11 +1,11 @@
-site_name: OCC - Compendio Canónico Completo
-site_description: Documentación del Compendio Canónico Completo
+site_name: OCC - Canonical Compendium
+site_description: Documentation for the OCC canonical compendium and runtime
 site_author: OCC Team
 repo_name: MarcoAIsaac/OCC
 repo_url: https://github.com/MarcoAIsaac/OCC
 theme:
   name: material
-  language: es
+  language: en
   font:
     text: IBM Plex Sans
     code: IBM Plex Mono
@@ -14,7 +14,6 @@ theme:
       primary: teal
       accent: amber
   features:
-    - navigation.instant
     - navigation.sections
     - navigation.top
     - navigation.tracking
@@ -23,26 +22,61 @@ theme:
     - content.code.copy
 
 nav:
-  - Inicio: "index.md"
-  - Primeros pasos:
+  - Home: "index.md"
+  - Getting Started:
       - Start Here: "START_HERE.md"
       - CLI: "CLI.md"
-      - Uso: "USAGE.md"
+      - Usage: "USAGE.md"
       - Troubleshooting: "TROUBLESHOOTING.md"
-  - Marco OCC:
+  - OCC Framework:
       - Executive Summary: "EXECUTIVE_SUMMARY.md"
-      - Glosario: "GLOSSARY.md"
+      - Glossary: "GLOSSARY.md"
       - FAQ: "FAQ.md"
-      - Judges y Locks: "JUDGES_LOCKS.md"
-  - Suite MRD:
-      - Suite canónica: "MRD_SUITE.md"
-      - Extensiones: "MRD_EXTENSIONS.md"
+      - Judges and Locks: "JUDGES_LOCKS.md"
+  - MRD Suite:
+      - Canonical Suite: "MRD_SUITE.md"
+      - Extensions: "MRD_EXTENSIONS.md"
       - Predictions Registry: "PREDICTIONS_REGISTRY.md"
   - Canon:
-      - Índice canónico: "INDEX_CANONICAL.md"
+      - Canonical Index: "INDEX_CANONICAL.md"
       - Releasing: "RELEASING.md"
 
 plugins:
+  - i18n:
+      docs_structure: suffix
+      fallback_to_default: true
+      reconfigure_material: true
+      languages:
+        - locale: en
+          name: English
+          default: true
+          build: true
+          site_name: OCC - Canonical Compendium
+          site_description: Documentation for the OCC canonical compendium and runtime
+        - locale: es
+          name: Español
+          build: true
+          site_name: OCC - Compendio Canónico Completo
+          site_description: Documentación del compendio canónico y runtime de OCC
+          nav:
+            - Inicio: "index.md"
+            - Primeros pasos:
+                - Start Here: "START_HERE.md"
+                - CLI: "CLI.md"
+                - Uso: "USAGE.md"
+                - Troubleshooting: "TROUBLESHOOTING.md"
+            - Marco OCC:
+                - Executive Summary: "EXECUTIVE_SUMMARY.md"
+                - Glosario: "GLOSSARY.md"
+                - FAQ: "FAQ.md"
+                - Judges y Locks: "JUDGES_LOCKS.md"
+            - Suite MRD:
+                - Suite canónica: "MRD_SUITE.md"
+                - Extensiones: "MRD_EXTENSIONS.md"
+                - Predictions Registry: "PREDICTIONS_REGISTRY.md"
+            - Canon:
+                - Índice canónico: "INDEX_CANONICAL.md"
+                - Releasing: "RELEASING.md"
   - search
 
 markdown_extensions:

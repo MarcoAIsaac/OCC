@@ -1,44 +1,43 @@
-# Jueces y candados (locks)
+# Judges and locks
 
-En OCC, un **juez** evalúa una afirmación (*claim*) o un artefacto derivado y devuelve un veredicto.
+In OCC, a **judge** evaluates a claim or derived artifact and returns a verdict.
 
-Un **candado (lock)** es una condición concreta que debe cumplirse.
+A **lock** is a concrete condition that must hold.
 
-## Veredictos
+## Verdicts
 
-- **PASS**: evaluable y consistente dentro de Ω_I.
-- **FAIL**: inconsistente (contradicción con reglas inevitables / estructura inválida).
-- **NO‑EVAL**: todavía no es evaluable operacionalmente (faltan definiciones, proyecciones, trazabilidad o el claim depende de knobs inaccesibles).
+- **PASS**: evaluable and consistent within \\(\Omega_I\\).
+- **FAIL**: inconsistent with unavoidable rules or structural requirements.
+- **NO-EVAL**: not yet operationally evaluable (missing definitions, projections, traceability,
+  or dependence on inaccessible knobs).
 
 ## Built-in judges (tooling)
 
-Estos jueces existen en el runtime para facilitar revisiones rápidas y onboarding.
-
-> Importante: no sustituyen el canon; son herramientas para triage.
+These judges exist in the runtime to support quick triage and onboarding.
 
 ### `domain` (DOM*)
 
-Comprueba que el claim declare un dominio operacional mínimo:
+Checks minimum declared operational domain in the claim:
 
 - `domain.omega_I`
 - `domain.observables[]`
 
-Si falta alguno → **NO‑EVAL(DOM*)**.
+Missing fields lead to **NO-EVAL(DOM*)**.
 
 ### `uv_guard` (UV*)
 
-Comprueba que parámetros **inaccesibles** (o con accesibilidad desconocida) no afecten materialmente a los observables.
+Checks that inaccessible (or unknown-accessibility) parameters do not materially affect observables.
 
-Si ocurre → **NO‑EVAL(UV*)**.
+If they do, verdict is **NO-EVAL(UV*)**.
 
 ### `trace` (TR*)
 
-Genera un witness `path -> sha256` para fuentes declaradas en `sources:`.
+Generates a witness map `path -> sha256` for paths declared in `sources:`.
 
-- Si faltan paths → **NO‑EVAL(TR2)**.
-- Con `--strict-trace` → **NO‑EVAL(TR1)**.
+- Missing paths: **NO-EVAL(TR2)**.
+- With `--strict-trace`: **NO-EVAL(TR1)**.
 
-## Ejemplos
+## Examples
 
 ```bash
 occ judge examples/claim_specs/minimal_pass.yaml

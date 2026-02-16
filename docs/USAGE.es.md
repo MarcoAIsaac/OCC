@@ -1,8 +1,8 @@
-# CLI Usage (`occ`)
+# Uso del CLI (`occ`)
 
-The CLI is designed for a simple and reproducible flow.
+El CLI está diseñado para un flujo simple y reproducible.
 
-## Installation (local/dev)
+## Instalación (desarrollo/local)
 
 ```bash
 python -m venv .venv
@@ -11,7 +11,7 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
-Windows PowerShell:
+En Windows PowerShell:
 
 ```powershell
 python -m venv .venv
@@ -20,28 +20,28 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
-## Commands
+## Comandos
 
 ### `occ --help`
 
-Shows CLI help.
+Muestra ayuda del CLI.
 
 ### `occ run <bundle.yaml> [--module ...] [--out out/]`
 
-Runs one YAML bundle associated with an MRD module.
+Ejecuta un bundle YAML asociado a un módulo MRD.
 
-Example:
+Ejemplo:
 
 ```bash
 occ run ILSC_MRD_suite_15_modulos_CANON/mrd_obs_isaac/inputs/mrd_obs_isaac/pass.yaml --out out/
 ```
 
-- If `--module` is omitted, the CLI tries to infer it from the path.
-- If `--out` is set, the CLI writes `out/report.json`.
+- Si `--module` no se especifica, el CLI intenta inferirlo del path (busca un folder `mrd_*`).
+- Si `--out` se especifica, se escribe `out/report.json`.
 
 ### `occ list`
 
-Lists available MRD modules.
+Lista módulos MRD disponibles.
 
 ```bash
 occ list
@@ -51,7 +51,7 @@ occ list --suite extensions
 
 ### `occ doctor`
 
-Quick diagnostics (versions, paths, discovered suites).
+Diagnóstico rápido (versiones, paths y suites detectadas).
 
 ```bash
 occ doctor
@@ -59,7 +59,7 @@ occ doctor
 
 ### `occ predict`
 
-Browse the prediction registry.
+Explora el registry YAML de predicciones.
 
 ```bash
 occ predict list
@@ -68,7 +68,7 @@ occ predict show P-0003
 
 ### `occ judge <claim.yaml>`
 
-Runs built-in judges on a claim spec.
+Ejecuta jueces básicos sobre un claim spec.
 
 ```bash
 occ judge examples/claim_specs/minimal_pass.yaml
@@ -76,10 +76,12 @@ occ judge examples/claim_specs/minimal_pass.yaml
 
 ### `occ verify`
 
-Runs suite verification.
+Ejecuta la verificación de una suite.
 
 ```bash
 occ verify
 occ verify --suite extensions
 occ verify --suite all
 ```
+
+En CI normalmente se ejecuta solo el smoke test, y `occ verify` se deja como workflow manual.

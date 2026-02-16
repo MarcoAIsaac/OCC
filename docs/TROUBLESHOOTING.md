@@ -1,61 +1,43 @@
 # Troubleshooting
 
-## `occ` no se encuentra
+## `occ` command not found
 
-Si instalaste en venv:
+If installed in a virtual environment:
 
 ```bash
 source .venv/bin/activate
 python -m pip install -e ".[dev]"
 ```
 
-En Windows (PowerShell):
+Windows PowerShell:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 python -m pip install -e ".[dev]"
 ```
 
-## `occ verify` tarda mucho
+## `occ verify` takes too long
 
-La suite completa ejecuta muchos casos.
+Full verification runs many cases.
 
-- Usa el workflow manual en GitHub.
-- Reduce timeout por caso:
+- Prefer the manual full-suite workflow in GitHub Actions.
+- Reduce per-case timeout:
 
 ```bash
 occ verify --timeout 60
 ```
 
-## `NO‑EVAL(TR*)` en `occ judge`
+## `NO-EVAL(TR*)` in `occ judge`
 
-Declara solo paths que existan o ejecuta sin `--strict-trace`.
+Declare only existing source paths or run without `--strict-trace`.
 
-## `occ research` sin resultados
+## `occ research` returns no results
 
-La búsqueda externa usa APIs públicas (arXiv/Crossref) y depende de red.
+External search uses public APIs (arXiv/Crossref) and depends on network access.
 
-- Verifica conectividad saliente.
-- Aumenta timeout:
+- Check outbound connectivity.
+- Increase timeout:
 
 ```bash
 occ research examples/claim_specs/minimal_pass.yaml --timeout 30
 ```
-
-## Login `occ auth`
-
-- `github`: puedes usar `--use-gh-token` si ya estás autenticado con `gh`.
-- `google`: usa `--username` y un token de acceso válido si quieres auto-validación.
-- `arxiv`: no hay OAuth público estándar para terceros; usa `--username`.
-
-### Auth remoto no responde
-
-Si usas `--backend remote`:
-
-- Verifica URL base: `OCC_AUTH_REMOTE_URL` o `--remote-url`.
-- Verifica token backend: `OCC_AUTH_REMOTE_TOKEN` o `--remote-token`.
-- Endpoint esperado:
-  - `POST /auth/login`
-  - `POST /auth/logout`
-  - `GET /auth/status`
-  - `GET /auth/events?limit=N`

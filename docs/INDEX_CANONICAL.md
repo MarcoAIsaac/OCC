@@ -1,25 +1,25 @@
-# Índice canónico (docs)
+# Canonical index (docs)
 
-Este índice está pensado para que cualquier lector encuentre rápido:
+This index helps readers quickly find:
 
-- **Conceptos** (PDFs canónicos)
-- **Herramientas** (cómo ejecutar y verificar con el CLI)
-- **Estructura** del suite MRD
+- concepts (canonical PDFs),
+- tooling (how to run and verify via CLI),
+- MRD suite structure.
 
-## Documentos principales
+## Main documents
 
-- Compendio (PDF): [`OCC_Compendio_Canonico_Completo.pdf`](OCC_Compendio_Canonico_Completo.pdf)
-- Guía de inicio: [`START_HERE.md`](START_HERE.md)
+- Compendium (PDF): [`OCC_Compendio_Canonico_Completo.pdf`](OCC_Compendio_Canonico_Completo.pdf)
+- Start guide: [`START_HERE.md`](START_HERE.md)
 - Executive Summary: [`EXECUTIVE_SUMMARY.md`](EXECUTIVE_SUMMARY.md)
-- Glosario: [`GLOSSARY.md`](GLOSSARY.md)
-- Releasing (DOI + ArXiv): [`RELEASING.md`](RELEASING.md)
+- Glossary: [`GLOSSARY.md`](GLOSSARY.md)
+- Releasing (DOI + arXiv): [`RELEASING.md`](RELEASING.md)
 - Predictions registry: [`PREDICTIONS_REGISTRY.md`](PREDICTIONS_REGISTRY.md)
 - Judges & locks: [`JUDGES_LOCKS.md`](JUDGES_LOCKS.md)
 - CLI: [`CLI.md`](CLI.md)
 
-## Documentos canónicos adicionales (PDF)
+## Additional canonical PDFs
 
-En `docs/canonical/`:
+Under `docs/canonical/`:
 
 - `OCC_Documento_A_metodologia.pdf`
 - `OCC_Documento_A_defensa_formal.pdf`
@@ -28,26 +28,23 @@ En `docs/canonical/`:
 - `OCC_FrontMatter_v1.0.0.pdf`
 - `OCC_FrontMatter_v1.1.0.pdf`
 
-> Nota: estos PDFs están incluidos como referencia para navegación rápida desde GitHub.
-
-## Uso del CLI
+## CLI usage
 
 - [`USAGE.md`](USAGE.md)
 
-## Suite MRD
+## MRD suite
 
 - [`MRD_SUITE.md`](MRD_SUITE.md)
 
-Carpeta principal:
+Main folder:
 
 - `ILSC_MRD_suite_15_modulos_CANON/`
 
-Extensiones (UX/meta‑MRDs):
+Extensions:
 
 - `ILSC_MRD_suite_extensions/`
 
-## Convenciones
+## Conventions
 
-- Los resultados típicos de los reportes incluyen un veredicto como `PASS`, `FAIL` o `NO-EVAL`.
-- El comando `occ run` copia un `report.json` a la carpeta `--out` si se especifica.
-
+- Typical report outputs include `PASS`, `FAIL`, or `NO-EVAL` verdicts.
+- `occ run` writes `report.json` into `--out` when provided.

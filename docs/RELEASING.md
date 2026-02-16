@@ -1,55 +1,43 @@
-# Releasing (DOI + ArXiv)
+# Releasing (DOI + arXiv)
 
-Este repo ya está “técnicamente listo”. Para maximizar impacto en comunidad científica, faltan dos
-cosas típicas:
+This repository is technically ready. To maximize scientific reach, two publication steps are recommended:
 
-1) **DOI** (Zenodo) → hace el software **citable**.
-2) **Preprint** (ArXiv) → hace el marco **discoverable**.
+1. **DOI** (Zenodo) to make software citable.
+2. **Preprint** (arXiv) to make the framework discoverable.
 
----
+## 1) DOI with Zenodo
 
-## 1) DOI con Zenodo (recomendado)
+### Steps
 
-### Pasos
+1. Connect GitHub with Zenodo and enable this repository.
+2. Create a GitHub Release (for example `v1.0.0`).
+3. Wait for Zenodo to archive the release and assign a DOI.
+4. Update README with DOI badge.
 
-1. Conecta tu GitHub con Zenodo y habilita el repositorio.
-2. Crea un **GitHub Release** (por ejemplo `v1.0.0`).
-3. Espera a que Zenodo procese el release y te asigne un DOI.
-4. Actualiza el README con el badge del DOI.
+### Badge template
 
-### Badge (plantilla)
-
-Cuando tengas el DOI (ej. `10.5281/zenodo.XXXXXXX`), reemplaza:
+When DOI is available (example `10.5281/zenodo.XXXXXXX`):
 
 ```md
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
 ```
 
----
+## 2) Preprint on arXiv
 
-## 2) Preprint (ArXiv)
+A short paper (8 to 10 pages) materially improves discoverability.
 
-Un paper corto (8–10 páginas) aumenta muchísimo la visibilidad. Recomendación:
-
-- Enfatiza **motivación** (malleabilidad UV / evaluabilidad)
-- Describe el pipeline OCC (PASS/FAIL/NO‑EVAL)
-- Destaca 1 predicción falsable (EDM ↔ GW en bariogénesis)
-- Incluye cómo ejecutar un MRD del repo
-
-### Sugerencia de estructura
+Suggested structure:
 
 1. Abstract
 2. Motivation: operational evaluability problem
-3. OCC framework: \(\Omega_I\), verdicts, non‑reinj.
+3. OCC framework: \\(\Omega_I\\), verdicts, non-reinjection
 4. Implementation: MRD suite + CLI
-5. Highlighted prediction: EDM–GW link
-6. How to falsify + experimental path
-7. Limitations + scope
+5. Highlight prediction: EDM-GW link
+6. Falsification path and experimental strategy
+7. Scope and limitations
 
----
+## 3) Operational recommendation
 
-## 3) Recomendación “empresa”
-
-- No guardes ZIPs grandes en `main`.
-- Usa **GitHub Releases** para binarios/artefactos.
-- Mantén docs y código en árbol normal del repo.
+- Do not keep large ZIP artifacts on `main`.
+- Use GitHub Releases for binaries/artifacts.
+- Keep docs and source in the normal tree.
