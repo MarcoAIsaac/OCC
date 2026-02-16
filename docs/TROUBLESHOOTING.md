@@ -46,4 +46,16 @@ occ research examples/claim_specs/minimal_pass.yaml --timeout 30
 
 - `github`: puedes usar `--use-gh-token` si ya estás autenticado con `gh`.
 - `google`: usa `--username` y un token de acceso válido si quieres auto-validación.
-- `arxiv`: no hay OAuth público estándar para terceros; usa `--username` para registrar identidad local.
+- `arxiv`: no hay OAuth público estándar para terceros; usa `--username`.
+
+### Auth remoto no responde
+
+Si usas `--backend remote`:
+
+- Verifica URL base: `OCC_AUTH_REMOTE_URL` o `--remote-url`.
+- Verifica token backend: `OCC_AUTH_REMOTE_TOKEN` o `--remote-token`.
+- Endpoint esperado:
+  - `POST /auth/login`
+  - `POST /auth/logout`
+  - `GET /auth/status`
+  - `GET /auth/events?limit=N`

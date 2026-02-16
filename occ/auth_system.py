@@ -1,7 +1,9 @@
-"""Local authentication/session helpers for OCC CLI.
+"""Authentication backends for OCC CLI.
 
-This is a lightweight account/session system intended for developer workflows.
-It stores account metadata locally and keeps an authentication event log.
+Supports two modes:
+
+- local: metadata/session state stored in a local JSON file.
+- remote: session state managed by an external HTTP auth service.
 """
 
 from __future__ import annotations
@@ -10,12 +12,17 @@ import hashlib
 import json
 import os
 import subprocess
+import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Protocol
 
 SUPPORTED_PROVIDERS = {"google", "github", "arxiv"}
+SUPPORTED_BACKENDS = {"auto", "local", "remote"}
+DEFAULT_REMOTE_TIMEOUT = 15
+USER_AGENT = "occ-mrd-runner"
 
 
 def _utcnow() -> str:
@@ -39,33 +46,48 @@ def default_auth_store_path() -> Path:
     return (Path.home() / ".occ" / "auth.json").resolve()
 
 
+def default_remote_auth_url() -> Optional[str]:
+    raw = os.getenv("OCC_AUTH_REMOTE_URL")
+    if not raw:
+        return None
+    return raw.strip() or None
+
+
+def default_remote_auth_token() -> Optional[str]:
+    raw = os.getenv("OCC_AUTH_REMOTE_TOKEN")
+    if not raw:
+        return None
+    return raw.strip() or None
+
+
 def _github_login_from_token(token: str) -> Optional[str]:
     req = urllib.request.Request(
         "https://api.github.com/user",
         headers={
             "Authorization": f"Bearer {token}",
             "Accept": "application/vnd.github+json",
-            "User-Agent": "occ-mrd-runner",
+            "User-Agent": USER_AGENT,
         },
     )
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
-            obj = json.loads(resp.read().decode("utf-8", errors="replace"))
+            body = resp.read()
     except Exception:
         return None
+    obj = json.loads(body.decode("utf-8", errors="replace"))
     login = obj.get("login")
     return str(login) if isinstance(login, str) and login else None
 
 
 def _google_email_from_token(token: str) -> Optional[str]:
-    # Public tokeninfo endpoint (best effort).
     url = f"https://oauth2.googleapis.com/tokeninfo?access_token={token}"
-    req = urllib.request.Request(url, headers={"User-Agent": "occ-mrd-runner"})
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
-            obj = json.loads(resp.read().decode("utf-8", errors="replace"))
+            body = resp.read()
     except Exception:
         return None
+    obj = json.loads(body.decode("utf-8", errors="replace"))
     email = obj.get("email")
     return str(email) if isinstance(email, str) and email else None
 
@@ -86,9 +108,17 @@ def best_effort_gh_token() -> Optional[str]:
     return tok if tok else None
 
 
-class AuthStore:
-    def __init__(self, path: Optional[Path] = None) -> None:
-        self.path = (path or default_auth_store_path()).resolve()
+def _json_or_empty(raw: bytes) -> Dict[str, Any]:
+    try:
+        obj = json.loads(raw.decode("utf-8", errors="replace"))
+    except Exception:
+        return {}
+    return obj if isinstance(obj, dict) else {}
+
+
+class _LocalAuthBackend:
+    def __init__(self, path: Path) -> None:
+        self.path = path.resolve()
 
     def _empty(self) -> Dict[str, Any]:
         return {
@@ -140,7 +170,7 @@ class AuthStore:
         provider: str,
         username: Optional[str],
         token: Optional[str],
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: Optional[Dict[str, Any]],
     ) -> Dict[str, Any]:
         provider = provider.strip().lower()
         if provider not in SUPPORTED_PROVIDERS:
@@ -153,7 +183,6 @@ class AuthStore:
             elif provider == "google":
                 inferred = _google_email_from_token(token)
 
-        # arXiv does not provide a public OAuth login flow for third-party apps.
         if not inferred:
             raise ValueError(
                 "Username/email is required for this provider. Pass --username "
@@ -195,7 +224,7 @@ class AuthStore:
         self.save(data)
         return account
 
-    def logout(self, provider: Optional[str] = None) -> Dict[str, Any]:
+    def logout(self, provider: Optional[str]) -> Dict[str, Any]:
         data = self.load()
         accounts = data.get("accounts", {})
         if not isinstance(accounts, dict):
@@ -242,6 +271,7 @@ class AuthStore:
             events = []
 
         return {
+            "backend": "local",
             "version": data.get("version", 1),
             "store_path": str(self.path),
             "active_provider": data.get("active_provider"),
@@ -250,7 +280,7 @@ class AuthStore:
             "updated_at": data.get("updated_at"),
         }
 
-    def events(self, limit: int = 20) -> list[Dict[str, Any]]:
+    def events(self, limit: int) -> list[Dict[str, Any]]:
         data = self.load()
         events = data.get("events", [])
         if not isinstance(events, list):
@@ -260,3 +290,165 @@ class AuthStore:
             if isinstance(e, dict):
                 out.append(e)
         return out
+
+
+class _RemoteAuthBackend:
+    def __init__(self, base_url: str, token: Optional[str] = None) -> None:
+        self.base_url = base_url.rstrip("/")
+        self.token = token
+
+    def _request(
+        self,
+        method: str,
+        path: str,
+        payload: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        url = f"{self.base_url}{path}"
+        if params:
+            qs = urllib.parse.urlencode({k: str(v) for k, v in params.items()})
+            url = f"{url}?{qs}"
+
+        body: Optional[bytes] = None
+        headers: Dict[str, str] = {
+            "User-Agent": USER_AGENT,
+            "Accept": "application/json",
+        }
+        if payload is not None:
+            body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+            headers["Content-Type"] = "application/json"
+        if self.token:
+            headers["Authorization"] = f"Bearer {self.token}"
+
+        req = urllib.request.Request(url, data=body, headers=headers, method=method)
+        try:
+            with urllib.request.urlopen(req, timeout=DEFAULT_REMOTE_TIMEOUT) as resp:
+                raw = resp.read()
+        except urllib.error.HTTPError as e:
+            msg = e.read().decode("utf-8", errors="replace")
+            raise RuntimeError(f"Remote auth HTTP {e.code}: {msg}") from e
+        except urllib.error.URLError as e:
+            raise RuntimeError(f"Remote auth unreachable: {e}") from e
+        except Exception as e:
+            raise RuntimeError(f"Remote auth request failed: {e}") from e
+
+        out = _json_or_empty(raw)
+        if out:
+            return out
+        return {"ok": True}
+
+    def login(
+        self,
+        provider: str,
+        username: Optional[str],
+        token: Optional[str],
+        metadata: Optional[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        return self._request(
+            "POST",
+            "/auth/login",
+            payload={
+                "provider": provider,
+                "username": username,
+                "token": token,
+                "metadata": metadata or {},
+            },
+        )
+
+    def logout(self, provider: Optional[str]) -> Dict[str, Any]:
+        return self._request("POST", "/auth/logout", payload={"provider": provider})
+
+    def status(self) -> Dict[str, Any]:
+        out = self._request("GET", "/auth/status")
+        out.setdefault("backend", "remote")
+        out.setdefault("remote_url", self.base_url)
+        return out
+
+    def events(self, limit: int) -> list[Dict[str, Any]]:
+        out = self._request("GET", "/auth/events", params={"limit": max(1, int(limit))})
+        if "events" in out and isinstance(out["events"], list):
+            return [e for e in out["events"] if isinstance(e, dict)]
+        if isinstance(out, dict):
+            return [out]
+        return []
+
+
+class _AuthBackend(Protocol):
+    def login(
+        self,
+        provider: str,
+        username: Optional[str],
+        token: Optional[str],
+        metadata: Optional[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        ...
+
+    def logout(self, provider: Optional[str]) -> Dict[str, Any]:
+        ...
+
+    def status(self) -> Dict[str, Any]:
+        ...
+
+    def events(self, limit: int) -> list[Dict[str, Any]]:
+        ...
+
+
+class AuthStore:
+    def __init__(
+        self,
+        path: Optional[Path] = None,
+        backend: str = "auto",
+        remote_url: Optional[str] = None,
+        remote_token: Optional[str] = None,
+    ) -> None:
+        backend = backend.strip().lower()
+        if backend not in SUPPORTED_BACKENDS:
+            raise ValueError(
+                f"Unsupported auth backend: {backend}. "
+                f"Expected one of {sorted(SUPPORTED_BACKENDS)}"
+            )
+
+        self.path = (path or default_auth_store_path()).resolve()
+        self.remote_url = (remote_url or default_remote_auth_url() or "").strip()
+        self.remote_token = (remote_token or default_remote_auth_token() or "").strip() or None
+
+        if backend == "auto":
+            backend = "remote" if self.remote_url else "local"
+        if backend == "remote" and not self.remote_url:
+            raise ValueError(
+                "Remote auth backend requires URL. Set --remote-url or OCC_AUTH_REMOTE_URL."
+            )
+
+        self.backend = backend
+        self._impl: _AuthBackend
+        if backend == "remote":
+            self._impl = _RemoteAuthBackend(base_url=self.remote_url, token=self.remote_token)
+        else:
+            self._impl = _LocalAuthBackend(path=self.path)
+
+    def login(
+        self,
+        provider: str,
+        username: Optional[str],
+        token: Optional[str],
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        return self._impl.login(
+            provider=provider,
+            username=username,
+            token=token,
+            metadata=metadata,
+        )
+
+    def logout(self, provider: Optional[str] = None) -> Dict[str, Any]:
+        return self._impl.logout(provider=provider)
+
+    def status(self) -> Dict[str, Any]:
+        out = self._impl.status()
+        if not isinstance(out, dict):
+            return {"backend": self.backend}
+        out.setdefault("backend", self.backend)
+        return out
+
+    def events(self, limit: int = 20) -> list[Dict[str, Any]]:
+        return self._impl.events(limit=limit)

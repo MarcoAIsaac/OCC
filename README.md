@@ -142,9 +142,12 @@ Puedes ejecutar investigación científica web directa desde un claim:
 occ research examples/claim_specs/minimal_pass.yaml --show 5
 ```
 
-## Login multi-proveedor (local)
+## Login multi-proveedor (local o remoto)
 
-OCC incluye un sistema de sesión local para Google, GitHub y arXiv:
+OCC soporta dos backends de autenticación:
+
+- `local` (archivo JSON local)
+- `remote` (servicio HTTP externo, sin guardar sesión local)
 
 ```bash
 occ auth login --provider github --use-gh-token
@@ -153,6 +156,16 @@ occ auth login --provider arxiv --username tu_usuario_arxiv
 occ auth status
 occ auth events
 occ auth logout
+```
+
+Modo remoto (no-local), contra un servidor externo:
+
+```bash
+export OCC_AUTH_REMOTE_URL="https://auth.tu-dominio.com"
+export OCC_AUTH_REMOTE_TOKEN="tu_token_backend"
+
+occ auth status --backend remote
+occ auth login --backend remote --provider github --use-gh-token
 ```
 
 ## Docs portal (MkDocs)

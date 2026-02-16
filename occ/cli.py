@@ -22,7 +22,7 @@ except ModuleNotFoundError:
     from .util import simple_yaml as yaml
 
 from . import get_version
-from .auth_system import SUPPORTED_PROVIDERS, AuthStore, best_effort_gh_token
+from .auth_system import SUPPORTED_BACKENDS, SUPPORTED_PROVIDERS, AuthStore, best_effort_gh_token
 from .catalog import build_catalog
 from .judges.pipeline import default_judges, run_pipeline
 from .module_autogen import auto_generate_module, load_claim_file
@@ -346,8 +346,37 @@ def _resolve_auth_token(args: argparse.Namespace) -> Optional[str]:
     return None
 
 
+def _resolve_remote_token(args: argparse.Namespace) -> Optional[str]:
+    raw = getattr(args, "remote_token", None)
+    if raw:
+        return str(raw)
+    env_name = getattr(args, "remote_token_env", None)
+    if env_name:
+        val = os.getenv(str(env_name))
+        if val:
+            return str(val)
+    return None
+
+
+def _build_auth_store(args: argparse.Namespace) -> AuthStore:
+    store_path_raw = getattr(args, "store_path", None)
+    store_path = Path(store_path_raw).expanduser().resolve() if store_path_raw else None
+    backend = str(getattr(args, "backend", "auto"))
+    remote_url = getattr(args, "remote_url", None)
+    remote_token = _resolve_remote_token(args)
+    try:
+        return AuthStore(
+            path=store_path,
+            backend=backend,
+            remote_url=remote_url,
+            remote_token=remote_token,
+        )
+    except ValueError as e:
+        raise SystemExit(str(e)) from e
+
+
 def cmd_auth_login(args: argparse.Namespace) -> int:
-    store = AuthStore()
+    store = _build_auth_store(args)
     token = _resolve_auth_token(args)
     metadata = _read_json_metadata(args.metadata_json)
     try:
@@ -370,7 +399,7 @@ def cmd_auth_login(args: argparse.Namespace) -> int:
 
 
 def cmd_auth_logout(args: argparse.Namespace) -> int:
-    store = AuthStore()
+    store = _build_auth_store(args)
     out = store.logout(provider=args.provider)
     if args.json:
         print(json.dumps(out, indent=2, ensure_ascii=False))
@@ -380,7 +409,7 @@ def cmd_auth_logout(args: argparse.Namespace) -> int:
 
 
 def cmd_auth_status(args: argparse.Namespace) -> int:
-    store = AuthStore()
+    store = _build_auth_store(args)
     out = store.status()
     if args.json:
         print(json.dumps(out, indent=2, ensure_ascii=False))
@@ -403,7 +432,7 @@ def cmd_auth_status(args: argparse.Namespace) -> int:
 
 
 def cmd_auth_events(args: argparse.Namespace) -> int:
-    store = AuthStore()
+    store = _build_auth_store(args)
     events = store.events(limit=max(1, int(args.limit)))
     if args.json:
         print(json.dumps(events, indent=2, ensure_ascii=False))
@@ -579,11 +608,37 @@ def build_parser() -> argparse.ArgumentParser:
 
     pa = sub.add_parser(
         "auth",
-        help="Local account/session management (google/github/arxiv)",
+        help="Account/session management (local or remote backend)",
     )
     pa_sub = pa.add_subparsers(dest="auth_cmd", required=True)
 
+    def _add_auth_backend_args(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            "--backend",
+            choices=sorted(SUPPORTED_BACKENDS),
+            default="auto",
+            help="Auth backend: auto (default), local, or remote.",
+        )
+        parser.add_argument(
+            "--remote-url",
+            help="Remote auth service base URL (e.g. https://auth.example.com).",
+        )
+        parser.add_argument(
+            "--remote-token",
+            help="Bearer token for remote auth service.",
+        )
+        parser.add_argument(
+            "--remote-token-env",
+            default="OCC_AUTH_REMOTE_TOKEN",
+            help="Environment variable for remote service token (default: OCC_AUTH_REMOTE_TOKEN).",
+        )
+        parser.add_argument(
+            "--store-path",
+            help="Local auth store path (used when backend=local).",
+        )
+
     pal = pa_sub.add_parser("login", help="Login and activate provider account")
+    _add_auth_backend_args(pal)
     pal.add_argument(
         "--provider",
         required=True,
@@ -603,6 +658,7 @@ def build_parser() -> argparse.ArgumentParser:
     pal.set_defaults(func=cmd_auth_login)
 
     pao = pa_sub.add_parser("logout", help="Logout provider (or active provider)")
+    _add_auth_backend_args(pao)
     pao.add_argument(
         "--provider",
         choices=sorted(SUPPORTED_PROVIDERS),
@@ -612,10 +668,12 @@ def build_parser() -> argparse.ArgumentParser:
     pao.set_defaults(func=cmd_auth_logout)
 
     pas = pa_sub.add_parser("status", help="Show auth status")
+    _add_auth_backend_args(pas)
     pas.add_argument("--json", action="store_true", help="Emit JSON")
     pas.set_defaults(func=cmd_auth_status)
 
     pae = pa_sub.add_parser("events", help="Show auth event log")
+    _add_auth_backend_args(pae)
     pae.add_argument("--limit", default=20, type=int, help="Max events")
     pae.add_argument("--json", action="store_true", help="Emit JSON")
     pae.set_defaults(func=cmd_auth_events)

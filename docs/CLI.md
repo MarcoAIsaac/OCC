@@ -60,7 +60,7 @@ Esto crea un módulo en `ILSC_MRD_suite_extensions/` con:
 - investigación web (arXiv/Crossref, best-effort)
 - borrador de predicción opcional
 
-### Auth / sesión local (Google, GitHub, arXiv)
+### Auth / sesión (local o remota)
 
 ```bash
 occ auth login --provider github --use-gh-token
@@ -70,6 +70,19 @@ occ auth status
 occ auth events --limit 50
 occ auth logout
 ```
+
+Modo remoto:
+
+```bash
+occ auth status --backend remote --remote-url https://auth.tu-dominio.com
+occ auth login --backend remote --remote-url https://auth.tu-dominio.com --provider github --use-gh-token
+```
+
+Variables de entorno soportadas:
+
+- `OCC_AUTH_REMOTE_URL`
+- `OCC_AUTH_REMOTE_TOKEN`
+- `OCC_AUTH_STORE` (solo backend local)
 
 ### Judges (claim spec)
 
