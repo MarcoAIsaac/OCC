@@ -8,8 +8,8 @@ Su propósito es **mejorar la usabilidad** sin tocar el canon (los 15 módulos).
 
 Incluye meta‑MRDs de ejemplo para:
 
-- Validar que un *claim spec* esté bien formado.
-- Demostrar el candado UV (NO‑EVAL si knobs inaccesibles afectan observables).
+- Validar que una especificación de afirmación esté bien formada.
+- Demostrar el candado UV (NO‑EVAL si parámetros inaccesibles afectan observables).
 - Validar el `predictions/registry.yaml`.
 
 ## Ejecutar

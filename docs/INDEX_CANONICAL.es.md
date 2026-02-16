@@ -1,23 +1,23 @@
 # Índice canónico (docs)
 
-Este índice está pensado para que cualquier lector encuentre rápido:
+Este índice ayuda a encontrar rápidamente:
 
-- **Conceptos** (PDFs canónicos)
-- **Herramientas** (cómo ejecutar y verificar con el CLI)
-- **Estructura** del suite MRD
+- conceptos (PDFs canónicos),
+- herramientas (cómo ejecutar y verificar con CLI),
+- estructura de la suite MRD.
 
 ## Documentos principales
 
 - Compendio (PDF): [`OCC_Compendio_Canonico_Completo.pdf`](OCC_Compendio_Canonico_Completo.pdf)
-- Guía de inicio: [`START_HERE.md`](START_HERE.md)
-- Executive Summary: [`EXECUTIVE_SUMMARY.md`](EXECUTIVE_SUMMARY.md)
-- Glosario: [`GLOSSARY.md`](GLOSSARY.md)
-- Releasing (DOI + ArXiv): [`RELEASING.md`](RELEASING.md)
-- Predictions registry: [`PREDICTIONS_REGISTRY.md`](PREDICTIONS_REGISTRY.md)
-- Judges & locks: [`JUDGES_LOCKS.md`](JUDGES_LOCKS.md)
-- CLI: [`CLI.md`](CLI.md)
+- Guía de inicio: [`START_HERE.es.md`](START_HERE.es.md)
+- Resumen ejecutivo: [`EXECUTIVE_SUMMARY.es.md`](EXECUTIVE_SUMMARY.es.md)
+- Glosario: [`GLOSSARY.es.md`](GLOSSARY.es.md)
+- Publicación (DOI + arXiv): [`RELEASING.es.md`](RELEASING.es.md)
+- Registro de predicciones: [`PREDICTIONS_REGISTRY.es.md`](PREDICTIONS_REGISTRY.es.md)
+- Jueces y candados: [`JUDGES_LOCKS.es.md`](JUDGES_LOCKS.es.md)
+- CLI: [`CLI.es.md`](CLI.es.md)
 
-## Documentos canónicos adicionales (PDF)
+## PDFs canónicos adicionales
 
 En `docs/canonical/`:
 
@@ -28,26 +28,23 @@ En `docs/canonical/`:
 - `OCC_FrontMatter_v1.0.0.pdf`
 - `OCC_FrontMatter_v1.1.0.pdf`
 
-> Nota: estos PDFs están incluidos como referencia para navegación rápida desde GitHub.
+## Uso de CLI
 
-## Uso del CLI
-
-- [`USAGE.md`](USAGE.md)
+- [`USAGE.es.md`](USAGE.es.md)
 
 ## Suite MRD
 
-- [`MRD_SUITE.md`](MRD_SUITE.md)
+- [`MRD_SUITE.es.md`](MRD_SUITE.es.md)
 
 Carpeta principal:
 
 - `ILSC_MRD_suite_15_modulos_CANON/`
 
-Extensiones (UX/meta‑MRDs):
+Extensiones:
 
 - `ILSC_MRD_suite_extensions/`
 
 ## Convenciones
 
-- Los resultados típicos de los reportes incluyen un veredicto como `PASS`, `FAIL` o `NO-EVAL`.
-- El comando `occ run` copia un `report.json` a la carpeta `--out` si se especifica.
-
+- Los reportes incluyen veredictos `PASS`, `FAIL` o `NO-EVAL`.
+- `occ run` escribe `report.json` en `--out` cuando se indica.

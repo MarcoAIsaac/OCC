@@ -1,8 +1,8 @@
-# Troubleshooting
+# Resolución de problemas
 
 ## `occ` no se encuentra
 
-Si instalaste en venv:
+Si instalaste en entorno virtual:
 
 ```bash
 source .venv/bin/activate
@@ -16,27 +16,27 @@ En Windows (PowerShell):
 python -m pip install -e ".[dev]"
 ```
 
-## `occ verify` tarda mucho
+## `occ verify` tarda demasiado
 
-La suite completa ejecuta muchos casos.
+La verificación completa ejecuta muchos casos.
 
-- Usa el workflow manual en GitHub.
-- Reduce timeout por caso:
+- Prefiere el flujo manual de suite completa en GitHub Actions.
+- Reduce el tiempo máximo por caso:
 
 ```bash
 occ verify --timeout 60
 ```
 
-## `NO‑EVAL(TR*)` en `occ judge`
+## `NO-EVAL(TR*)` en `occ judge`
 
-Declara solo paths que existan o ejecuta sin `--strict-trace`.
+Declara solo rutas existentes o ejecuta sin `--strict-trace`.
 
 ## `occ research` sin resultados
 
-La búsqueda externa usa APIs públicas (arXiv/Crossref) y depende de red.
+La búsqueda externa usa API públicas (arXiv/Crossref) y depende de conectividad.
 
-- Verifica conectividad saliente.
-- Aumenta timeout:
+- Verifica salida a Internet.
+- Aumenta el tiempo máximo:
 
 ```bash
 occ research examples/claim_specs/minimal_pass.yaml --timeout 30

@@ -1,42 +1,42 @@
-# Jueces y candados (locks)
+# Jueces y candados
 
-En OCC, un **juez** evalúa una afirmación (*claim*) o un artefacto derivado y devuelve un veredicto.
+En OCC, un **juez** evalúa una afirmación o artefacto derivado y devuelve un veredicto.
 
-Un **candado (lock)** es una condición concreta que debe cumplirse.
+Un **candado** es una condición concreta que debe cumplirse.
 
 ## Veredictos
 
-- **PASS**: evaluable y consistente dentro de Ω_I.
-- **FAIL**: inconsistente (contradicción con reglas inevitables / estructura inválida).
-- **NO‑EVAL**: todavía no es evaluable operacionalmente (faltan definiciones, proyecciones, trazabilidad o el claim depende de knobs inaccesibles).
+- **PASS**: evaluable y consistente dentro de `Omega_I`.
+- **FAIL**: inconsistente con reglas inevitables o requisitos estructurales.
+- **NO-EVAL**: aún no evaluable operacionalmente (faltan definiciones, proyecciones,
+  trazabilidad, o hay dependencia de parámetros inaccesibles).
 
-## Built-in judges (tooling)
+## Jueces integrados (herramientas)
 
-Estos jueces existen en el runtime para facilitar revisiones rápidas y onboarding.
-
-> Importante: no sustituyen el canon; son herramientas para triage.
+Estos jueces existen en el runtime para triaje rápido y adopción inicial.
 
 ### `domain` (DOM*)
 
-Comprueba que el claim declare un dominio operacional mínimo:
+Verifica dominio operacional mínimo declarado en la afirmación:
 
 - `domain.omega_I`
 - `domain.observables[]`
 
-Si falta alguno → **NO‑EVAL(DOM*)**.
+Si faltan campos, el resultado es **NO-EVAL(DOM*)**.
 
 ### `uv_guard` (UV*)
 
-Comprueba que parámetros **inaccesibles** (o con accesibilidad desconocida) no afecten materialmente a los observables.
+Verifica que parámetros inaccesibles (o de accesibilidad desconocida) no afecten
+materialmente los observables.
 
-Si ocurre → **NO‑EVAL(UV*)**.
+Si los afectan, el resultado es **NO-EVAL(UV*)**.
 
 ### `trace` (TR*)
 
-Genera un witness `path -> sha256` para fuentes declaradas en `sources:`.
+Genera un mapa de evidencias `ruta -> sha256` para rutas declaradas en `sources:`.
 
-- Si faltan paths → **NO‑EVAL(TR2)**.
-- Con `--strict-trace` → **NO‑EVAL(TR1)**.
+- Rutas faltantes: **NO-EVAL(TR2)**.
+- Con `--strict-trace`: **NO-EVAL(TR1)**.
 
 ## Ejemplos
 

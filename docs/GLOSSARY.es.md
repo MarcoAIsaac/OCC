@@ -16,7 +16,7 @@ Conjunto explícito de operaciones/mediciones/regímenes en los que una afirmaci
 
 ### **MRD**
 **Minimum Reproducible Demo**. “Módulo mínimo reproducible” que implementa una parte del criterio OCC
-con inputs simples (bundles YAML) y reportes deterministas.
+con entradas simples (paquetes YAML) y reportes deterministas.
 
 ### **ISAAC**
 Sigla usada en el canon para referirse a *cierre operacional* (ej. anclajes operacionales provenientes de
@@ -52,8 +52,8 @@ Mecanismos físicos propuestos para explicar el exceso bariónico del universo (
 
 ## Convenciones prácticas del repo
 
-### Bundle YAML
-Archivo YAML bajo `ILSC_MRD_suite_15_modulos_CANON/<módulo>/inputs/...` usado como input mínimo.
+### Paquete YAML
+Archivo YAML bajo `ILSC_MRD_suite_15_modulos_CANON/<módulo>/inputs/...` usado como entrada mínima.
 
 ### Reporte
 Salida `.report.json` (o `out/report.json` si usas `--out`) que incluye veredicto y detalles.

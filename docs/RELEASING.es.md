@@ -1,55 +1,43 @@
-# Releasing (DOI + ArXiv)
+# Publicación (DOI + arXiv)
 
-Este repo ya está “técnicamente listo”. Para maximizar impacto en comunidad científica, faltan dos
-cosas típicas:
+Este repositorio ya está técnicamente listo. Para maximizar alcance científico, se recomiendan dos pasos:
 
-1) **DOI** (Zenodo) → hace el software **citable**.
-2) **Preprint** (ArXiv) → hace el marco **discoverable**.
+1. **DOI** (Zenodo) para volver el software citable.
+2. **Preprint** (arXiv) para mejorar la visibilidad del marco.
 
----
-
-## 1) DOI con Zenodo (recomendado)
+## 1) DOI con Zenodo
 
 ### Pasos
 
-1. Conecta tu GitHub con Zenodo y habilita el repositorio.
-2. Crea un **GitHub Release** (por ejemplo `v1.0.0`).
-3. Espera a que Zenodo procese el release y te asigne un DOI.
-4. Actualiza el README con el badge del DOI.
+1. Conecta GitHub con Zenodo y habilita este repositorio.
+2. Crea una publicación de versión en GitHub (por ejemplo `v1.0.0`).
+3. Espera a que Zenodo archive la versión y asigne DOI.
+4. Actualiza `README` con el distintivo del DOI.
 
-### Badge (plantilla)
+### Plantilla de distintivo
 
-Cuando tengas el DOI (ej. `10.5281/zenodo.XXXXXXX`), reemplaza:
+Cuando tengas DOI (ejemplo `10.5281/zenodo.XXXXXXX`):
 
 ```md
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
 ```
 
----
+## 2) Preprint en arXiv
 
-## 2) Preprint (ArXiv)
+Un artículo corto (8-10 páginas) mejora mucho la visibilidad.
 
-Un paper corto (8–10 páginas) aumenta muchísimo la visibilidad. Recomendación:
+Estructura sugerida:
 
-- Enfatiza **motivación** (malleabilidad UV / evaluabilidad)
-- Describe el pipeline OCC (PASS/FAIL/NO‑EVAL)
-- Destaca 1 predicción falsable (EDM ↔ GW en bariogénesis)
-- Incluye cómo ejecutar un MRD del repo
+1. Resumen
+2. Motivación: problema de evaluabilidad operacional
+3. Marco OCC: `Omega_I`, veredictos y no-reinyección
+4. Implementación: suite MRD + CLI
+5. Predicción destacada: vínculo EDM-GW
+6. Ruta de falsación y estrategia experimental
+7. Alcance y limitaciones
 
-### Sugerencia de estructura
+## 3) Recomendación operativa
 
-1. Abstract
-2. Motivation: operational evaluability problem
-3. OCC framework: \(\Omega_I\), verdicts, non‑reinj.
-4. Implementation: MRD suite + CLI
-5. Highlighted prediction: EDM–GW link
-6. How to falsify + experimental path
-7. Limitations + scope
-
----
-
-## 3) Recomendación “empresa”
-
-- No guardes ZIPs grandes en `main`.
-- Usa **GitHub Releases** para binarios/artefactos.
-- Mantén docs y código en árbol normal del repo.
+- No guardar ZIPs grandes en `main`.
+- Usar GitHub Releases para binarios/artefactos.
+- Mantener docs y código en el árbol normal del repositorio.

@@ -1,15 +1,15 @@
 # OCC: Runtime auditable para veredictos operacionales
 
 <section class="occ-hero reveal-on-scroll">
-  <p class="occ-eyebrow">Operational Consistency Compiler</p>
-  <p class="occ-title">Ejecuta claims, valida módulos MRD y genera veredictos reproducibles</p>
+  <p class="occ-eyebrow">Compilador de Consistencia Operacional</p>
+  <p class="occ-title">Ejecuta afirmaciones, valida módulos MRD y genera veredictos reproducibles</p>
   <p class="occ-lead">
     OCC prioriza afirmaciones falsables con una salida simple y auditable:
     <strong>PASS</strong>, <strong>FAIL</strong> o <strong>NO-EVAL</strong>.
   </p>
   <div class="occ-cta-row">
-    <a class="md-button md-button--primary" href="START_HERE.md">Arrancar en 5 minutos</a>
-    <a class="md-button" href="USAGE.md">Ver comandos del CLI</a>
+    <a class="md-button md-button--primary" href="START_HERE.es.md">Arrancar en 5 minutos</a>
+    <a class="md-button" href="USAGE.es.md">Ver comandos del CLI</a>
   </div>
 </section>
 
@@ -60,15 +60,15 @@ occ predict list</code></pre>
   </article>
   <article class="occ-card reveal-on-scroll">
     <h3>3) Ejecutar una evaluación real</h3>
-    <p>Lanza un bundle y genera reporte en JSON.</p>
+    <p>Lanza un paquete y genera un reporte en JSON.</p>
     <pre><code>occ run ILSC_MRD_suite_15_modulos_CANON/mrd_obs_isaac/inputs/mrd_obs_isaac/pass.yaml --out out/</code></pre>
   </article>
 </section>
 
 ## Navegación canónica
 
-- [Start Here](START_HERE.md): entrada guiada para primera ejecución.
-- [Executive Summary](EXECUTIVE_SUMMARY.md): visión científica compacta.
-- [Glosario](GLOSSARY.md): términos clave y contexto para no expertos.
-- [Suite MRD](MRD_SUITE.md): estructura de módulos y lógica de veredictos.
-- [Índice Canónico](INDEX_CANONICAL.md): mapa completo de documentación y assets.
+- [Empieza aquí](START_HERE.es.md): entrada guiada para la primera ejecución.
+- [Resumen ejecutivo](EXECUTIVE_SUMMARY.es.md): visión científica compacta.
+- [Glosario](GLOSSARY.es.md): términos clave y contexto para no especialistas.
+- [Suite MRD](MRD_SUITE.es.md): estructura de módulos y lógica de veredictos.
+- [Índice canónico](INDEX_CANONICAL.es.md): mapa completo de documentación y recursos.

@@ -3,7 +3,7 @@
 El CLI está pensado para dos casos:
 
 1. Ejecutar MRDs (suite canónica y extensiones).
-2. Hacer *discoverability* (listar módulos, predicciones, diagnosticar el repo).
+2. Mejorar la capacidad de descubrimiento (listar módulos, predicciones y diagnósticos).
 
 ## Comandos principales
 
@@ -16,14 +16,14 @@ occ list --suite extensions
 occ list --json
 ```
 
-### Ejecutar un bundle
+### Ejecutar un paquete
 
 ```bash
 occ run ILSC_MRD_suite_15_modulos_CANON/mrd_4f_dict/inputs/mrd_4f_dict/pass.yaml
 occ run ... --out out/
 ```
 
-### Verificar una suite completa
+### Verificar suites completas
 
 ```bash
 occ verify
@@ -45,7 +45,7 @@ occ research examples/claim_specs/minimal_pass.yaml
 occ research examples/claim_specs/minimal_pass.yaml --max-results 8 --show 5 --json
 ```
 
-### Generación automática de módulo
+### Generación automática de módulos
 
 ```bash
 occ module auto examples/claim_specs/minimal_pass.yaml
@@ -55,12 +55,12 @@ occ module auto examples/claim_specs/minimal_pass.yaml --create-prediction --pub
 
 Esto crea un módulo en `ILSC_MRD_suite_extensions/` con:
 
-- runner auto-generado
+- runner autogenerado
 - `module_context.json` con jueces/candados aplicados
-- investigación web (arXiv/Crossref, best-effort)
+- contexto de investigación web opcional (arXiv/Crossref, mejor esfuerzo)
 - borrador de predicción opcional
 
-### Judges (claim spec)
+### Jueces (especificación de afirmación)
 
 ```bash
 occ judge examples/claim_specs/minimal_pass.yaml

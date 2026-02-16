@@ -1,137 +1,74 @@
-# Executive Summary (científico)
+# Resumen ejecutivo (científico)
 
-Este documento existe para responder, en 5–10 minutos, a la pregunta:
+Este documento responde, en 5-10 minutos, a la pregunta:
 
-> **¿Para qué sirve OCC y cómo se usa sin leer 300+ páginas?**
+> ¿Para qué sirve OCC y cómo se usa sin leer 300+ páginas?
 
-Si luego quieres el detalle formal completo, el compendio está aquí:
+Si necesitas detalle formal completo, el compendio está aquí:
 
 - [`OCC_Compendio_Canonico_Completo.pdf`](OCC_Compendio_Canonico_Completo.pdf)
 
----
+## 1) El problema que OCC busca resolver
 
-## 1) El problema que OCC intenta resolver
+En física teórica moderna, especialmente en contextos UV/BSM, muchas afirmaciones son
+matemáticamente consistentes pero operacionalmente ambiguas:
 
-En física teórica moderna (especialmente en extensiones BSM/UV), es frecuente encontrarse con
-afirmaciones que son matemáticamente consistentes pero **operacionalmente ambiguas**:
+- dependen de escalas o parámetros inaccesibles,
+- recuperan ajuste reintroduciendo libertad UV oculta,
+- o no declaran un dominio medible donde la afirmación pueda evaluarse.
 
-- dependen de escalas o parámetros en regímenes inaccesibles,
-- reintroducen libertad “oculta” cuando el ajuste falla,
-- o no especifican un dominio de medición donde la afirmación se pueda evaluar.
+Esto produce **malleabilidad UV** en la práctica: el modelo se vuelve difícil de falsar
+al desplazar supuestos inaccesibles en lugar de asumir compromisos robustos y testeables.
 
-En la práctica, esto produce un patrón conocido como **malleabilidad UV**:
+## 2) Qué es OCC
 
-- si el dato no aparece, se “mueve” la escala,
-- si un observable falla, se introduce otra pieza UV,
-- si hay tensión con restricciones generales, se apela a un sector inaccesible.
+OCC combina:
 
-Esto no es una crítica a la teoría en sí: es un **problema de despliegue** (*deployment*) y falsabilidad
-cuando el contenido físico queda fuera del alcance operacional.
+1. Un conjunto canónico de documentación (términos, reglas y criterios).
+2. Un runtime con CLI (`occ`) que ejecuta una suite MRD de 15 módulos y emite veredictos auditables.
 
----
+Puede leerse como disciplina de compilación para afirmaciones:
 
-## 2) ¿Qué es OCC?
+- entrada: afirmación + paquete operacional mínimo
+- salida: veredicto + reporte trazable
 
-OCC (Operational Consistency Compiler) combina:
+## 3) Concepto central: dominio operacional `Omega_I`
 
-1. **Un canon** (documentación extensa) que define términos, reglas y criterios.
-2. Un **runtime CLI** (`occ`) que ejecuta una suite MRD (15 módulos) y produce veredictos con reportes.
+Una afirmación útil debe declarar explícitamente `Omega_I`:
 
-La intención es tratar afirmaciones físicas con una disciplina similar a “compilación”:
-
-- input → afirmación + bundle/estructura mínima,
-- output → veredicto + reporte auditable.
-
----
-
-## 3) Concepto central: dominio operacional \(\Omega_I\)
-
-Una afirmación física útil necesita declarar, explícitamente, su dominio operacional \(\Omega_I\):
-
-- qué magnitudes son medibles,
+- qué es medible,
 - con qué procedimientos,
-- en qué régimen de escalas/precisión,
-- y con qué supuestos mínimos.
+- en qué régimen de escala/precisión,
+- con qué supuestos mínimos.
 
-Cuando una afirmación no declara (o no puede declarar) un \(\Omega_I\) consistente, el resultado típico
-no es “falso”: es **NO‑EVAL**.
+Cuando esto no puede declararse consistentemente, el resultado típico es **NO-EVAL**.
 
----
+## 4) Veredictos: PASS / FAIL / NO-EVAL
 
-## 4) Veredictos: PASS / FAIL / NO‑EVAL
+- **PASS**: evaluable en `Omega_I` y consistente con restricciones del módulo.
+- **FAIL**: evaluable, pero falla consistencia/restricciones.
+- **NO-EVAL**: no evaluable operacionalmente bajo los supuestos declarados.
 
-OCC entrega veredictos con significado operativo:
+Interpretación importante:
 
-- **PASS**: la afirmación es evaluable en \(\Omega_I\) y pasa restricciones inevitables dentro del alcance del módulo.
-- **FAIL**: la afirmación es evaluable, pero falla restricciones/consistencia (con reporte del motivo).
-- **NO‑EVAL**: no se puede evaluar de forma operacional bajo lo declarado (falta definición, medición o cierre).
+- PASS no demuestra verdad: indica viabilidad operacional.
+- FAIL no descarta globalmente una idea: señala un conflicto específico.
+- NO-EVAL no es rechazo: indica falta de cierre operacional.
 
-**Interpretación importante:**
-
-- PASS no “demuestra verdad”: indica *viabilidad operacional* para entrar a la siguiente etapa.
-- FAIL no “mata” toda una idea: indica un conflicto concreto que debe resolverse sin reinyección UV.
-- NO‑EVAL no es insulto: es una invitación a **declarar mejor** el dominio/medición.
-
----
-
-## 5) ¿Cómo se usa (mínimo)?
-
-### Ruta rápida
-
-1) Instala y valida:
+## 5) Uso mínimo
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -e ".[dev]"
-occ --help
-pytest -q
+occ doctor
+occ list
+occ run ILSC_MRD_suite_15_modulos_CANON/mrd_obs_isaac/inputs/mrd_obs_isaac/pass.yaml --out out/
+occ verify --suite extensions
+occ predict list
 ```
 
-2) Ejecuta un bundle de ejemplo:
+## 6) Predicción destacada
 
-```bash
-occ run ILSC_MRD_suite_15_modulos_CANON/mrd_4f_dict/inputs/mrd_4f_dict/pass.yaml --out out/
-cat out/report.json
-```
+El canon destaca una predicción falsable:
 
-3) Suite completa (puede tardar):
+- **Correlación EDM ↔ GW** en escenarios de bariogénesis.
 
-```bash
-occ verify
-```
-
----
-
-## 6) “Killer example” (lo que debes buscar en el canon)
-
-El canon destaca una predicción falsable pensada para conectar marco ↔ observables:
-
-- **Correlación EDM ↔ GW en bariogénesis**
-
-Este tipo de ancla experimental es clave porque fuerza a que el marco no quede en un régimen UV
-inaccesible: se compromete con una ruta de falsación.
-
-> Nota: el compendio contiene el desarrollo completo, supuestos y condiciones. Este summary solo
-> te dice “dónde mirar” y “por qué importa”.
-
----
-
-## 7) Para no‑expertos (experimentalistas, cosmología, etc.)
-
-Si llegas aquí sin el vocabulario interno:
-
-- abre el glosario: [`GLOSSARY.md`](GLOSSARY.md)
-- luego mira el índice: [`INDEX_CANONICAL.md`](INDEX_CANONICAL.md)
-- y vuelve al CLI cuando tengas la ruta.
-
----
-
-## 8) Siguiente paso recomendado (impacto/comunidad)
-
-Para maximizar *discoverability*:
-
-1) Preprint (ArXiv): 8–10 páginas (hep-ph o subárea relevante), centrado en la predicción destacada.
-2) DOI (Zenodo): conectar repo → crear release → obtener DOI y badge.
-
-Guía práctica: [`RELEASING.md`](RELEASING.md)
+Es un punto de entrada práctico para planificación experimental y estrategia de falsación.

@@ -6,7 +6,7 @@ La suite canónica vive en:
 
 Cada módulo suele contener:
 
-- `inputs/` → bundles YAML de prueba (PASS/FAIL/NO‑EVAL)
+- `inputs/` → paquetes YAML de prueba (PASS/FAIL/NO‑EVAL)
 - `scripts/` → runner(s) Python (`run_mrd_*.py` o `run_*.py`)
 - `outputs/` → reportes `.report.json` canónicos (útiles para regresión)
 
@@ -15,7 +15,7 @@ Cada módulo suele contener:
 Forma recomendada:
 
 ```bash
-occ run ILSC_MRD_suite_15_modulos_CANON/<modulo>/inputs/<modulo>/<bundle>.yaml --out out/
+occ run ILSC_MRD_suite_15_modulos_CANON/<modulo>/inputs/<modulo>/<paquete>.yaml --out out/
 ```
 
 ## Verificar todo

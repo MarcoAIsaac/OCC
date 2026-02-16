@@ -61,22 +61,22 @@ plugins:
           nav:
             - Inicio: "index.md"
             - Primeros pasos:
-                - Start Here: "START_HERE.md"
+                - Empieza aquí: "START_HERE.md"
                 - CLI: "CLI.md"
                 - Uso: "USAGE.md"
-                - Troubleshooting: "TROUBLESHOOTING.md"
+                - Resolución de problemas: "TROUBLESHOOTING.md"
             - Marco OCC:
-                - Executive Summary: "EXECUTIVE_SUMMARY.md"
+                - Resumen ejecutivo: "EXECUTIVE_SUMMARY.md"
                 - Glosario: "GLOSSARY.md"
                 - FAQ: "FAQ.md"
-                - Judges y Locks: "JUDGES_LOCKS.md"
+                - Jueces y candados: "JUDGES_LOCKS.md"
             - Suite MRD:
                 - Suite canónica: "MRD_SUITE.md"
                 - Extensiones: "MRD_EXTENSIONS.md"
-                - Predictions Registry: "PREDICTIONS_REGISTRY.md"
+                - Registro de predicciones: "PREDICTIONS_REGISTRY.md"
             - Canon:
                 - Índice canónico: "INDEX_CANONICAL.md"
-                - Releasing: "RELEASING.md"
+                - Publicación: "RELEASING.md"
   - search
 
 markdown_extensions:
