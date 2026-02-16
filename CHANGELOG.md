@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on *Keep a Changelog* and this project adheres to *Semantic Versioning*.
 
+## [1.3.3] - 2026-02-16
+
+### Changed
+
+- Version metadata synchronized to `1.3.3` across project/release files:
+  `pyproject.toml`, `CITATION.cff`, `.zenodo.json`.
+- Documentation release examples updated to `1.3.3` (`README` EN/ES, `docs/RELEASING` EN/ES).
+- `occ/science_research.py` user-agent fallback updated to `1.3.3`.
+
 ## [1.3.2] - 2026-02-16
 
 ### Fixed

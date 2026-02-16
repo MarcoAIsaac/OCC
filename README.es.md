@@ -115,9 +115,9 @@ Descargar paquete preconstruido más reciente para Windows:
 
 Si los enlaces directos devuelven `404`, abre la página del release y espera a que el workflow
 `Windows desktop release` termine de subir los assets.
-Ese pipeline corre automáticamente cuando empujas un tag de versión (por ejemplo `1.3.1` o `v1.3.1`).
+Ese pipeline corre automáticamente cuando empujas un tag de versión (por ejemplo `1.3.3` o `v1.3.3`).
 Si hace falta, ejecuta ese workflow manualmente y usa `release_tag` con la versión
-(ejemplo `1.3.1`) para adjuntar assets a un release ya existente.
+(ejemplo `1.3.3`) para adjuntar assets a un release ya existente.
 
 Verificación SHA256 en Windows:
 
@@ -217,7 +217,7 @@ Para ejecuciones largas, conviene usar el flujo manual de verificación completa
 
 ## Expansiones de dominio
 
-`v1.3.0` mantiene el conjunto de candados nucleares (`nuclear_guard`, `NUC*`) y agrega
+`v1.3.3` mantiene el conjunto de candados nucleares (`nuclear_guard`, `NUC*`) y agrega
 distribución de escritorio para Windows vía GitHub Releases
 (`OCCDesktop-windows-x64.exe/.zip`).
 
