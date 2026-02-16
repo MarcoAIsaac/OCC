@@ -65,6 +65,7 @@ $iconPath = "build/occ_desktop.ico"
 if (!(Test-Path $iconPath)) {
   throw "Failed to generate icon at $iconPath"
 }
+$iconPath = (Resolve-Path $iconPath).Path
 
 & $Python -m PyInstaller `
   --noconfirm `
@@ -78,9 +79,10 @@ if (!(Test-Path $iconPath)) {
   occ/desktop.py
 
 New-Item -ItemType Directory -Path "release-windows" | Out-Null
+$releaseDir = (Resolve-Path "release-windows").Path
 
 $exeSource = "dist/$Name.exe"
-$exeTarget = "release-windows/OCCDesktop-windows-x64.exe"
+$exeTarget = Join-Path $releaseDir "OCCDesktop-windows-x64.exe"
 Copy-Item $exeSource $exeTarget -Force
 
 $tempDir = if (![string]::IsNullOrWhiteSpace($env:RUNNER_TEMP)) {
@@ -111,10 +113,10 @@ else {
   Write-Host "Code signing skipped (certificate secrets not configured)."
 }
 
-$zipTarget = "release-windows/OCCDesktop-windows-x64.zip"
+$zipTarget = Join-Path $releaseDir "OCCDesktop-windows-x64.zip"
 Compress-Archive -Path $exeTarget -DestinationPath $zipTarget -Force
 
-$setupTarget = "release-windows/OCCDesktop-Setup-windows-x64.exe"
+$setupTarget = Join-Path $releaseDir "OCCDesktop-Setup-windows-x64.exe"
 if ($BuildInstaller) {
   $iscc = Get-Command iscc.exe -ErrorAction SilentlyContinue | Select-Object -First 1
   if ($null -eq $iscc) {
@@ -126,12 +128,14 @@ if ($BuildInstaller) {
     $appVersion = "0.0.0"
   }
 
+  $issScript = (Resolve-Path "scripts/windows/OCCDesktopSetup.iss").Path
+
   & $iscc.Source `
     "/DAppVersion=$appVersion" `
     "/DExeFile=$exeTarget" `
-    "/DOutputDir=release-windows" `
+    "/DOutputDir=$releaseDir" `
     "/DSetupIconFile=$iconPath" `
-    "scripts/windows/OCCDesktopSetup.iss"
+    $issScript
 
   if (!(Test-Path $setupTarget)) {
     throw "Installer not generated at $setupTarget"
@@ -159,12 +163,12 @@ if (Test-Path $setupTarget) {
   $hashLines += "$((Get-FileHash -Path $setupTarget -Algorithm SHA256).Hash.ToLowerInvariant())  OCCDesktop-Setup-windows-x64.exe"
 }
 
-$hashPath = "release-windows/OCCDesktop-windows-x64.sha256"
+$hashPath = Join-Path $releaseDir "OCCDesktop-windows-x64.sha256"
 $hashLines | Set-Content -Path $hashPath -Encoding ascii
 
 Write-Host ""
 Write-Host "Done. Release assets:"
-Write-Host "  release-windows/OCCDesktop-windows-x64.exe"
-Write-Host "  release-windows/OCCDesktop-windows-x64.zip"
-if (Test-Path $setupTarget) { Write-Host "  release-windows/OCCDesktop-Setup-windows-x64.exe" }
-Write-Host "  release-windows/OCCDesktop-windows-x64.sha256"
+Write-Host "  $exeTarget"
+Write-Host "  $zipTarget"
+if (Test-Path $setupTarget) { Write-Host "  $setupTarget" }
+Write-Host "  $hashPath"
