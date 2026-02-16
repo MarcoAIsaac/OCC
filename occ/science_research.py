@@ -14,7 +14,9 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Mapping
 
-USER_AGENT = "occ-mrd-runner/1.1 (+https://github.com/MarcoAIsaac/OCC)"
+from .version import get_version
+
+USER_AGENT = f"occ-mrd-runner/{get_version('1.2.0')} (+https://github.com/MarcoAIsaac/OCC)"
 
 
 def _now_iso() -> str:
@@ -50,12 +52,19 @@ def build_query_from_claim(claim: Mapping[str, Any]) -> str:
 
     domain = claim.get("domain")
     if isinstance(domain, Mapping):
+        for key in ("sector", "field", "discipline", "domain_type", "reaction_channel"):
+            raw = domain.get(key)
+            if isinstance(raw, str):
+                raw_parts.append(raw)
         omega = domain.get("omega_I")
         if isinstance(omega, str):
             raw_parts.append(omega)
         observables = domain.get("observables")
         if isinstance(observables, list):
             raw_parts.extend(str(x) for x in observables)
+        isotopes = domain.get("isotopes")
+        if isinstance(isotopes, list):
+            raw_parts.extend(str(x) for x in isotopes)
 
     params = claim.get("parameters")
     if isinstance(params, list):

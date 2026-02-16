@@ -72,6 +72,8 @@ Runs built-in judges on a claim spec.
 
 ```bash
 occ judge examples/claim_specs/minimal_pass.yaml
+occ judge examples/claim_specs/nuclear_pass.yaml --profile nuclear
+occ judge examples/claim_specs/minimal_pass.yaml --json
 ```
 
 ### `occ verify`

@@ -64,5 +64,7 @@ This creates a module under `ILSC_MRD_suite_extensions/` with:
 
 ```bash
 occ judge examples/claim_specs/minimal_pass.yaml
+occ judge examples/claim_specs/nuclear_pass.yaml --profile nuclear
 occ judge examples/claim_specs/trace_noeval.yaml --strict-trace --out out/judge.json
+occ judge examples/claim_specs/minimal_pass.yaml --json
 ```

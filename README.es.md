@@ -82,6 +82,7 @@ occ doctor
 occ list
 occ predict list
 occ judge examples/claim_specs/minimal_pass.yaml
+occ judge examples/claim_specs/nuclear_pass.yaml --profile nuclear
 ```
 
 ## Generación automática de módulos
@@ -136,6 +137,11 @@ occ verify
 ```
 
 Para ejecuciones largas, conviene usar el flujo manual de verificación completa en GitHub Actions.
+
+## Expansiones de dominio
+
+`v1.2.0` añade un conjunto de candados operacionales para el dominio nuclear
+(`nuclear_guard`, códigos `NUC*`) y cobertura en extensiones con `mrd_nuclear_guard`.
 
 ## Estructura del repositorio
 

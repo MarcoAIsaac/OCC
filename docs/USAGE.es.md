@@ -72,6 +72,8 @@ Ejecuta jueces básicos sobre una especificación de afirmación.
 
 ```bash
 occ judge examples/claim_specs/minimal_pass.yaml
+occ judge examples/claim_specs/nuclear_pass.yaml --profile nuclear
+occ judge examples/claim_specs/minimal_pass.yaml --json
 ```
 
 ### `occ verify`

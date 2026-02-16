@@ -82,6 +82,7 @@ occ doctor
 occ list
 occ predict list
 occ judge examples/claim_specs/minimal_pass.yaml
+occ judge examples/claim_specs/nuclear_pass.yaml --profile nuclear
 ```
 
 ## Automatic module generation
@@ -136,6 +137,11 @@ occ verify
 ```
 
 For long runs, prefer the manual full-suite workflow in GitHub Actions.
+
+## Domain expansions
+
+`v1.2.0` adds a nuclear-domain operational lock set (`nuclear_guard`, codes `NUC*`)
+and extension MRD coverage (`mrd_nuclear_guard`).
 
 ## Repository layout
 

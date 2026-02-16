@@ -1,0 +1,22 @@
+# Example: nuclear claim with missing reaction channel -> NO-EVAL(NUC6)
+
+claim_id: "CLAIM-NUCLEAR-0002"
+title: "Incomplete nuclear claim"
+
+domain:
+  sector: "nuclear"
+  omega_I: "Fast-neutron scattering setup"
+  observables:
+    - "Differential scattering cross section"
+  energy_range_mev:
+    min_mev: 1.0
+    max_mev: 14.0
+  isotopes:
+    - "Fe-56"
+  detectors:
+    - "Time-of-flight spectrometer"
+
+parameters:
+  - name: "effective_scattering_term"
+    accessible: true
+    affects_observables: true

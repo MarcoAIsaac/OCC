@@ -10,6 +10,7 @@ The registry addresses that discoverability gap.
 ```bash
 occ predict list
 occ predict show P-0003
+occ predict show P-0004
 ```
 
 ## Add a prediction

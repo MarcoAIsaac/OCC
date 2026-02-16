@@ -60,7 +60,13 @@ occ run ILSC_MRD_suite_15_modulos_CANON/mrd_obs_isaac/inputs/mrd_obs_isaac/pass.
 cat out/report.json
 ```
 
-4. Optional full verification
+4. Optional judge examples
+
+```bash
+occ judge examples/claim_specs/nuclear_pass.yaml --profile nuclear
+```
+
+5. Optional full verification
 
 ```bash
 occ verify

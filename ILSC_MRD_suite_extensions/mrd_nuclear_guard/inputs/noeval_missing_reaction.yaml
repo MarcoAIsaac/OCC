@@ -1,0 +1,20 @@
+claim_id: "MRD-NUC-NOEVAL"
+title: "Nuclear guard NO-EVAL missing reaction channel"
+
+domain:
+  sector: "nuclear"
+  omega_I: "Fast-neutron scattering"
+  observables:
+    - "Differential scattering cross section"
+  energy_range_mev:
+    min_mev: 1.0
+    max_mev: 14.0
+  isotopes:
+    - "Fe-56"
+  detectors:
+    - "Time-of-flight spectrometer"
+
+parameters:
+  - name: "effective_coupling"
+    accessible: true
+    affects_observables: true

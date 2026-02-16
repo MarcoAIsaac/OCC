@@ -275,10 +275,17 @@ def cmd_judge(args: argparse.Namespace) -> int:
             )
         )
 
-    pipeline = default_judges(strict_trace=bool(args.strict_trace))
+    include_nuclear = str(args.profile) == "nuclear"
+    pipeline = default_judges(
+        strict_trace=bool(args.strict_trace),
+        include_nuclear=include_nuclear,
+    )
     report = run_pipeline(claim, pipeline)
     verdict = report.get("verdict")
-    if isinstance(verdict, str):
+
+    if args.json:
+        print(json.dumps(report, indent=2, ensure_ascii=False))
+    elif isinstance(verdict, str):
         RPRINT(verdict)
 
     if args.out:
@@ -380,17 +387,28 @@ def cmd_research(args: argparse.Namespace) -> int:
 
 
 def cmd_module_auto(args: argparse.Namespace) -> int:
-    res = auto_generate_module(
-        claim_path=Path(args.claim),
-        start=Path.cwd(),
-        module_name=args.module_name,
-        with_research=not bool(args.no_research),
-        max_sources=max(1, int(args.max_sources)),
-        create_prediction=bool(args.create_prediction),
-        publish_prediction=bool(args.publish_prediction),
-        register_manifest=not bool(args.no_manifest),
-        force=bool(args.force),
-    )
+    try:
+        res = auto_generate_module(
+            claim_path=Path(args.claim),
+            start=Path.cwd(),
+            module_name=args.module_name,
+            with_research=not bool(args.no_research),
+            max_sources=max(1, int(args.max_sources)),
+            create_prediction=bool(args.create_prediction),
+            publish_prediction=bool(args.publish_prediction),
+            register_manifest=not bool(args.no_manifest),
+            force=bool(args.force),
+        )
+    except FileNotFoundError as e:
+        print(str(e), file=sys.stderr)
+        return 2
+    except ValueError as e:
+        print(str(e), file=sys.stderr)
+        return 2
+    except RuntimeError as e:
+        print(str(e), file=sys.stderr)
+        return 1
+
     if args.json:
         print(json.dumps(res, indent=2, ensure_ascii=False))
         return 0
@@ -546,6 +564,13 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Require all declared source paths to exist.",
     )
+    pj.add_argument(
+        "--profile",
+        default="core",
+        choices=["core", "nuclear"],
+        help="Judge profile: core (default) or nuclear (adds NUC lock package).",
+    )
+    pj.add_argument("--json", action="store_true", help="Emit full judge report as JSON")
     pj.add_argument("--out", help="Write report JSON to this path")
     pj.set_defaults(func=cmd_judge)
 

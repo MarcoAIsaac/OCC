@@ -21,3 +21,12 @@ modules:
         expect: "PASS"
       - input: fail_duplicate_id.yaml
         expect: "FAIL(REG2)"
+
+  - name: mrd_nuclear_guard
+    cases:
+      - input: pass.yaml
+        expect: "PASS"
+      - input: noeval_missing_reaction.yaml
+        expect: "NO-EVAL(NUC6)"
+      - input: fail_data_anchor.yaml
+        expect: "FAIL(NUC12E)"

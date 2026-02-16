@@ -1,0 +1,34 @@
+# Example: nuclear claim satisfying NUC Class-C and Class-E locks -> PASS
+# Evidence anchor uses published U-238 thermal capture cross section (n,gamma).
+
+claim_id: "CLAIM-NUCLEAR-0001"
+title: "U-238 thermal capture consistency claim"
+
+domain:
+  sector: "Nuclear Physics"
+  omega_I: "Thermal-neutron capture at 0.0253 eV"
+  observables:
+    - "U-238 neutron capture cross section"
+  energy_range_mev:
+    min_mev: 2.50e-8
+    max_mev: 2.56e-8
+  isotopes:
+    - "U-238"
+  reaction_channel: "(n,gamma)"
+  detectors:
+    - "Activation gamma spectrometry"
+
+model:
+  predicted_cross_section_barns: 2.690
+
+evidence:
+  observed_cross_section_barns: 2.683
+  sigma_cross_section_barns: 0.012
+  max_sigma: 3.0
+  dataset_ref: "Trkov et al., Nuclear Science and Engineering 150 (2005)"
+  source_url: "https://www.osti.gov/biblio/924832"
+
+parameters:
+  - name: "effective_capture_term"
+    accessible: true
+    affects_observables: true

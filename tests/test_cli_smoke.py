@@ -47,6 +47,18 @@ def test_occ_judge_minimal_pass() -> None:
     assert "PASS" in proc.stdout
 
 
+def test_occ_judge_nuclear_pass() -> None:
+    proc = _occ("judge", "examples/claim_specs/nuclear_pass.yaml", "--profile", "nuclear")
+    assert proc.returncode == 0, proc.stderr
+    assert "PASS" in proc.stdout
+
+
+def test_occ_judge_json_contract() -> None:
+    proc = _occ("judge", "examples/claim_specs/minimal_pass.yaml", "--json")
+    assert proc.returncode == 0, proc.stderr
+    assert "\"schema\": \"occ.judge_report.v1\"" in proc.stdout
+
+
 def test_occ_verify_extensions_strict() -> None:
     proc = _occ("verify", "--suite", "extensions", "--strict", "--timeout", "60")
     assert proc.returncode == 0, proc.stderr

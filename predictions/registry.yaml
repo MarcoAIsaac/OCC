@@ -23,3 +23,22 @@ predictions:
     timeframe: "Mid-term (depends on experimental / observational programs)"
     references:
       - "docs/OCC_Compendio_Canonico_Completo.pdf"
+
+  - id: P-0004
+    title: "Capture-yield / delayed-neutron consistency window in isotope-resolved campaigns"
+    status: draft
+    summary: >-
+      In isotope-resolved neutron campaigns, OCC predicts a falsifiable consistency
+      window linking prompt capture-yield channels with delayed-neutron fractions
+      across the same declared energy range and reaction channel.
+    domain: "Nuclear Physics / Reactor-relevant neutron interactions"
+    observables:
+      - "Prompt gamma capture yield as a function of neutron energy"
+      - "Delayed-neutron fraction by isotope and energy bin"
+    tests:
+      - "Joint fit consistency over shared energy_range_mev and isotope set"
+      - "Cross-lab replication with identical reaction_channel declarations"
+    timeframe: "Near-term (existing neutron beamline and spectroscopy programs)"
+    references:
+      - "docs/OCC_Compendio_Canonico_Completo.pdf"
+      - "module:mrd_nuclear_guard"

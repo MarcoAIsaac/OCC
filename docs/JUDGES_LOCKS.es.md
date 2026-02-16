@@ -31,6 +31,32 @@ materialmente los observables.
 
 Si los afectan, el resultado es **NO-EVAL(UV*)**.
 
+### `nuclear_guard` (NUC*) — paquete de candados por dominio
+
+Es un paquete de candados por dominio (clase C / clase E), no un juez fundacional J.
+Los jueces fundacionales siguen siendo J0–J3 (ISAAC/PA/IO/RFS) según el compendio.
+
+Se usa con:
+
+```bash
+occ judge examples/claim_specs/nuclear_pass.yaml --profile nuclear
+```
+
+Se aplica solo a afirmaciones etiquetadas explícitamente en dominio nuclear y exige:
+
+- `domain.energy_range_mev.{min_mev,max_mev}`
+- `domain.isotopes[]`
+- `domain.reaction_channel`
+- `domain.detectors[]`
+
+Chequeo de anclaje de evidencia (clase E):
+
+- `z = |sigma_pred - sigma_obs| / sigma_obs_err <= z_max`
+- metadatos de trazabilidad: `evidence.dataset_ref` y (`evidence.source_url` o `evidence.dataset_doi`)
+
+Si faltan declaraciones obligatorias, el resultado es **NO-EVAL(NUC*)**.
+Si el anclaje numérico es inconsistente, el resultado es **FAIL(NUC12E)**.
+
 ### `trace` (TR*)
 
 Genera un mapa de evidencias `ruta -> sha256` para rutas declaradas en `sources:`.

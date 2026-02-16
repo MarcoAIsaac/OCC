@@ -7,6 +7,7 @@ It contains *meta‑MRDs* that validate:
 
 - Claim spec shape + minimal operational domain locks
 - UV guard behavior (NO‑EVAL when inaccessible knobs affect observables)
+- Nuclear lock behavior (domain-specific NUC* Class-C / Class-E locks)
 - Predictions registry integrity
 
 Run it via:

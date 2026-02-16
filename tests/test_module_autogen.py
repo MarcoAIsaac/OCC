@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from occ.module_autogen import auto_generate_module
 from occ.suites import SUITE_EXTENSIONS
 
@@ -88,3 +90,24 @@ def test_auto_generate_detects_existing_module(tmp_path: Path) -> None:
     assert out["created"] is False
     assert out["matched_existing"] is True
     assert out["module"] == "mrd_existing"
+
+
+def test_auto_generate_validates_claim_shape(tmp_path: Path) -> None:
+    _bootstrap_repo(tmp_path)
+    claim = tmp_path / "invalid_claim.yaml"
+    claim.write_text(
+        "\n".join(
+            [
+                "claim_id: CLAIM-003",
+                "title: \"\"",
+                "domain:",
+                "  omega_I: demo",
+                "  observables: []",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="not valid for module auto-generation"):
+        auto_generate_module(claim_path=claim, start=tmp_path, with_research=False)

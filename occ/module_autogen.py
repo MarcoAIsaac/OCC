@@ -12,10 +12,12 @@ from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
 from .catalog import build_catalog
+from .judges.nuclear_guard import claim_is_nuclear
 from .judges.pipeline import default_judges, run_pipeline
 from .science_research import research_claim
 from .suites import SUITE_EXTENSIONS, discover_suite_roots, find_repo_root
 from .util import simple_yaml
+from .version import get_version
 
 try:
     import yaml as _pyyaml  # type: ignore[import-untyped]
@@ -55,6 +57,44 @@ def load_claim_file(path: Path) -> Dict[str, Any]:
     if not isinstance(obj, dict):
         raise ValueError("Claim must be a mapping (YAML/JSON object)")
     return obj
+
+
+def _validate_claim_for_autogen(claim: Mapping[str, Any]) -> None:
+    errors: list[str] = []
+
+    title = claim.get("title")
+    if not isinstance(title, str) or not title.strip():
+        errors.append("Missing required string field: title")
+
+    domain = claim.get("domain")
+    if not isinstance(domain, Mapping):
+        errors.append("Missing required mapping field: domain")
+    else:
+        omega = domain.get("omega_I")
+        if not isinstance(omega, (str, Mapping)):
+            errors.append("Missing required domain field: domain.omega_I")
+
+        observables = domain.get("observables")
+        if not isinstance(observables, list) or not observables:
+            errors.append("Missing required domain field: domain.observables[] (non-empty list)")
+
+    params = claim.get("parameters")
+    if params is not None:
+        if not isinstance(params, list):
+            errors.append("Invalid field: parameters must be a list when provided")
+        else:
+            for i, p in enumerate(params):
+                if not isinstance(p, Mapping):
+                    errors.append(f"Invalid parameters[{i}]: expected mapping")
+                    continue
+                name = p.get("name")
+                if not isinstance(name, str) or not name.strip():
+                    errors.append(f"Invalid parameters[{i}]: missing string name")
+
+    if errors:
+        raise ValueError(
+            "Claim is not valid for module auto-generation:\n- " + "\n- ".join(errors)
+        )
 
 
 def _verdict_prefix(verdict: str) -> str:
@@ -191,7 +231,14 @@ def _runner_script(module_name: str) -> str:
                 except Exception:
                     ctx = {{}}
 
-            report = run_pipeline(claim, default_judges(strict_trace=False))
+            include_nuclear = bool(ctx.get("include_nuclear_profile", False))
+            report = run_pipeline(
+                claim,
+                default_judges(
+                    strict_trace=False,
+                    include_nuclear=include_nuclear,
+                ),
+            )
             verdict = str(report.get("verdict"))
 
             out: Dict[str, Any] = {{
@@ -424,12 +471,24 @@ def auto_generate_module(
         raise FileNotFoundError(f"Claim file not found: {claim_path}")
 
     claim = load_claim_file(claim_path)
+    _validate_claim_for_autogen(claim)
     existing = _find_existing_module(claim, start=start, requested_name=module_name)
-    report = run_pipeline(claim, default_judges(strict_trace=False))
+    include_nuclear_profile = claim_is_nuclear(claim)
+    report = run_pipeline(
+        claim,
+        default_judges(
+            strict_trace=False,
+            include_nuclear=include_nuclear_profile,
+        ),
+    )
     verdict = str(report.get("verdict") or "")
 
     if existing and not force:
         return {
+            "schema": "occ.module_autogen.result.v1",
+            "schema_version": "1.0",
+            "occ_version": get_version(),
+            "generated_at": _now_iso(),
             "created": False,
             "matched_existing": True,
             "module": existing,
@@ -481,10 +540,14 @@ def auto_generate_module(
                     locks_applied.append(code)
 
     context = {
+        "schema": "occ.module_context.v1",
+        "schema_version": "1.0",
+        "occ_version": get_version(),
         "module_name": module_name,
         "generated_at": _now_iso(),
         "source_claim": str(claim_path),
         "baseline_verdict": verdict,
+        "include_nuclear_profile": include_nuclear_profile,
         "locks_applied": locks_applied,
         "judge_report": report,
         "research": research,
@@ -520,6 +583,10 @@ def auto_generate_module(
             prediction_registry = _publish_prediction(pred_root, pred)
 
     return {
+        "schema": "occ.module_autogen.result.v1",
+        "schema_version": "1.0",
+        "occ_version": get_version(),
+        "generated_at": _now_iso(),
         "created": True,
         "matched_existing": False,
         "module": module_name,
