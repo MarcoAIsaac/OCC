@@ -99,6 +99,13 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/USAGE/"/>
     </url>
     <url>
+        <loc>NoneWORKFLOWS/</loc>
+        <lastmod>2026-02-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="NoneWORKFLOWS/"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/WORKFLOWS/"/>
+    </url>
+    <url>
         <loc>Nonees/</loc>
         <lastmod>2026-02-16</lastmod>
         <changefreq>daily</changefreq>
@@ -195,5 +202,12 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/USAGE/"/>
         <xhtml:link rel="alternate" hreflang="en" href="NoneUSAGE/"/>
+    </url>
+    <url>
+        <loc>Nonees/WORKFLOWS/</loc>
+        <lastmod>2026-02-16</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/WORKFLOWS/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="NoneWORKFLOWS/"/>
     </url>
 </urlset>

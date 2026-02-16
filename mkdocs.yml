@@ -27,6 +27,7 @@ nav:
       - Start Here: "START_HERE.md"
       - CLI: "CLI.md"
       - Usage: "USAGE.md"
+      - Automation Workflows: "WORKFLOWS.md"
       - Troubleshooting: "TROUBLESHOOTING.md"
   - OCC Framework:
       - Executive Summary: "EXECUTIVE_SUMMARY.md"
@@ -64,6 +65,7 @@ plugins:
                 - Empieza aquí: "START_HERE.md"
                 - CLI: "CLI.md"
                 - Uso: "USAGE.md"
+                - Flujos de automatización: "WORKFLOWS.md"
                 - Resolución de problemas: "TROUBLESHOOTING.md"
             - Marco OCC:
                 - Resumen ejecutivo: "EXECUTIVE_SUMMARY.md"

@@ -85,6 +85,21 @@ occ judge examples/claim_specs/minimal_pass.yaml
 occ judge examples/claim_specs/nuclear_pass.yaml --profile nuclear
 ```
 
+## Utilidades de mantenimiento
+
+```bash
+python scripts/release_doctor.py --strict
+python scripts/check_docs_i18n.py --strict
+python scripts/ci_doctor.py --workflow CI --limit 12
+python scripts/generate_release_notes.py
+```
+
+Flujo guiado de claim a módulo:
+
+```bash
+python scripts/mrd_flow.py examples/claim_specs/minimal_pass.yaml --generate-module
+```
+
 ## Generación automática de módulos
 
 Si una afirmación no mapea a un módulo existente, OCC puede generar un módulo en extensiones:

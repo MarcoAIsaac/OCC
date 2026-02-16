@@ -9,7 +9,7 @@ endif
 
 PY := $(VENV_BIN)/python
 
-.PHONY: help venv bootstrap install-dev install-docs smoke lint format typecheck test check verify docs-serve docs-build
+.PHONY: help venv bootstrap install-dev install-docs smoke lint format typecheck test check verify docs-serve docs-build release-doctor docs-i18n ci-doctor release-notes
 
 help:
 	@echo "Targets:"
@@ -19,6 +19,10 @@ help:
 	@echo "  verify      Run OCC suite verification"
 	@echo "  docs-serve  Serve docs locally with autoreload"
 	@echo "  docs-build  Build docs in strict mode"
+	@echo "  release-doctor  Validate release metadata consistency"
+	@echo "  docs-i18n       Audit EN/ES docs consistency and links"
+	@echo "  ci-doctor       Summarize recent failing GitHub Actions runs (requires gh auth)"
+	@echo "  release-notes   Generate release notes from CHANGELOG + commits"
 
 venv:
 	$(PYTHON) -m venv $(VENV)
@@ -57,3 +61,15 @@ docs-serve: install-docs
 
 docs-build: install-docs
 	$(PY) -m mkdocs build --strict
+
+release-doctor:
+	$(PY) scripts/release_doctor.py --strict
+
+docs-i18n:
+	$(PY) scripts/check_docs_i18n.py --strict
+
+ci-doctor:
+	$(PY) scripts/ci_doctor.py --limit 12 --workflow CI
+
+release-notes:
+	$(PY) scripts/generate_release_notes.py
