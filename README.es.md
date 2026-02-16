@@ -108,9 +108,9 @@ Descargar paquete preconstruido más reciente para Windows:
 
 Si los enlaces directos devuelven `404`, abre la página del release y espera a que el workflow
 `Windows desktop release` termine de subir los assets.
-Ese pipeline corre automáticamente cuando empujas un tag de versión (por ejemplo `v1.3.1`).
+Ese pipeline corre automáticamente cuando empujas un tag de versión (por ejemplo `1.3.1` o `v1.3.1`).
 Si hace falta, ejecuta ese workflow manualmente y usa `release_tag` con la versión
-(ejemplo `v1.3.0`) para adjuntar assets a un release ya existente.
+(ejemplo `1.3.0`) para adjuntar assets a un release ya existente.
 
 Verificación SHA256 en Windows:
 

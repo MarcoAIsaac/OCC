@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*"
+      - "*.*.*"
   workflow_dispatch:
     inputs:
       release_tag:
@@ -77,6 +78,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.resolve_tag.outputs.tag }}
+          overwrite_files: true
           files: |
             release-windows/OCCDesktop-windows-x64.exe
             release-windows/OCCDesktop-windows-x64.zip
