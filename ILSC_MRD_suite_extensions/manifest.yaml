@@ -1,0 +1,23 @@
+version: 1
+
+modules:
+  - name: mrd_meta_claimspec
+    cases:
+      - input: pass.yaml
+        expect: "PASS"
+      - input: noeval_missing_domain.yaml
+        expect: "NO-EVAL(DOM1)"
+
+  - name: mrd_uv_guard
+    cases:
+      - input: pass.yaml
+        expect: "PASS"
+      - input: noeval_uv.yaml
+        expect: "NO-EVAL(UV1)"
+
+  - name: mrd_predictions_registry
+    cases:
+      - input: pass.yaml
+        expect: "PASS"
+      - input: fail_duplicate_id.yaml
+        expect: "FAIL(REG2)"

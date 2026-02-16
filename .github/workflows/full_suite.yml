@@ -3,6 +3,9 @@ name: Full suite verification
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -24,4 +27,5 @@ jobs:
 
       - name: Run verify
         run: |
-          occ verify
+          occ verify --strict --timeout 180
+          occ verify --suite extensions --strict --timeout 60

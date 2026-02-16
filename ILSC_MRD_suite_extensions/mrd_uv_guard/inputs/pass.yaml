@@ -1,0 +1,12 @@
+claim_id: "MRD-UV-PASS"
+title: "UV guard PASS"
+
+domain:
+  omega_I: "Meta Ω_I"
+  observables:
+    - "O1"
+
+parameters:
+  - name: "theta"
+    accessible: true
+    affects_observables: true

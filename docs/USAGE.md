@@ -39,12 +39,49 @@ occ run ILSC_MRD_suite_15_modulos_CANON/mrd_obs_isaac/inputs/mrd_obs_isaac/pass.
 - Si `--module` no se especifica, el CLI intenta inferirlo del path (busca un folder `mrd_*`).
 - Si `--out` se especifica, se escribe `out/report.json`.
 
+### `occ list`
+
+Lista módulos MRD disponibles.
+
+```bash
+occ list
+occ list --suite canon
+occ list --suite extensions
+```
+
+### `occ doctor`
+
+Diagnóstico rápido (versiones, paths y suites detectadas).
+
+```bash
+occ doctor
+```
+
+### `occ predict`
+
+Explora el registry YAML de predicciones.
+
+```bash
+occ predict list
+occ predict show P-0003
+```
+
+### `occ judge <claim.yaml>`
+
+Ejecuta jueces básicos sobre un claim spec.
+
+```bash
+occ judge examples/claim_specs/minimal_pass.yaml
+```
+
 ### `occ verify`
 
-Ejecuta la verificación completa del suite (llama `RUN_ALL.py`).
+Ejecuta la verificación de una suite.
 
 ```bash
 occ verify
+occ verify --suite extensions
+occ verify --suite all
 ```
 
 En CI normalmente se ejecuta solo el smoke test, y `occ verify` se deja como workflow manual.

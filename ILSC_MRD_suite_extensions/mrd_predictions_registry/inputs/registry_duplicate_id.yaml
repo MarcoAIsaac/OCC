@@ -1,0 +1,8 @@
+version: 1
+predictions:
+  - id: P-1
+    title: "A"
+    summary: "S"
+  - id: P-1
+    title: "B"
+    summary: "S"

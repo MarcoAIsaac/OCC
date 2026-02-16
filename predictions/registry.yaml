@@ -1,0 +1,25 @@
+version: 1
+
+# Predictions registry
+#
+# This file is meant to be *human readable* and easy to diff in PRs.
+# Treat every entry as a falsifiable claim with a clear test channel.
+
+predictions:
+  - id: P-0003
+    title: "EDM ↔ GW correlation in baryogenesis"
+    status: featured
+    summary: >-
+      OCC canon highlights an explicit, falsifiable correlation between an electric
+      dipole moment (EDM) signal channel and a gravitational-wave (GW) signature in
+      baryogenesis scenarios.
+    domain: "Cosmology / Baryogenesis"
+    observables:
+      - "EDM (electric dipole moment) constraints / measurements"
+      - "Stochastic GW background features"
+    tests:
+      - "Cross-check EDM bounds vs GW parameter inference"
+      - "Search for correlated signatures across channels"
+    timeframe: "Mid-term (depends on experimental / observational programs)"
+    references:
+      - "docs/OCC_Compendio_Canonico_Completo.pdf"

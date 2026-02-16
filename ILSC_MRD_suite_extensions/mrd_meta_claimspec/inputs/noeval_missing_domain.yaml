@@ -1,0 +1,4 @@
+claim_id: "MRD-CLAIMSPEC-NOEVAL"
+title: "Meta claim spec NO-EVAL (missing domain)"
+
+# domain: { ... }  # intentionally missing

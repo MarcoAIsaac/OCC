@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+"""Run MRD meta-claimspec.
+
+This MRD intentionally reuses the OCC built-in judge pipeline.
+"""
+
+from __future__ import annotations
+
+import json
+import sys
+import time
+from pathlib import Path
+from typing import Any, Dict
+
+import yaml
+
+
+def _repo_root() -> Path:
+    # .../ILSC_MRD_suite_extensions/mrd_xxx/scripts/run_*.py
+    return Path(__file__).resolve().parents[3]
+
+
+def main() -> int:
+    if len(sys.argv) != 2:
+        print("Usage: run_mrd_meta_claimspec.py <input.yaml>")
+        return 2
+
+    inp = Path(sys.argv[1]).resolve()
+    claim = yaml.safe_load(inp.read_text(encoding="utf-8"))
+    if not isinstance(claim, dict):
+        raise SystemExit("Input must be a YAML mapping")
+
+    # Ensure we can import occ from source tree even if not installed.
+    sys.path.insert(0, str(_repo_root()))
+
+    from occ.judges.pipeline import default_judges, run_pipeline
+
+    report = run_pipeline(claim, default_judges(strict_trace=False))
+    verdict = str(report.get("verdict"))
+
+    out: Dict[str, Any] = {
+        "module": "mrd_meta_claimspec",
+        "input": str(inp.name),
+        "verdict": verdict,
+        "report": report,
+        "timestamp": time.time(),
+    }
+
+    outputs = Path(__file__).resolve().parents[1] / "outputs"
+    outputs.mkdir(exist_ok=True)
+    outpath = outputs / f"meta_claimspec.{inp.stem}.{int(time.time())}.report.json"
+    outpath.write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -10,6 +10,12 @@ Este índice está pensado para que cualquier lector encuentre rápido:
 
 - Compendio (PDF): [`OCC_Compendio_Canonico_Completo.pdf`](OCC_Compendio_Canonico_Completo.pdf)
 - Guía de inicio: [`START_HERE.md`](START_HERE.md)
+- Executive Summary: [`EXECUTIVE_SUMMARY.md`](EXECUTIVE_SUMMARY.md)
+- Glosario: [`GLOSSARY.md`](GLOSSARY.md)
+- Releasing (DOI + ArXiv): [`RELEASING.md`](RELEASING.md)
+- Predictions registry: [`PREDICTIONS_REGISTRY.md`](PREDICTIONS_REGISTRY.md)
+- Judges & locks: [`JUDGES_LOCKS.md`](JUDGES_LOCKS.md)
+- CLI: [`CLI.md`](CLI.md)
 
 ## Documentos canónicos adicionales (PDF)
 
@@ -20,6 +26,7 @@ En `docs/canonical/`:
 - `ILSC_OCC_Documento_A_defensa_formal.pdf`
 - `ILSC_OCC_Addendum_RealJudge.pdf`
 - `OCC_FrontMatter_v1.0.0.pdf`
+- `OCC_FrontMatter_v1.1.0.pdf`
 
 > Nota: estos PDFs están incluidos como referencia para navegación rápida desde GitHub.
 
@@ -34,6 +41,10 @@ En `docs/canonical/`:
 Carpeta principal:
 
 - `ILSC_MRD_suite_15_modulos_CANON/`
+
+Extensiones (UX/meta‑MRDs):
+
+- `ILSC_MRD_suite_extensions/`
 
 ## Convenciones
 
