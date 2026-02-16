@@ -1,8 +1,9 @@
 name: Windows desktop release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "v*"
   workflow_dispatch:
     inputs:
       release_tag:
@@ -31,6 +32,23 @@ jobs:
         shell: pwsh
         run: choco install innosetup --no-progress -y
 
+      - name: Resolve release tag
+        id: resolve_tag
+        shell: pwsh
+        run: |
+          $eventName = "${{ github.event_name }}"
+          if ($eventName -eq "workflow_dispatch") {
+            $tag = "${{ github.event.inputs.release_tag }}"
+          } else {
+            $tag = "${{ github.ref_name }}"
+          }
+
+          if ([string]::IsNullOrWhiteSpace($tag)) {
+            throw "Unable to resolve release tag."
+          }
+
+          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
       - name: Build Windows desktop assets
         shell: pwsh
         run: |
@@ -48,11 +66,17 @@ jobs:
           path: release-windows/*
           if-no-files-found: error
 
-      - name: Upload assets to GitHub Release
-        if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+      - name: Ensure release exists
+        if: github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.release_tag }}
+          tag_name: ${{ steps.resolve_tag.outputs.tag }}
+          generate_release_notes: true
+
+      - name: Upload assets to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.resolve_tag.outputs.tag }}
           files: |
             release-windows/OCCDesktop-windows-x64.exe
             release-windows/OCCDesktop-windows-x64.zip

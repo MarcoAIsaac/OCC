@@ -25,6 +25,7 @@ The format is based on *Keep a Changelog* and this project adheres to *Semantic 
 - Desktop UI upgraded with Fluent-style workbench improvements, execution telemetry (last run + PASS/FAIL/NO-EVAL counters), and improved dark-theme consistency.
 - Windows release pipeline now supports optional Authenticode signing when code-sign secrets are configured.
 - Desktop app now persists run history in local SQLite (`~/.occ_desktop/occ_desktop.db`) with CSV export and history reset.
+- Windows desktop release pipeline now auto-runs on pushed `v*` tags and auto-attaches artifacts to the release.
 
 ## [1.2.0] - 2026-02-16
 

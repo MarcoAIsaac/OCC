@@ -10,14 +10,14 @@ This repository is technically ready. To maximize scientific reach, two publicat
 ### Steps
 
 1. Connect GitHub with Zenodo and enable this repository.
-2. Create a GitHub Release (for example `v1.0.0`).
+2. Push a version tag (for example `v1.3.1`).
 3. Windows desktop assets are built automatically by workflow
    `.github/workflows/windows_desktop_release.yml` and attached to the release:
    - `OCCDesktop-Setup-windows-x64.exe`
    - `OCCDesktop-windows-x64.zip`
    - `OCCDesktop-windows-x64.exe`
    - `OCCDesktop-windows-x64.sha256`
-   - If upload is missed, run workflow manually with input `release_tag` (example `v1.3.0`).
+   - If needed, run workflow manually with input `release_tag` (example `v1.3.0`).
 4. Wait for Zenodo to archive the release and assign a DOI.
 5. Update README with DOI badge.
 

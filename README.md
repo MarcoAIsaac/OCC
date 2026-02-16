@@ -108,6 +108,7 @@ Download latest prebuilt Windows package:
 
 If direct download links return `404`, open the release page and wait for workflow
 `Windows desktop release` to finish uploading assets.
+This pipeline runs automatically when you push a version tag (for example `v1.3.1`).
 If needed, trigger that workflow manually and set `release_tag` to your version
 (example `v1.3.0`) to attach assets to an existing release.
 
