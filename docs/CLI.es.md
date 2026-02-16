@@ -68,3 +68,15 @@ occ judge examples/claim_specs/nuclear_pass.yaml --profile nuclear
 occ judge examples/claim_specs/trace_noeval.yaml --strict-trace --out out/judge.json
 occ judge examples/claim_specs/minimal_pass.yaml --json
 ```
+
+### Frontend de escritorio (Windows)
+
+```bash
+occ-desktop
+```
+
+Construir ejecutable:
+
+```powershell
+.\scripts\build_windows_desktop.ps1
+```

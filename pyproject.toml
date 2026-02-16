@@ -51,6 +51,7 @@ Issues = "https://github.com/MarcoAIsaac/OCC/issues"
 
 [project.scripts]
 occ = "occ.cli:main"
+occ-desktop = "occ.desktop:main"
 
 [tool.setuptools]
 include-package-data = true

@@ -66,7 +66,13 @@ cat out/report.json
 occ judge examples/claim_specs/nuclear_pass.yaml --profile nuclear
 ```
 
-5. Verificación completa opcional
+5. Frontend de escritorio opcional (Windows)
+
+```bash
+occ-desktop
+```
+
+6. Verificación completa opcional
 
 ```bash
 occ verify

@@ -85,6 +85,26 @@ occ judge examples/claim_specs/minimal_pass.yaml
 occ judge examples/claim_specs/nuclear_pass.yaml --profile nuclear
 ```
 
+## Desktop app (Windows)
+
+Run desktop frontend:
+
+```bash
+occ-desktop
+```
+
+From source without install entrypoint:
+
+```bash
+python -m occ.desktop
+```
+
+Build `.exe` on Windows (PowerShell):
+
+```powershell
+.\scripts\build_windows_desktop.ps1
+```
+
 ## Maintenance helpers
 
 ```bash

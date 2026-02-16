@@ -85,6 +85,26 @@ occ judge examples/claim_specs/minimal_pass.yaml
 occ judge examples/claim_specs/nuclear_pass.yaml --profile nuclear
 ```
 
+## App de escritorio (Windows)
+
+Ejecutar frontend de escritorio:
+
+```bash
+occ-desktop
+```
+
+Desde código fuente sin entrypoint instalado:
+
+```bash
+python -m occ.desktop
+```
+
+Construir `.exe` en Windows (PowerShell):
+
+```powershell
+.\scripts\build_windows_desktop.ps1
+```
+
 ## Utilidades de mantenimiento
 
 ```bash
