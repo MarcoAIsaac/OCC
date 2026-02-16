@@ -64,6 +64,20 @@ flowchart TD
 
 ## Quickstart
 
+### Fast path (recomendado)
+
+```bash
+make bootstrap
+make smoke
+make check
+```
+
+Para levantar la documentación local:
+
+```bash
+make docs-serve
+```
+
 ### macOS / Linux
 
 ```bash
