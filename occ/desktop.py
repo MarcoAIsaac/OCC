@@ -34,6 +34,11 @@ except ImportError:
     # Support direct script execution (e.g., PyInstaller entry as desktop.py).
     from occ.version import get_version
 
+try:
+    from .ai_assistant import AssistantError, ask_openai
+except ImportError:
+    from occ.ai_assistant import AssistantError, ask_openai
+
 
 def _detect_language() -> str:
     candidates = [
@@ -83,6 +88,12 @@ class OCCDesktopApp(tk.Tk):
     SUCCESS = "#22c55e"
     WARNING = "#f59e0b"
     DANGER = "#ef4444"
+    BUTTON_PRIMARY_BG = "#0ea5e9"
+    BUTTON_PRIMARY_HOVER = "#0284c7"
+    BUTTON_SECONDARY_BG = "#13213a"
+    BUTTON_SECONDARY_HOVER = "#1b2c4b"
+    BUTTON_DANGER_BG = "#ef4444"
+    BUTTON_DANGER_HOVER = "#dc2626"
 
     VERDICT_RE = re.compile(r"\b(PASS|FAIL|NO-EVAL)(?:\([^)]+\))?\b")
 
@@ -107,6 +118,16 @@ class OCCDesktopApp(tk.Tk):
         self.module_name_var = tk.StringVar(value="")
         self.create_prediction_var = tk.BooleanVar(value=True)
         self.verify_generated_var = tk.BooleanVar(value=False)
+        self.ai_provider_var = tk.StringVar(value="openai")
+        self.ai_model_var = tk.StringVar(value="gpt-4.1-mini")
+        self.ai_timeout_var = tk.StringVar(value="45")
+        self.ai_include_context_var = tk.BooleanVar(value=True)
+        self.ai_system_prompt_var = tk.StringVar(
+            value=(
+                "You are the OCC Desktop assistant. Focus on actionable guidance for "
+                "judges, locks, module flow, and reproducible execution."
+            )
+        )
 
         self.status_var = tk.StringVar(value=_tr("Ready", "Listo"))
         self.command_preview_var = tk.StringVar(value="-")
@@ -118,7 +139,11 @@ class OCCDesktopApp(tk.Tk):
                 "Ejecuciones: 0 | PASS: 0 | FAIL: 0 | NO-EVAL: 0",
             )
         )
+        self.assistant_status_var = tk.StringVar(
+            value=_tr("Assistant idle", "Asistente inactivo")
+        )
         self.version_var = tk.StringVar(value=f"v{get_version()}")
+        self.clock_var = tk.StringVar(value=_now_text())
 
         self._queue: "queue.Queue[Tuple[str, Dict[str, Any]]]" = queue.Queue()
         self._proc: Optional[subprocess.Popen[str]] = None
@@ -134,15 +159,28 @@ class OCCDesktopApp(tk.Tk):
         self._stats_pass = 0
         self._stats_fail = 0
         self._stats_no_eval = 0
+        self._assistant_running = False
+        self._assistant_last_reply = ""
+        self._assistant_output_text: Optional[tk.Text] = None
+        self._assistant_prompt_text: Optional[tk.Text] = None
+        self._assistant_system_text: Optional[tk.Text] = None
+        self._assistant_api_key_var = tk.StringVar(value="")
+        self._assistant_send_button: Optional[tk.Button] = None
+        self._assistant_copy_button: Optional[tk.Button] = None
+        self._assistant_clear_button: Optional[tk.Button] = None
 
-        self._buttons: List[ttk.Button] = []
+        self._buttons: List[Any] = []
         self._history_commands: Dict[str, List[str]] = {}
         self._history_db_ids: Dict[str, int] = {}
 
         self._init_persistence()
         self._load_settings()
+        env_api_key = str(os.getenv("OPENAI_API_KEY") or "").strip()
+        if env_api_key:
+            self._assistant_api_key_var.set(env_api_key)
         self._configure_style()
         self._apply_window_branding()
+        self._build_menu()
         self._build_ui()
         self._load_persisted_history()
         self._refresh_stats_from_tree()
@@ -150,6 +188,7 @@ class OCCDesktopApp(tk.Tk):
 
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         self.after(120, self._drain_queue)
+        self.after(1000, self._tick_clock)
 
     def _configure_style(self) -> None:
         self.configure(bg=self.BG)
@@ -367,6 +406,141 @@ class OCCDesktopApp(tk.Tk):
             foreground=[("selected", "#ffffff")],
         )
 
+    def _build_menu(self) -> None:
+        menu = tk.Menu(
+            self,
+            tearoff=False,
+            bg=self.SURFACE,
+            fg=self.TEXT,
+            activebackground=self.PANEL,
+        )
+
+        file_menu = tk.Menu(
+            menu,
+            tearoff=False,
+            bg=self.SURFACE,
+            fg=self.TEXT,
+            activebackground=self.PANEL,
+            activeforeground=self.TEXT,
+        )
+        file_menu.add_command(
+            label=_tr("Open workspace", "Abrir workspace"),
+            command=self._pick_workspace,
+        )
+        file_menu.add_command(label=_tr("Open claim", "Abrir claim"), command=self._pick_claim)
+        file_menu.add_separator()
+        file_menu.add_command(label=_tr("Save output", "Guardar salida"), command=self._save_output)
+        file_menu.add_command(label=_tr("Exit", "Salir"), command=self._on_close)
+        menu.add_cascade(label=_tr("File", "Archivo"), menu=file_menu)
+
+        run_menu = tk.Menu(
+            menu,
+            tearoff=False,
+            bg=self.SURFACE,
+            fg=self.TEXT,
+            activebackground=self.PANEL,
+            activeforeground=self.TEXT,
+        )
+        run_menu.add_command(
+            label=_tr("Judge claim", "Evaluar claim"),
+            command=lambda: self._run_action("judge"),
+        )
+        run_menu.add_command(
+            label=_tr("Verify suite", "Verificar suite"),
+            command=lambda: self._run_action("verify"),
+        )
+        run_menu.add_command(
+            label=_tr("Module flow", "Flujo de modulo"),
+            command=lambda: self._run_action("module_flow"),
+        )
+        run_menu.add_separator()
+        run_menu.add_command(
+            label=_tr("Stop running command", "Detener comando"),
+            command=self._stop_running,
+        )
+        menu.add_cascade(label=_tr("Run", "Ejecutar"), menu=run_menu)
+
+        tools_menu = tk.Menu(
+            menu,
+            tearoff=False,
+            bg=self.SURFACE,
+            fg=self.TEXT,
+            activebackground=self.PANEL,
+            activeforeground=self.TEXT,
+        )
+        tools_menu.add_command(
+            label=_tr("Release doctor", "Release doctor"),
+            command=lambda: self._run_action("release_doctor"),
+        )
+        tools_menu.add_command(
+            label=_tr("Docs i18n audit", "Auditar docs i18n"),
+            command=lambda: self._run_action("docs_i18n"),
+        )
+        tools_menu.add_command(
+            label=_tr("CI doctor", "CI doctor"),
+            command=lambda: self._run_action("ci_doctor"),
+        )
+        tools_menu.add_command(
+            label=_tr("Generate release notes", "Generar release notes"),
+            command=lambda: self._run_action("release_notes"),
+        )
+        menu.add_cascade(label=_tr("Tools", "Herramientas"), menu=tools_menu)
+
+        ai_menu = tk.Menu(
+            menu,
+            tearoff=False,
+            bg=self.SURFACE,
+            fg=self.TEXT,
+            activebackground=self.PANEL,
+            activeforeground=self.TEXT,
+        )
+        ai_menu.add_command(
+            label=_tr("OpenAI API docs", "Docs API OpenAI"),
+            command=lambda: webbrowser.open("https://platform.openai.com/docs"),
+        )
+        ai_menu.add_command(
+            label=_tr("Set OPENAI_API_KEY", "Definir OPENAI_API_KEY"),
+            command=self._show_set_api_key_dialog,
+        )
+        menu.add_cascade(label=_tr("Assistant", "Asistente"), menu=ai_menu)
+
+        help_menu = tk.Menu(
+            menu,
+            tearoff=False,
+            bg=self.SURFACE,
+            fg=self.TEXT,
+            activebackground=self.PANEL,
+            activeforeground=self.TEXT,
+        )
+        help_menu.add_command(
+            label=_tr("Documentation portal", "Portal de documentacion"),
+            command=lambda: webbrowser.open("https://marcoaisaac.github.io/OCC/"),
+        )
+        help_menu.add_command(
+            label=_tr("Latest release", "Ultimo release"),
+            command=lambda: webbrowser.open("https://github.com/MarcoAIsaac/OCC/releases/latest"),
+        )
+        help_menu.add_separator()
+        help_menu.add_command(label=_tr("About", "Acerca de"), command=self._show_about_dialog)
+        menu.add_cascade(label=_tr("Help", "Ayuda"), menu=help_menu)
+
+        self.configure(menu=menu)
+
+    def _tick_clock(self) -> None:
+        self.clock_var.set(_now_text())
+        self.after(1000, self._tick_clock)
+
+    def _show_about_dialog(self) -> None:
+        messagebox.showinfo(
+            "OCC Desktop",
+            _tr(
+                f"OCC Desktop\nVersion: {self.version_var.get()}\n\n"
+                "Windows workstation for OCC runtime operations.",
+                f"OCC Desktop\nVersion: {self.version_var.get()}\n\n"
+                "Estacion de trabajo Windows para operaciones del runtime OCC.",
+            ),
+        )
+
     def _apply_window_branding(self) -> None:
         try:
             icon = tk.PhotoImage(width=64, height=64)
@@ -513,11 +687,29 @@ class OCCDesktopApp(tk.Tk):
             ),
             style="SubHeader.TLabel",
         ).grid(row=1, column=0, sticky="w", pady=(2, 0))
-        ttk.Label(
-            header,
+
+        right = ttk.Frame(header, style="App.TFrame")
+        right.grid(row=0, column=1, rowspan=2, sticky="e")
+
+        version_chip = tk.Label(
+            right,
             textvariable=self.version_var,
-            style="SubHeader.TLabel",
-        ).grid(row=0, column=1, sticky="e")
+            bg="#0f172a",
+            fg="#7dd3fc",
+            font=("Segoe UI Semibold", 11),
+            padx=10,
+            pady=4,
+        )
+        version_chip.pack(anchor="e")
+
+        clock_chip = tk.Label(
+            right,
+            textvariable=self.clock_var,
+            bg=self.BG,
+            fg=self.MUTED,
+            font=("Segoe UI", 9),
+        )
+        clock_chip.pack(anchor="e", pady=(4, 0))
 
         main = ttk.Frame(self, style="App.TFrame", padding=(12, 0, 12, 12))
         main.grid(row=1, column=0, sticky="nsew")
@@ -580,23 +772,24 @@ class OCCDesktopApp(tk.Tk):
         )
 
         ttk.Separator(sidebar, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=10)
-        stop_btn = ttk.Button(
+        stop_btn = self._create_modern_button(
             sidebar,
-            text=_tr("Stop running command", "Detener comando"),
+            label=_tr("Stop running command", "Detener comando"),
             command=self._stop_running,
-            style="Danger.TButton",
+            variant="danger",
         )
         stop_btn.pack(fill=tk.X, pady=(2, 6))
         self._buttons.append(stop_btn)
 
         link_row = ttk.Frame(sidebar, style="Surface.TFrame")
         link_row.pack(fill=tk.X, pady=(6, 0))
-        ttk.Button(
+        release_btn = self._create_modern_button(
             link_row,
-            text=_tr("Open latest release", "Abrir ultimo release"),
-            command=lambda: webbrowser.open("https://github.com/MarcoAIsaac/OCC/releases/latest"),
-            style="Ghost.TButton",
-        ).pack(fill=tk.X)
+            label=_tr("Open latest release", "Abrir ultimo release"),
+            command=lambda: self._open_url("https://github.com/MarcoAIsaac/OCC/releases/latest"),
+            variant="ghost",
+        )
+        release_btn.pack(fill=tk.X)
 
     def _add_sidebar_button(
         self,
@@ -605,21 +798,91 @@ class OCCDesktopApp(tk.Tk):
         action: str,
         primary: bool = True,
     ) -> None:
-        style = "Primary.TButton" if primary else "Ghost.TButton"
-        btn = ttk.Button(
+        btn = self._create_modern_button(
             parent,
-            text=label,
+            label=label,
             command=self._make_action_handler(action),
-            style=style,
+            variant="primary" if primary else "ghost",
         )
         btn.pack(fill=tk.X, pady=4)
         self._buttons.append(btn)
+
+    def _create_modern_button(
+        self,
+        parent: tk.Widget,
+        label: str,
+        command: Callable[[], None],
+        variant: str = "primary",
+    ) -> tk.Button:
+        palette = {
+            "primary": {
+                "bg": self.BUTTON_PRIMARY_BG,
+                "hover": self.BUTTON_PRIMARY_HOVER,
+                "press": "#0369a1",
+                "fg": "#ffffff",
+            },
+            "ghost": {
+                "bg": self.BUTTON_SECONDARY_BG,
+                "hover": self.BUTTON_SECONDARY_HOVER,
+                "press": "#14203a",
+                "fg": "#e2e8f0",
+            },
+            "danger": {
+                "bg": self.BUTTON_DANGER_BG,
+                "hover": self.BUTTON_DANGER_HOVER,
+                "press": "#b91c1c",
+                "fg": "#ffffff",
+            },
+        }
+        colors = palette.get(variant, palette["ghost"])
+        btn = tk.Button(
+            parent,
+            text=label,
+            command=command,
+            bg=colors["bg"],
+            fg=colors["fg"],
+            activebackground=colors["hover"],
+            activeforeground=colors["fg"],
+            relief=tk.FLAT,
+            borderwidth=0,
+            highlightthickness=0,
+            padx=12,
+            pady=9,
+            font=("Segoe UI Semibold", 10),
+            cursor="hand2",
+            disabledforeground="#9ca3af",
+        )
+
+        def on_enter(_event: tk.Event[Any]) -> None:
+            if str(btn.cget("state")) != tk.DISABLED:
+                btn.configure(bg=colors["hover"])
+
+        def on_leave(_event: tk.Event[Any]) -> None:
+            if str(btn.cget("state")) != tk.DISABLED:
+                btn.configure(bg=colors["bg"])
+
+        def on_press(_event: tk.Event[Any]) -> None:
+            if str(btn.cget("state")) != tk.DISABLED:
+                btn.configure(bg=colors["press"])
+
+        def on_release(_event: tk.Event[Any]) -> None:
+            if str(btn.cget("state")) != tk.DISABLED:
+                btn.configure(bg=colors["hover"])
+
+        btn.bind("<Enter>", on_enter)
+        btn.bind("<Leave>", on_leave)
+        btn.bind("<ButtonPress-1>", on_press)
+        btn.bind("<ButtonRelease-1>", on_release)
+        return btn
 
     def _make_action_handler(self, action: str) -> Callable[[], None]:
         def _handler() -> None:
             self._run_action(action)
 
         return _handler
+
+    def _open_url(self, url: str) -> None:
+        webbrowser.open(url)
 
     def _build_content(self, parent: ttk.Frame) -> None:
         content = ttk.Frame(parent, style="App.TFrame")
@@ -632,14 +895,17 @@ class OCCDesktopApp(tk.Tk):
 
         workbench = ttk.Frame(notebook, style="Panel.TFrame", padding=12)
         history = ttk.Frame(notebook, style="Panel.TFrame", padding=12)
+        assistant = ttk.Frame(notebook, style="Panel.TFrame", padding=12)
         security = ttk.Frame(notebook, style="Panel.TFrame", padding=12)
 
         notebook.add(workbench, text=_tr("Workbench", "Workbench"))
         notebook.add(history, text=_tr("History", "Historial"))
+        notebook.add(assistant, text=_tr("Assistant", "Asistente"))
         notebook.add(security, text=_tr("Security", "Seguridad"))
 
         self._build_workbench_tab(workbench)
         self._build_history_tab(history)
+        self._build_assistant_tab(assistant)
         self._build_security_tab(security)
 
     def _build_workbench_tab(self, tab: ttk.Frame) -> None:
@@ -969,6 +1235,200 @@ class OCCDesktopApp(tk.Tk):
             style="Ghost.TButton",
         ).pack(side=tk.LEFT, padx=(8, 0))
 
+    def _build_assistant_tab(self, tab: ttk.Frame) -> None:
+        tab.grid_columnconfigure(0, weight=1)
+        tab.grid_rowconfigure(3, weight=1)
+
+        intro = ttk.LabelFrame(
+            tab,
+            text=_tr("AI assistant", "Asistente IA"),
+            style="Card.TLabelframe",
+            padding=10,
+        )
+        intro.grid(row=0, column=0, sticky="ew")
+        intro.grid_columnconfigure(1, weight=1)
+        intro.grid_columnconfigure(3, weight=1)
+
+        ttk.Label(intro, text=_tr("Provider", "Proveedor"), style="Body.TLabel").grid(
+            row=0,
+            column=0,
+            sticky="w",
+            padx=(0, 8),
+        )
+        ttk.Combobox(
+            intro,
+            textvariable=self.ai_provider_var,
+            values=["openai"],
+            state="readonly",
+            style="Input.TCombobox",
+            width=14,
+        ).grid(row=0, column=1, sticky="w")
+
+        ttk.Label(intro, text=_tr("Model", "Modelo"), style="Body.TLabel").grid(
+            row=0,
+            column=2,
+            sticky="w",
+            padx=(14, 8),
+        )
+        ttk.Entry(intro, textvariable=self.ai_model_var, style="Input.TEntry").grid(
+            row=0,
+            column=3,
+            sticky="ew",
+        )
+
+        ttk.Label(intro, text=_tr("Timeout (s)", "Timeout (s)"), style="Body.TLabel").grid(
+            row=1,
+            column=0,
+            sticky="w",
+            padx=(0, 8),
+            pady=(8, 0),
+        )
+        ttk.Entry(intro, textvariable=self.ai_timeout_var, style="Input.TEntry", width=10).grid(
+            row=1,
+            column=1,
+            sticky="w",
+            pady=(8, 0),
+        )
+
+        ttk.Checkbutton(
+            intro,
+            text=_tr("Include runtime context", "Incluir contexto del runtime"),
+            variable=self.ai_include_context_var,
+        ).grid(row=1, column=2, columnspan=2, sticky="w", padx=(14, 0), pady=(8, 0))
+
+        ttk.Label(intro, text=_tr("API key", "API key"), style="Body.TLabel").grid(
+            row=2,
+            column=0,
+            sticky="w",
+            padx=(0, 8),
+            pady=(8, 0),
+        )
+        key_entry = ttk.Entry(
+            intro,
+            textvariable=self._assistant_api_key_var,
+            style="Input.TEntry",
+            show="*",
+        )
+        key_entry.grid(row=2, column=1, columnspan=2, sticky="ew", pady=(8, 0))
+        ttk.Button(
+            intro,
+            text=_tr("Set from env", "Tomar de env"),
+            command=self._set_api_key_from_env,
+            style="Ghost.TButton",
+        ).grid(row=2, column=3, sticky="e", pady=(8, 0))
+
+        ttk.Label(
+            tab,
+            textvariable=self.assistant_status_var,
+            style="Muted.TLabel",
+        ).grid(row=1, column=0, sticky="w", pady=(10, 0))
+
+        prompt_card = ttk.LabelFrame(
+            tab,
+            text=_tr("Prompt", "Prompt"),
+            style="Card.TLabelframe",
+            padding=8,
+        )
+        prompt_card.grid(row=2, column=0, sticky="ew", pady=(8, 0))
+        prompt_card.grid_columnconfigure(0, weight=1)
+
+        self._assistant_prompt_text = tk.Text(
+            prompt_card,
+            height=6,
+            wrap=tk.WORD,
+            font=("Segoe UI", 10),
+            background="#0b1324",
+            foreground="#e2e8f0",
+            insertbackground="#e2e8f0",
+            relief=tk.FLAT,
+            borderwidth=0,
+        )
+        self._assistant_prompt_text.grid(row=0, column=0, sticky="ew")
+
+        controls = ttk.Frame(prompt_card, style="Panel.TFrame")
+        controls.grid(row=1, column=0, sticky="ew", pady=(8, 0))
+
+        self._assistant_send_button = self._create_modern_button(
+            controls,
+            label=_tr("Ask assistant", "Preguntar asistente"),
+            command=self._ask_assistant,
+            variant="primary",
+        )
+        self._assistant_send_button.pack(side=tk.LEFT)
+
+        self._assistant_clear_button = self._create_modern_button(
+            controls,
+            label=_tr("Clear", "Limpiar"),
+            command=self._clear_assistant_prompt,
+            variant="ghost",
+        )
+        self._assistant_clear_button.pack(side=tk.LEFT, padx=(8, 0))
+
+        self._assistant_copy_button = self._create_modern_button(
+            controls,
+            label=_tr("Copy last reply", "Copiar ultima respuesta"),
+            command=self._copy_assistant_reply,
+            variant="ghost",
+        )
+        self._assistant_copy_button.pack(side=tk.LEFT, padx=(8, 0))
+
+        system_card = ttk.LabelFrame(
+            tab,
+            text=_tr("System prompt", "Prompt del sistema"),
+            style="Card.TLabelframe",
+            padding=8,
+        )
+        system_card.grid(row=3, column=0, sticky="ew", pady=(8, 0))
+        system_card.grid_columnconfigure(0, weight=1)
+
+        self._assistant_system_text = tk.Text(
+            system_card,
+            height=3,
+            wrap=tk.WORD,
+            font=("Segoe UI", 9),
+            background="#0b1324",
+            foreground="#93c5fd",
+            insertbackground="#93c5fd",
+            relief=tk.FLAT,
+            borderwidth=0,
+        )
+        self._assistant_system_text.grid(row=0, column=0, sticky="ew")
+        self._assistant_system_text.insert("1.0", self.ai_system_prompt_var.get())
+
+        output_card = ttk.LabelFrame(
+            tab,
+            text=_tr("Assistant output", "Salida del asistente"),
+            style="Card.TLabelframe",
+            padding=8,
+        )
+        output_card.grid(row=4, column=0, sticky="nsew", pady=(8, 0))
+        output_card.grid_columnconfigure(0, weight=1)
+        output_card.grid_rowconfigure(0, weight=1)
+        tab.grid_rowconfigure(4, weight=1)
+
+        self._assistant_output_text = tk.Text(
+            output_card,
+            wrap=tk.WORD,
+            font=("Consolas", 10),
+            background="#030b1d",
+            foreground="#dbeafe",
+            insertbackground="#dbeafe",
+            relief=tk.FLAT,
+            borderwidth=0,
+        )
+        self._assistant_output_text.grid(row=0, column=0, sticky="nsew")
+        self._assistant_output_text.tag_configure("assistant", foreground="#bfdbfe")
+        self._assistant_output_text.tag_configure("error", foreground="#fca5a5")
+        self._assistant_output_text.tag_configure("meta", foreground="#7dd3fc")
+
+        assistant_scroll = ttk.Scrollbar(
+            output_card,
+            orient=tk.VERTICAL,
+            command=self._assistant_output_text.yview,
+        )
+        assistant_scroll.grid(row=0, column=1, sticky="ns")
+        self._assistant_output_text.configure(yscrollcommand=assistant_scroll.set)
+
     def _build_security_tab(self, tab: ttk.Frame) -> None:
         tab.grid_columnconfigure(0, weight=1)
 
@@ -1087,10 +1547,19 @@ class OCCDesktopApp(tk.Tk):
             _set_str(self.module_name_var, "module_name")
             _set_bool(self.create_prediction_var, "create_prediction")
             _set_bool(self.verify_generated_var, "verify_generated")
+            _set_str(self.ai_provider_var, "ai_provider")
+            _set_str(self.ai_model_var, "ai_model")
+            _set_str(self.ai_timeout_var, "ai_timeout")
+            _set_bool(self.ai_include_context_var, "ai_include_context")
+            _set_str(self.ai_system_prompt_var, "ai_system_prompt")
         except Exception:
             pass
 
     def _save_settings(self) -> None:
+        system_prompt = self.ai_system_prompt_var.get().strip()
+        if self._assistant_system_text is not None:
+            system_prompt = self._assistant_system_text.get("1.0", tk.END).strip()
+            self.ai_system_prompt_var.set(system_prompt)
         payload = {
             "workspace": self.workspace_var.get().strip(),
             "claim": self.claim_var.get().strip(),
@@ -1099,6 +1568,11 @@ class OCCDesktopApp(tk.Tk):
             "module_name": self.module_name_var.get().strip(),
             "create_prediction": bool(self.create_prediction_var.get()),
             "verify_generated": bool(self.verify_generated_var.get()),
+            "ai_provider": self.ai_provider_var.get().strip(),
+            "ai_model": self.ai_model_var.get().strip(),
+            "ai_timeout": self.ai_timeout_var.get().strip(),
+            "ai_include_context": bool(self.ai_include_context_var.get()),
+            "ai_system_prompt": system_prompt,
         }
         self.settings_file.parent.mkdir(parents=True, exist_ok=True)
         self.settings_file.write_text(json.dumps(payload, indent=2), encoding="utf-8")
@@ -1166,6 +1640,189 @@ class OCCDesktopApp(tk.Tk):
         )
         if selected:
             self.claim_var.set(str(Path(selected).resolve()))
+
+    def _set_api_key_from_env(self) -> None:
+        key = str(os.getenv("OPENAI_API_KEY") or "").strip()
+        if not key:
+            messagebox.showwarning(
+                "OCC Desktop",
+                _tr(
+                    "OPENAI_API_KEY is not set in this environment.",
+                    "OPENAI_API_KEY no esta definido en este entorno.",
+                ),
+            )
+            return
+        self._assistant_api_key_var.set(key)
+        self.assistant_status_var.set(
+            _tr("API key loaded from environment", "API key cargada desde entorno")
+        )
+
+    def _show_set_api_key_dialog(self) -> None:
+        dialog = tk.Toplevel(self)
+        dialog.title("OPENAI_API_KEY")
+        dialog.configure(bg=self.BG)
+        dialog.transient(self)
+        dialog.grab_set()
+        dialog.resizable(False, False)
+
+        ttk.Label(
+            dialog,
+            text=_tr(
+                "Paste your OpenAI API key (stored only for this app session).",
+                "Pega tu API key de OpenAI (solo se guarda en esta sesion).",
+            ),
+            style="SubHeader.TLabel",
+            wraplength=460,
+            justify=tk.LEFT,
+        ).grid(row=0, column=0, columnspan=2, sticky="w", padx=14, pady=(12, 8))
+
+        key_var = tk.StringVar(value=self._assistant_api_key_var.get())
+        entry = ttk.Entry(dialog, textvariable=key_var, style="Input.TEntry", show="*")
+        entry.grid(row=1, column=0, columnspan=2, sticky="ew", padx=14)
+        entry.focus_set()
+
+        def save_key() -> None:
+            self._assistant_api_key_var.set(key_var.get().strip())
+            self.assistant_status_var.set(
+                _tr("API key updated (session only)", "API key actualizada (solo sesion)")
+            )
+            dialog.destroy()
+
+        ttk.Button(
+            dialog,
+            text=_tr("Cancel", "Cancelar"),
+            command=dialog.destroy,
+            style="Ghost.TButton",
+        ).grid(row=2, column=0, sticky="w", padx=14, pady=12)
+        ttk.Button(
+            dialog,
+            text=_tr("Save", "Guardar"),
+            command=save_key,
+            style="Primary.TButton",
+        ).grid(row=2, column=1, sticky="e", padx=14, pady=12)
+
+        dialog.grid_columnconfigure(0, weight=1)
+        dialog.grid_columnconfigure(1, weight=1)
+
+    def _clear_assistant_prompt(self) -> None:
+        if self._assistant_prompt_text is None:
+            return
+        self._assistant_prompt_text.delete("1.0", tk.END)
+
+    def _copy_assistant_reply(self) -> None:
+        if not self._assistant_last_reply.strip():
+            return
+        self.clipboard_clear()
+        self.clipboard_append(self._assistant_last_reply)
+        self.assistant_status_var.set(
+            _tr("Assistant reply copied", "Respuesta del asistente copiada")
+        )
+
+    def _set_assistant_busy(self, busy: bool) -> None:
+        self._assistant_running = busy
+        for widget in (self._assistant_send_button, self._assistant_clear_button):
+            if widget is not None:
+                if busy:
+                    widget.configure(state=tk.DISABLED)
+                else:
+                    widget.configure(state=tk.NORMAL)
+
+    def _collect_assistant_context(self) -> str:
+        lines = [
+            f"Version: {self.version_var.get()}",
+            f"Profile: {self.profile_var.get().strip() or 'core'}",
+            f"Suite: {self.suite_var.get().strip() or 'extensions'}",
+            f"Workspace: {self.workspace_var.get().strip()}",
+            f"Claim: {self.claim_var.get().strip()}",
+            f"Last command: {self.command_preview_var.get().strip()}",
+            f"Last run: {self.last_run_var.get().strip()}",
+            f"Stats: {self.metrics_var.get().strip()}",
+        ]
+        if self._run_log_buffer:
+            tail = "".join(self._run_log_buffer)[-2000:].strip()
+            if tail:
+                lines.append("Recent output tail:")
+                lines.append(tail)
+        return "\n".join(lines).strip()
+
+    def _ask_assistant(self) -> None:
+        if self._assistant_running:
+            return
+        if self._assistant_prompt_text is None:
+            return
+        prompt = self._assistant_prompt_text.get("1.0", tk.END).strip()
+        if not prompt:
+            messagebox.showwarning(
+                "OCC Desktop",
+                _tr("Assistant prompt is empty.", "El prompt del asistente esta vacio."),
+            )
+            return
+
+        provider = self.ai_provider_var.get().strip().lower() or "openai"
+        if provider != "openai":
+            messagebox.showwarning(
+                "OCC Desktop",
+                _tr(
+                    "Only OpenAI provider is currently implemented.",
+                    "Solo el proveedor OpenAI esta implementado por ahora.",
+                ),
+            )
+            return
+
+        timeout_raw = self.ai_timeout_var.get().strip()
+        try:
+            timeout_s = max(5, min(180, int(timeout_raw)))
+        except ValueError:
+            timeout_s = 45
+        self.ai_timeout_var.set(str(timeout_s))
+
+        system_prompt = self.ai_system_prompt_var.get().strip()
+        if self._assistant_system_text is not None:
+            system_prompt = self._assistant_system_text.get("1.0", tk.END).strip()
+        self.ai_system_prompt_var.set(system_prompt)
+
+        full_prompt = prompt
+        if self.ai_include_context_var.get():
+            full_prompt = (
+                f"{prompt}\n\n[OCC runtime context]\n"
+                f"{self._collect_assistant_context()}\n[/OCC runtime context]"
+            )
+
+        model = self.ai_model_var.get().strip() or "gpt-4.1-mini"
+        api_key = self._assistant_api_key_var.get().strip()
+        self._set_assistant_busy(True)
+        self.assistant_status_var.set(
+            _tr("Calling OpenAI assistant...", "Consultando asistente OpenAI...")
+        )
+        if self._assistant_output_text is not None:
+            self._assistant_output_text.insert(
+                tk.END,
+                f"\n[{_now_text()}] {model}\n",
+                "meta",
+            )
+            self._assistant_output_text.insert(
+                tk.END,
+                f"{_tr('You: ', 'Tu: ')}{prompt}\n\n",
+                "meta",
+            )
+            self._assistant_output_text.see(tk.END)
+
+        def worker() -> None:
+            try:
+                reply = ask_openai(
+                    prompt=full_prompt,
+                    model=model,
+                    api_key=api_key or None,
+                    system_prompt=system_prompt,
+                    timeout_s=timeout_s,
+                )
+                self._queue.put(("assistant_done", {"reply": reply}))
+            except AssistantError as e:
+                self._queue.put(("assistant_error", {"error": str(e)}))
+            except Exception as e:
+                self._queue.put(("assistant_error", {"error": str(e)}))
+
+        threading.Thread(target=worker, daemon=True).start()
 
     def _resolve_script(self, script_name: str) -> Path:
         workspace = Path(self.workspace_var.get()).resolve()
@@ -1480,6 +2137,31 @@ class OCCDesktopApp(tk.Tk):
                         _tr(f"Finished with exit {rc}", f"Terminado con salida {rc}")
                     )
                     self._append_output(f"\n[exit {rc}]\n", "error")
+            elif kind == "assistant_done":
+                reply = str(payload.get("reply") or "")
+                self._assistant_last_reply = reply
+                self._set_assistant_busy(False)
+                self.assistant_status_var.set(_tr("Assistant ready", "Asistente listo"))
+                if self._assistant_output_text is not None:
+                    self._assistant_output_text.insert(
+                        tk.END,
+                        f"{_tr('Assistant: ', 'Asistente: ')}{reply}\n\n",
+                        "assistant",
+                    )
+                    self._assistant_output_text.see(tk.END)
+            elif kind == "assistant_error":
+                message = str(payload.get("error") or "unknown error")
+                self._set_assistant_busy(False)
+                self.assistant_status_var.set(
+                    _tr("Assistant request failed", "Fallo en solicitud del asistente")
+                )
+                if self._assistant_output_text is not None:
+                    self._assistant_output_text.insert(
+                        tk.END,
+                        f"[error] {message}\n\n",
+                        "error",
+                    )
+                    self._assistant_output_text.see(tk.END)
 
         self.after(120, self._drain_queue)
 

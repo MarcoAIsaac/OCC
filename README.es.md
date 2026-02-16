@@ -98,6 +98,13 @@ La app de escritorio guarda datos persistentes en:
 - `~/.occ_desktop/settings.json`
 - `~/.occ_desktop/occ_desktop.db` (historial SQLite)
 
+Asistente IA integrado (pestaña Assistant):
+
+- Proveedor: `OpenAI` (API oficial).
+- Fuente de API key: variable de entorno `OPENAI_API_KEY` (recomendado) o campo de clave solo para la sesión.
+- Modelo configurable (por defecto: `gpt-4.1-mini`).
+- Inyección opcional de contexto del runtime OCC para soporte técnico más preciso.
+
 Descargar paquete preconstruido más reciente para Windows:
 
 - Página de release (siempre disponible): [Último release](https://github.com/MarcoAIsaac/OCC/releases/latest)

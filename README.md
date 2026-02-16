@@ -98,6 +98,13 @@ Desktop stores persistent local data in:
 - `~/.occ_desktop/settings.json`
 - `~/.occ_desktop/occ_desktop.db` (SQLite run history)
 
+Built-in AI assistant (Assistant tab):
+
+- Provider: `OpenAI` (official API).
+- API key source: `OPENAI_API_KEY` environment variable (recommended) or session-only key field.
+- Model is configurable (default: `gpt-4.1-mini`).
+- Optional runtime-context injection for OCC-aware troubleshooting.
+
 Download latest prebuilt Windows package:
 
 - Release page (always available): [Latest release](https://github.com/MarcoAIsaac/OCC/releases/latest)

@@ -74,6 +74,7 @@ $iconPath = (Resolve-Path $iconPath).Path
   --onefile `
   --name $Name `
   --icon $iconPath `
+  --copy-metadata occ-mrd-runner `
   --hidden-import occ.cli `
   --hidden-import occ.module_autogen `
   occ/desktop.py
