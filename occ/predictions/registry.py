@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 try:
-    import yaml
+    import yaml  # type: ignore[import-untyped]
 except ModuleNotFoundError:
     from ..util import simple_yaml as yaml
 

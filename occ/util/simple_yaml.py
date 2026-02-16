@@ -155,11 +155,11 @@ def _parse_block(lines: List[_Line], idx: int, indent: int) -> Tuple[Any, int]:
                 nested, idx = _parse_block(lines, idx, indent + 2)
                 out[key] = nested
             elif val == ">-":
-                folded: List[str] = []
+                folded_root: List[str] = []
                 while idx < len(lines) and lines[idx].indent > indent:
-                    folded.append(lines[idx].text.strip())
+                    folded_root.append(lines[idx].text.strip())
                     idx += 1
-                out[key] = " ".join(folded)
+                out[key] = " ".join(folded_root)
             else:
                 out[key] = _parse_scalar(val)
 
