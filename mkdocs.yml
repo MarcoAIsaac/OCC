@@ -1,0 +1,15 @@
+site_name: OCC - Compendio Canónico Completo
+site_description: Documentación del Compendio Canónico Completo
+site_author: OCC Team
+theme:
+  name: material
+
+nav:
+  - Home: 'index.md'
+  - Start Here: 'START_HERE.md'
+  - Usage: 'USAGE.md'
+  - MRD Suite: 'MRD_SUITE.md'
+  - Index Canonical: 'INDEX_CANONICAL.md'
+
+plugins:
+  - search
