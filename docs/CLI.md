@@ -38,6 +38,39 @@ occ predict list
 occ predict show P-0003
 ```
 
+### Investigación científica web
+
+```bash
+occ research examples/claim_specs/minimal_pass.yaml
+occ research examples/claim_specs/minimal_pass.yaml --max-results 8 --show 5 --json
+```
+
+### Generación automática de módulo
+
+```bash
+occ module auto examples/claim_specs/minimal_pass.yaml
+occ module auto examples/claim_specs/minimal_pass.yaml --create-prediction
+occ module auto examples/claim_specs/minimal_pass.yaml --create-prediction --publish-prediction
+```
+
+Esto crea un módulo en `ILSC_MRD_suite_extensions/` con:
+
+- runner auto-generado
+- `module_context.json` con jueces/candados aplicados
+- investigación web (arXiv/Crossref, best-effort)
+- borrador de predicción opcional
+
+### Auth / sesión local (Google, GitHub, arXiv)
+
+```bash
+occ auth login --provider github --use-gh-token
+occ auth login --provider google --username tu_correo@gmail.com --token "$GOOGLE_ACCESS_TOKEN"
+occ auth login --provider arxiv --username tu_usuario_arxiv
+occ auth status
+occ auth events --limit 50
+occ auth logout
+```
+
 ### Judges (claim spec)
 
 ```bash

@@ -69,12 +69,43 @@ def newest_report(outputs_dir: Path) -> Optional[Path]:
     return reports[0]
 
 
+def _report_snapshot(outputs_dir: Path) -> dict[Path, int]:
+    snap: dict[Path, int] = {}
+    if not outputs_dir.is_dir():
+        return snap
+    for p in outputs_dir.glob("*.report.json"):
+        try:
+            snap[p] = p.stat().st_mtime_ns
+        except OSError:
+            continue
+    return snap
+
+
+def _newest_updated_report(outputs_dir: Path, before: dict[Path, int]) -> Optional[Path]:
+    changed: list[Path] = []
+    if not outputs_dir.is_dir():
+        return None
+    for p in outputs_dir.glob("*.report.json"):
+        try:
+            now_ns = p.stat().st_mtime_ns
+        except OSError:
+            continue
+        prev = before.get(p)
+        if prev is None or now_ns > prev:
+            changed.append(p)
+    if not changed:
+        return None
+    changed.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    return changed[0]
+
+
 def run_bundle(
     bundle_yaml: Path,
     module: Optional[str] = None,
     out_dir: Optional[Path] = None,
     strict: bool = False,
     suite: str = "auto",  # auto|canon|extensions
+    timeout: Optional[int] = None,
 ) -> RunResult:
     bundle_yaml = bundle_yaml.resolve()
     if not bundle_yaml.is_file():
@@ -126,11 +157,24 @@ def run_bundle(
     # Ensure outputs exists
     outputs_dir = module_dir / "outputs"
     outputs_dir.mkdir(exist_ok=True)
+    before_reports = _report_snapshot(outputs_dir)
 
     cmd = [sys.executable, str(runner), str(bundle_yaml)]
-    proc = subprocess.run(cmd, cwd=str(module_dir))
+    try:
+        proc = subprocess.run(
+            cmd,
+            cwd=str(module_dir),
+            timeout=(int(timeout) if timeout and int(timeout) > 0 else None),
+        )
+    except subprocess.TimeoutExpired as e:
+        raise RuntimeError(
+            f"Run timed out after {e.timeout}s for module {module} (input: {bundle_yaml})"
+        ) from e
 
-    report = newest_report(outputs_dir)
+    # Prefer reports created/updated by this run, to avoid stale picks.
+    report = _newest_updated_report(outputs_dir, before_reports)
+    if report is None and proc.returncode == 0:
+        report = newest_report(outputs_dir)
 
     if out_dir is not None:
         out_dir = out_dir.resolve()

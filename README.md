@@ -122,6 +122,39 @@ occ judge examples/claim_specs/minimal_pass.yaml
 > Tip: para un output más legible en terminal puedes instalar el extra opcional:
 > `python -m pip install -e ".[dev,cli]"`
 
+## Generación automática de módulos
+
+Si el claim no encaja en un módulo existente, OCC puede crear uno nuevo en la suite de extensiones:
+
+```bash
+occ module auto examples/claim_specs/minimal_pass.yaml --create-prediction
+```
+
+Opciones útiles:
+
+- `--publish-prediction` para añadir la predicción al `predictions/registry.yaml`.
+- `--no-research` para desactivar la búsqueda científica web.
+- `--module-name mrd_auto_mi_modulo` para fijar nombre.
+
+Puedes ejecutar investigación científica web directa desde un claim:
+
+```bash
+occ research examples/claim_specs/minimal_pass.yaml --show 5
+```
+
+## Login multi-proveedor (local)
+
+OCC incluye un sistema de sesión local para Google, GitHub y arXiv:
+
+```bash
+occ auth login --provider github --use-gh-token
+occ auth login --provider google --username tu_correo@gmail.com --token "$GOOGLE_ACCESS_TOKEN"
+occ auth login --provider arxiv --username tu_usuario_arxiv
+occ auth status
+occ auth events
+occ auth logout
+```
+
 ## Docs portal (MkDocs)
 
 El repo incluye un portal de documentación (MkDocs Material).

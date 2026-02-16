@@ -33,6 +33,32 @@ def newest_report(outputs_dir: Path) -> Optional[Path]:
     return reports[0]
 
 
+def report_snapshot(outputs_dir: Path) -> dict[Path, int]:
+    snap: dict[Path, int] = {}
+    for p in outputs_dir.glob("*.report.json"):
+        try:
+            snap[p] = p.stat().st_mtime_ns
+        except OSError:
+            continue
+    return snap
+
+
+def newest_updated_report(outputs_dir: Path, before: dict[Path, int]) -> Optional[Path]:
+    changed: list[Path] = []
+    for p in outputs_dir.glob("*.report.json"):
+        try:
+            now_ns = p.stat().st_mtime_ns
+        except OSError:
+            continue
+        prev = before.get(p)
+        if prev is None or now_ns > prev:
+            changed.append(p)
+    if not changed:
+        return None
+    changed.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    return changed[0]
+
+
 def extract_verdict(report_path: Path) -> str:
     data = json.loads(report_path.read_text(encoding="utf-8"))
     for key in ("verdict", "VERDICT", "result"):
@@ -52,6 +78,7 @@ def run_case(module_dir: Path, input_yaml: Path, timeout_s: int) -> Dict[str, An
 
     outputs_dir = module_dir / "outputs"
     outputs_dir.mkdir(exist_ok=True)
+    before = report_snapshot(outputs_dir)
 
     t0 = time.time()
     proc = subprocess.run(
@@ -61,7 +88,9 @@ def run_case(module_dir: Path, input_yaml: Path, timeout_s: int) -> Dict[str, An
     )
     dt = time.time() - t0
 
-    rep = newest_report(outputs_dir)
+    rep = newest_updated_report(outputs_dir, before)
+    if rep is None and proc.returncode == 0:
+        rep = newest_report(outputs_dir)
     verdict = extract_verdict(rep) if rep else ""
     return {
         "returncode": proc.returncode,
