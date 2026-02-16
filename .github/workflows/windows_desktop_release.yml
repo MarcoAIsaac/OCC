@@ -67,17 +67,11 @@ jobs:
           path: release-windows/*
           if-no-files-found: error
 
-      - name: Ensure release exists
-        if: github.event_name == 'push'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.resolve_tag.outputs.tag }}
-          generate_release_notes: true
-
       - name: Upload assets to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.resolve_tag.outputs.tag }}
+          generate_release_notes: true
           overwrite_files: true
           files: |
             release-windows/OCCDesktop-windows-x64.exe
