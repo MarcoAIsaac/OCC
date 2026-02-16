@@ -70,9 +70,12 @@ def _commit_highlights(cwd: Path, since_ref: Optional[str], max_items: int) -> L
     out = _git(["log", range_expr, "--pretty=format:%s"], cwd)
     lines = [x.strip() for x in out.splitlines() if x.strip()]
     clean: List[str] = []
+    low_signal = {"up", "wip", "fix", "update", "changes"}
     for line in lines:
         low = line.lower()
         if low.startswith("merge "):
+            continue
+        if low in low_signal:
             continue
         clean.append(line)
         if len(clean) >= max(1, max_items):
@@ -80,7 +83,13 @@ def _commit_highlights(cwd: Path, since_ref: Optional[str], max_items: int) -> L
     return clean
 
 
-def _build_notes(version: str, doi: str, changelog_section: str, commits: List[str], since_ref: str) -> str:
+def _build_notes(
+    version: str,
+    doi: str,
+    changelog_section: str,
+    commits: List[str],
+    since_ref: str,
+) -> str:
     parts: List[str] = [f"## OCC v{version}", ""]
     if doi:
         parts.append(f"DOI (Zenodo): https://doi.org/{doi}")
@@ -118,7 +127,11 @@ def main() -> int:
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parents[1]
-    version = str(args.version).strip() if args.version else _project_version(root / "pyproject.toml")
+    version = (
+        str(args.version).strip()
+        if args.version
+        else _project_version(root / "pyproject.toml")
+    )
     doi = _citation_doi(root / "CITATION.cff")
     changelog_section = _extract_changelog_section(root / "CHANGELOG.md", version)
     since_ref = str(args.since_ref).strip() if args.since_ref else _previous_tag(root)

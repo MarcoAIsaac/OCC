@@ -70,7 +70,7 @@ def _extract_readme_doi(text: str) -> Optional[str]:
     m = DOI_RE.search(text)
     if not m:
         return None
-    return m.group(1).strip()
+    return m.group(1).strip().rstrip(")")
 
 
 def _resolve_doi(doi: str, timeout_s: int = 12) -> Tuple[bool, str]:
@@ -104,7 +104,9 @@ def run_checks(root: Path, expected_doi: Optional[str], resolve_doi: bool) -> Li
     if _changelog_has_version(changelog, version):
         checks.append(Check("changelog.version", "PASS", f"CHANGELOG contains [{version}]"))
     else:
-        checks.append(Check("changelog.version", "FAIL", f"Missing CHANGELOG section for [{version}]"))
+        checks.append(
+            Check("changelog.version", "FAIL", f"Missing CHANGELOG section for [{version}]")
+        )
 
     cff = _load_yaml(citation)
     cff_version = str(cff.get("version") or "").strip()
@@ -156,7 +158,11 @@ def run_checks(root: Path, expected_doi: Optional[str], resolve_doi: bool) -> Li
             checks.append(Check("readme.doi.sync", "PASS", "EN/ES README DOI links match"))
         else:
             checks.append(
-                Check("readme.doi.sync", "FAIL", f"EN/ES README DOI mismatch ({doi_en} vs {doi_es})")
+                Check(
+                    "readme.doi.sync",
+                    "FAIL",
+                    f"EN/ES README DOI mismatch ({doi_en} vs {doi_es})",
+                )
             )
 
     if cff_doi:
@@ -175,14 +181,18 @@ def run_checks(root: Path, expected_doi: Optional[str], resolve_doi: bool) -> Li
                 )
             )
         else:
-            checks.append(Check("doi.expected", "PASS", f"All files match expected DOI {expected_doi}"))
+            checks.append(
+                Check("doi.expected", "PASS", f"All files match expected DOI {expected_doi}")
+            )
 
     if resolve_doi and target_doi:
         ok, detail = _resolve_doi(target_doi)
         if ok:
             checks.append(Check("doi.resolve", "PASS", f"{target_doi} -> {detail}"))
         else:
-            checks.append(Check("doi.resolve", "WARN", f"Could not resolve DOI {target_doi}: {detail}"))
+            checks.append(
+                Check("doi.resolve", "WARN", f"Could not resolve DOI {target_doi}: {detail}")
+            )
 
     return checks
 

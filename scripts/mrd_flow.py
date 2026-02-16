@@ -15,16 +15,14 @@ from pathlib import Path
 from typing import Any, Dict
 
 ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
-from occ.judges.nuclear_guard import claim_is_nuclear
-from occ.judges.pipeline import default_judges, run_pipeline
-from occ.module_autogen import auto_generate_module, load_claim_file
-from occ.runner import extract_verdict_from_report, run_bundle
 
 
 def _judge_claim(claim: Dict[str, Any]) -> Dict[str, Any]:
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    from occ.judges.nuclear_guard import claim_is_nuclear
+    from occ.judges.pipeline import default_judges, run_pipeline
+
     include_nuclear = claim_is_nuclear(claim)
     judges = default_judges(strict_trace=False, include_nuclear=include_nuclear)
     report = run_pipeline(claim, judges)
@@ -37,15 +35,36 @@ def _judge_claim(claim: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def main() -> int:
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    from occ.module_autogen import auto_generate_module, load_claim_file
+    from occ.runner import extract_verdict_from_report, run_bundle
+
     parser = argparse.ArgumentParser(description="Run OCC guided pipeline for new claims.")
     parser.add_argument("claim", help="Path to claim YAML/JSON")
     parser.add_argument("--module-name", help="Target module name for auto-generation")
     parser.add_argument("--start", default=".", help="Workspace root (default: current dir)")
-    parser.add_argument("--no-research", action="store_true", help="Disable web research enrichment")
+    parser.add_argument(
+        "--no-research",
+        action="store_true",
+        help="Disable web research enrichment",
+    )
     parser.add_argument("--max-sources", type=int, default=5, help="Max external references")
-    parser.add_argument("--create-prediction", action="store_true", help="Create prediction draft")
-    parser.add_argument("--publish-prediction", action="store_true", help="Publish draft to registry")
-    parser.add_argument("--force", action="store_true", help="Force module creation when name exists")
+    parser.add_argument(
+        "--create-prediction",
+        action="store_true",
+        help="Create prediction draft",
+    )
+    parser.add_argument(
+        "--publish-prediction",
+        action="store_true",
+        help="Publish draft to registry",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force module creation when name exists",
+    )
     parser.add_argument(
         "--generate-module",
         action="store_true",

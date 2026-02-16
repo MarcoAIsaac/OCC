@@ -9,7 +9,7 @@ import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, List
 
 
 @dataclass
@@ -63,12 +63,14 @@ def collect_findings(limit: int, workflow: str | None) -> List[RunFinding]:
     if not isinstance(raw, list):
         raise RuntimeError(f"Could not read run list: {proc.stderr.strip() or proc.stdout.strip()}")
 
+    bad = {"failure", "cancelled", "timed_out", "action_required", "startup_failure"}
+
     failures: List[RunFinding] = []
     for item in raw:
         if not isinstance(item, dict):
             continue
         conclusion = str(item.get("conclusion") or "")
-        if conclusion not in {"failure", "cancelled", "timed_out", "action_required", "startup_failure"}:
+        if conclusion not in bad:
             continue
 
         run_id = int(item.get("databaseId") or 0)
@@ -83,7 +85,7 @@ def collect_findings(limit: int, workflow: str | None) -> List[RunFinding]:
                     if not isinstance(job, dict):
                         continue
                     jc = str(job.get("conclusion") or "")
-                    if jc in {"failure", "cancelled", "timed_out", "action_required", "startup_failure"}:
+                    if jc in bad:
                         jobs.append(str(job.get("name") or "unknown-job"))
 
         failures.append(

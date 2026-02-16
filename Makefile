@@ -63,13 +63,13 @@ docs-build: install-docs
 	$(PY) -m mkdocs build --strict
 
 release-doctor:
-	$(PY) scripts/release_doctor.py --strict
+	$(PYTHON) scripts/release_doctor.py --strict --no-resolve-doi
 
 docs-i18n:
-	$(PY) scripts/check_docs_i18n.py --strict
+	$(PYTHON) scripts/check_docs_i18n.py --strict
 
 ci-doctor:
-	$(PY) scripts/ci_doctor.py --limit 12 --workflow CI
+	$(PYTHON) scripts/ci_doctor.py --limit 12 --workflow CI
 
 release-notes:
-	$(PY) scripts/generate_release_notes.py
+	$(PYTHON) scripts/generate_release_notes.py

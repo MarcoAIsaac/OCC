@@ -87,7 +87,9 @@ def run_audit(root: Path) -> List[Issue]:
         if not en.is_file():
             continue
         if not es.is_file():
-            issues.append(Issue("ERROR", str(en.relative_to(root)), f"Missing pair file: {es.name}"))
+            issues.append(
+                Issue("ERROR", str(en.relative_to(root)), f"Missing pair file: {es.name}")
+            )
             continue
 
         en_text = _read(en)
