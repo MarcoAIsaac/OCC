@@ -12,6 +12,7 @@ Bienvenido a la documentación oficial del **Compendio Canónico Completo (OCC)*
 ## Documentación Canónica
 
 La documentación canónica completa está disponible en la carpeta `canonical/`:
+
 - Documentos de defensa formal
 - Adéndums y actualizaciones
 - Metodología y referencias
