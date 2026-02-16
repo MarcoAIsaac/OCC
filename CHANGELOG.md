@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on *Keep a Changelog* and this project adheres to *Semantic Versioning*.
 
+## [1.3.0] - 2026-02-16
+
+### Added
+
+- Windows desktop frontend (`occ-desktop`) for claim judging, suite verification, module flow, and maintenance tools.
+- Windows packaging script `scripts/build_windows_desktop.ps1` generating:
+  - `OCCDesktop-windows-x64.exe`
+  - `OCCDesktop-windows-x64.zip`
+- Release workflow `.github/workflows/windows_desktop_release.yml` to build/upload desktop assets on published releases.
+- New desktop entry smoke test (`tests/test_desktop_entry.py`).
+
+### Changed
+
+- Version bump to `1.3.0` across runtime/citation metadata (`pyproject.toml`, `CITATION.cff`, `.zenodo.json`).
+- README EN/ES now include direct download links to latest Windows desktop assets on GitHub Releases.
+- Releasing docs EN/ES now document automatic Windows desktop asset publication.
+
 ## [1.2.0] - 2026-02-16
 
 ### Added

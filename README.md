@@ -93,6 +93,11 @@ Run desktop frontend:
 occ-desktop
 ```
 
+Download latest prebuilt Windows package:
+
+- ZIP (recommended): [`OCCDesktop-windows-x64.zip`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.zip)
+- EXE: [`OCCDesktop-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.exe)
+
 From source without install entrypoint:
 
 ```bash
@@ -175,8 +180,8 @@ For long runs, prefer the manual full-suite workflow in GitHub Actions.
 
 ## Domain expansions
 
-`v1.2.0` adds a nuclear-domain operational lock set (`nuclear_guard`, codes `NUC*`)
-and extension MRD coverage (`mrd_nuclear_guard`).
+`v1.3.0` keeps the nuclear-domain lock set (`nuclear_guard`, `NUC*`) and adds
+Windows desktop distribution via GitHub Releases (`OCCDesktop-windows-x64.exe/.zip`).
 
 ## Repository layout
 

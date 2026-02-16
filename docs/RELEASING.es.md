@@ -11,8 +11,12 @@ Este repositorio ya está técnicamente listo. Para maximizar alcance científic
 
 1. Conecta GitHub con Zenodo y habilita este repositorio.
 2. Crea una publicación de versión en GitHub (por ejemplo `v1.0.0`).
-3. Espera a que Zenodo archive la versión y asigne DOI.
-4. Actualiza `README` con el distintivo del DOI.
+3. Los assets de escritorio para Windows se construyen automáticamente con
+   `.github/workflows/windows_desktop_release.yml` y se adjuntan al release:
+   - `OCCDesktop-windows-x64.zip`
+   - `OCCDesktop-windows-x64.exe`
+4. Espera a que Zenodo archive la versión y asigne DOI.
+5. Actualiza `README` con el distintivo del DOI.
 
 ### Plantilla de distintivo
 

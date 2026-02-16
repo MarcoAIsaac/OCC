@@ -1,0 +1,43 @@
+name: Windows desktop release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-desktop:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Build Windows desktop assets
+        shell: pwsh
+        run: |
+          .\scripts\build_windows_desktop.ps1 -Python python -Name OCCDesktop
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: occ-windows-desktop
+          path: release-windows/*
+          if-no-files-found: error
+
+      - name: Upload assets to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-windows/OCCDesktop-windows-x64.exe
+            release-windows/OCCDesktop-windows-x64.zip

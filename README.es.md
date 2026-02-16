@@ -93,6 +93,11 @@ Ejecutar frontend de escritorio:
 occ-desktop
 ```
 
+Descargar paquete preconstruido más reciente para Windows:
+
+- ZIP (recomendado): [`OCCDesktop-windows-x64.zip`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.zip)
+- EXE: [`OCCDesktop-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.exe)
+
 Desde código fuente sin entrypoint instalado:
 
 ```bash
@@ -175,8 +180,9 @@ Para ejecuciones largas, conviene usar el flujo manual de verificación completa
 
 ## Expansiones de dominio
 
-`v1.2.0` añade un conjunto de candados operacionales para el dominio nuclear
-(`nuclear_guard`, códigos `NUC*`) y cobertura en extensiones con `mrd_nuclear_guard`.
+`v1.3.0` mantiene el conjunto de candados nucleares (`nuclear_guard`, `NUC*`) y agrega
+distribución de escritorio para Windows vía GitHub Releases
+(`OCCDesktop-windows-x64.exe/.zip`).
 
 ## Estructura del repositorio
 
