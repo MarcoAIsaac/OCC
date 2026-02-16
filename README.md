@@ -55,11 +55,11 @@ Si quieres el mapa completo sin entrar directo a 300+ páginas, empieza aquí:
 
 ```mermaid
 flowchart TD
-  A[Theory / Claim] --> B[Declare operational domain Ω_I]
-  B --> C[OCC runtime + MRD suite]
-  C -->|PASS| D[Candidate for experimental program]
-  C -->|FAIL| E[Reject / revise claim]
-  C -->|NO‑EVAL| F[Not operationally evaluable yet]
+  A["Theory / Claim"] --> B["Declare operational domain OMEGA_I"]
+  B --> C["OCC runtime + MRD suite"]
+  C -->|PASS| D["Candidate for experimental program"]
+  C -->|FAIL| E["Reject / revise claim"]
+  C -->|NO-EVAL| F["Not operationally evaluable yet"]
 ```
 
 ## Quickstart
