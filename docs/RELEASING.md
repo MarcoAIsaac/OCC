@@ -13,6 +13,7 @@ This repository is technically ready. To maximize scientific reach, two publicat
 2. Create a GitHub Release (for example `v1.0.0`).
 3. Windows desktop assets are built automatically by workflow
    `.github/workflows/windows_desktop_release.yml` and attached to the release:
+   - `OCCDesktop-Setup-windows-x64.exe`
    - `OCCDesktop-windows-x64.zip`
    - `OCCDesktop-windows-x64.exe`
    - `OCCDesktop-windows-x64.sha256`
@@ -27,8 +28,8 @@ To reduce Windows SmartScreen warnings, configure repository secrets:
 - `WINDOWS_CODESIGN_PFX_B64`: base64-encoded code-signing `.pfx`.
 - `WINDOWS_CODESIGN_PFX_PASSWORD`: password for that certificate.
 
-When those secrets are present, workflow `windows_desktop_release.yml` signs the EXE,
-timestamps it, and verifies signature status.
+When those secrets are present, workflow `windows_desktop_release.yml` signs the EXE and installer,
+timestamps them, and verifies signature status.
 
 ### Badge template
 

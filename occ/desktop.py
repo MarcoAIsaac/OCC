@@ -10,11 +10,13 @@ Design goals inspired by Fluent-style principles:
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import os
 import queue
 import re
 import shlex
+import sqlite3
 import subprocess
 import sys
 import threading
@@ -88,7 +90,9 @@ class OCCDesktopApp(tk.Tk):
         self.minsize(1080, 700)
 
         self.repo_root = Path(__file__).resolve().parents[1]
-        self.settings_file = Path.home() / ".occ_desktop" / "settings.json"
+        self.app_dir = Path.home() / ".occ_desktop"
+        self.settings_file = self.app_dir / "settings.json"
+        self.db_file = self.app_dir / "occ_desktop.db"
 
         self.workspace_var = tk.StringVar(value=str(self.repo_root))
         self.claim_var = tk.StringVar(
@@ -114,11 +118,14 @@ class OCCDesktopApp(tk.Tk):
 
         self._queue: "queue.Queue[Tuple[str, Dict[str, Any]]]" = queue.Queue()
         self._proc: Optional[subprocess.Popen[str]] = None
+        self._db_conn: Optional[sqlite3.Connection] = None
         self._running = False
         self._running_label = ""
         self._running_started_at = 0.0
+        self._running_started_text = "-"
         self._current_verdict = ""
         self._last_cmd: List[str] = []
+        self._run_log_buffer: List[str] = []
         self._stats_total_runs = 0
         self._stats_pass = 0
         self._stats_fail = 0
@@ -126,10 +133,15 @@ class OCCDesktopApp(tk.Tk):
 
         self._buttons: List[ttk.Button] = []
         self._history_commands: Dict[str, List[str]] = {}
+        self._history_db_ids: Dict[str, int] = {}
 
+        self._init_persistence()
         self._load_settings()
         self._configure_style()
+        self._apply_window_branding()
         self._build_ui()
+        self._load_persisted_history()
+        self._refresh_stats_from_tree()
         self._bind_shortcuts()
 
         self.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -179,6 +191,24 @@ class OCCDesktopApp(tk.Tk):
             background=self.SURFACE,
             foreground=self.TEXT,
             font=("Segoe UI Semibold", 11),
+        )
+        style.configure(
+            "HeroTitle.TLabel",
+            background=self.PANEL,
+            foreground="#f8fafc",
+            font=("Segoe UI Semibold", 14),
+        )
+        style.configure(
+            "HeroBody.TLabel",
+            background=self.PANEL,
+            foreground="#cbd5e1",
+            font=("Segoe UI", 10),
+        )
+        style.configure(
+            "Metric.TLabel",
+            background=self.PANEL,
+            foreground="#7dd3fc",
+            font=("Segoe UI Semibold", 10),
         )
 
         style.configure(
@@ -333,6 +363,131 @@ class OCCDesktopApp(tk.Tk):
             foreground=[("selected", "#ffffff")],
         )
 
+    def _apply_window_branding(self) -> None:
+        try:
+            icon = tk.PhotoImage(width=64, height=64)
+            icon.put("#0b1220", to=(0, 0, 64, 64))
+            icon.put("#1e293b", to=(6, 6, 58, 58))
+            icon.put("#0ea5e9", to=(10, 10, 54, 22))
+            icon.put("#22d3ee", to=(10, 22, 54, 34))
+            icon.put("#38bdf8", to=(10, 34, 54, 54))
+            icon.put("#f8fafc", to=(18, 18, 46, 46))
+            icon.put("#0f172a", to=(22, 22, 42, 42))
+            self._brand_icon = icon  # keep reference
+            self.iconphoto(True, self._brand_icon)
+        except Exception:
+            pass
+
+    def _init_persistence(self) -> None:
+        self.app_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            conn = sqlite3.connect(self.db_file)
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS run_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    started_at TEXT NOT NULL,
+                    action TEXT NOT NULL,
+                    command_text TEXT NOT NULL,
+                    exit_code INTEGER NOT NULL,
+                    duration_s REAL NOT NULL,
+                    verdict TEXT NOT NULL,
+                    output_excerpt TEXT NOT NULL
+                )
+                """
+            )
+            conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_run_history_started_at
+                ON run_history(started_at DESC)
+                """
+            )
+            conn.commit()
+            self._db_conn = conn
+        except Exception as e:
+            self._db_conn = None
+            self.status_var.set(_tr(f"DB offline: {e}", f"BD inactiva: {e}"))
+
+    def _load_persisted_history(self, limit: int = 250) -> None:
+        if self._db_conn is None:
+            return
+        try:
+            rows = self._db_conn.execute(
+                """
+                SELECT id, started_at, action, exit_code, duration_s, verdict, command_text
+                FROM run_history
+                ORDER BY id DESC
+                LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
+        except Exception:
+            return
+
+        for row in reversed(rows):
+            row_id, started_at, action, rc, duration_s, verdict, command_text = row
+            command_value = str(command_text or "")
+            try:
+                parsed_command = json.loads(command_value)
+                if isinstance(parsed_command, list):
+                    command = [str(x) for x in parsed_command]
+                else:
+                    command = [command_value]
+            except json.JSONDecodeError:
+                command = [command_value]
+            self._insert_history_row(
+                started_at=str(started_at),
+                action=str(action),
+                rc=int(rc),
+                duration_s=float(duration_s),
+                verdict=str(verdict or "-"),
+                command=command,
+                db_id=int(row_id),
+            )
+
+    def _persist_history_row(
+        self,
+        started_at: str,
+        action: str,
+        rc: int,
+        duration_s: float,
+        verdict: str,
+        command: Sequence[str],
+        output_excerpt: str,
+    ) -> Optional[int]:
+        if self._db_conn is None:
+            return None
+        cmd_text = json.dumps(list(command), ensure_ascii=True)
+        try:
+            cursor = self._db_conn.execute(
+                """
+                INSERT INTO run_history (
+                    started_at,
+                    action,
+                    command_text,
+                    exit_code,
+                    duration_s,
+                    verdict,
+                    output_excerpt
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    started_at,
+                    action,
+                    cmd_text,
+                    rc,
+                    duration_s,
+                    verdict or "-",
+                    output_excerpt,
+                ),
+            )
+            self._db_conn.commit()
+            last_id = cursor.lastrowid
+            return int(last_id) if last_id is not None else None
+        except Exception:
+            return None
+
     def _build_ui(self) -> None:
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
@@ -485,7 +640,46 @@ class OCCDesktopApp(tk.Tk):
 
     def _build_workbench_tab(self, tab: ttk.Frame) -> None:
         tab.grid_columnconfigure(0, weight=1)
-        tab.grid_rowconfigure(3, weight=1)
+        tab.grid_rowconfigure(4, weight=1)
+
+        hero = ttk.LabelFrame(
+            tab,
+            text=_tr("Presentation", "Presentacion"),
+            style="Card.TLabelframe",
+            padding=10,
+        )
+        hero.grid(row=0, column=0, sticky="ew")
+        hero.grid_columnconfigure(0, weight=1)
+        hero.grid_columnconfigure(1, weight=1)
+
+        ttk.Label(
+            hero,
+            text=_tr("OCC Enterprise Desktop", "OCC Desktop Empresarial"),
+            style="HeroTitle.TLabel",
+        ).grid(row=0, column=0, sticky="w")
+        ttk.Label(
+            hero,
+            text=_tr(
+                "Claim screening, judge execution, module generation and release operations "
+                "in one governed workstation.",
+                "Evaluacion de claims, ejecucion de jueces, generacion de modulos y "
+                "operaciones release en un solo entorno gobernado.",
+            ),
+            style="HeroBody.TLabel",
+            wraplength=560,
+            justify=tk.LEFT,
+        ).grid(row=1, column=0, sticky="w", pady=(4, 0))
+        ttk.Label(
+            hero,
+            text=_tr("Persistent SQLite run ledger enabled", "Bitacora SQLite persistente activa"),
+            style="Metric.TLabel",
+        ).grid(row=0, column=1, sticky="e")
+        ttk.Button(
+            hero,
+            text=_tr("Open release page", "Abrir pagina release"),
+            command=lambda: webbrowser.open("https://github.com/MarcoAIsaac/OCC/releases/latest"),
+            style="Ghost.TButton",
+        ).grid(row=1, column=1, sticky="e", pady=(4, 0))
 
         context = ttk.LabelFrame(
             tab,
@@ -493,7 +687,7 @@ class OCCDesktopApp(tk.Tk):
             style="Card.TLabelframe",
             padding=10,
         )
-        context.grid(row=0, column=0, sticky="ew")
+        context.grid(row=1, column=0, sticky="ew", pady=(8, 0))
         for c in (1, 3):
             context.grid_columnconfigure(c, weight=1)
 
@@ -567,7 +761,7 @@ class OCCDesktopApp(tk.Tk):
         ).grid(row=1, column=4, sticky="w", pady=(8, 0))
 
         options = ttk.Frame(tab, style="Panel.TFrame")
-        options.grid(row=1, column=0, sticky="ew", pady=(10, 0))
+        options.grid(row=2, column=0, sticky="ew", pady=(10, 0))
         options.grid_columnconfigure(0, weight=1)
 
         ttk.Label(options, text=_tr("Module name", "Nombre modulo"), style="Body.TLabel").grid(
@@ -593,7 +787,7 @@ class OCCDesktopApp(tk.Tk):
         ).grid(row=0, column=3, sticky="w", padx=(14, 0))
 
         preview = ttk.Frame(tab, style="Panel.TFrame")
-        preview.grid(row=2, column=0, sticky="ew", pady=(8, 0))
+        preview.grid(row=3, column=0, sticky="ew", pady=(8, 0))
         preview.grid_columnconfigure(1, weight=1)
 
         ttk.Label(
@@ -639,7 +833,7 @@ class OCCDesktopApp(tk.Tk):
             style="Card.TLabelframe",
             padding=8,
         )
-        out_card.grid(row=3, column=0, sticky="nsew", pady=(8, 0))
+        out_card.grid(row=4, column=0, sticky="nsew", pady=(8, 0))
         out_card.grid_rowconfigure(0, weight=1)
         out_card.grid_columnconfigure(0, weight=1)
 
@@ -666,7 +860,7 @@ class OCCDesktopApp(tk.Tk):
         self.output.tag_configure("warning", foreground="#fcd34d")
 
         footer = ttk.Frame(tab, style="Panel.TFrame")
-        footer.grid(row=4, column=0, sticky="ew", pady=(8, 0))
+        footer.grid(row=5, column=0, sticky="ew", pady=(8, 0))
         footer.grid_columnconfigure(0, weight=1)
 
         self.progress = ttk.Progressbar(
@@ -686,7 +880,7 @@ class OCCDesktopApp(tk.Tk):
         self.verdict_label.grid(row=0, column=2, sticky="e")
 
         action_row = ttk.Frame(tab, style="Panel.TFrame")
-        action_row.grid(row=5, column=0, sticky="ew", pady=(8, 0))
+        action_row.grid(row=6, column=0, sticky="ew", pady=(8, 0))
 
         clear_btn = ttk.Button(
             action_row,
@@ -758,6 +952,18 @@ class OCCDesktopApp(tk.Tk):
             command=self._copy_selected_history_command,
             style="Ghost.TButton",
         ).pack(side=tk.LEFT, padx=(8, 0))
+        ttk.Button(
+            actions,
+            text=_tr("Export CSV", "Exportar CSV"),
+            command=self._export_history_csv,
+            style="Ghost.TButton",
+        ).pack(side=tk.LEFT, padx=(8, 0))
+        ttk.Button(
+            actions,
+            text=_tr("Clear history", "Limpiar historial"),
+            command=self._clear_history,
+            style="Ghost.TButton",
+        ).pack(side=tk.LEFT, padx=(8, 0))
 
     def _build_security_tab(self, tab: ttk.Frame) -> None:
         tab.grid_columnconfigure(0, weight=1)
@@ -799,6 +1005,16 @@ class OCCDesktopApp(tk.Tk):
             command=lambda: webbrowser.open(
                 "https://github.com/MarcoAIsaac/OCC/releases/latest/download/"
                 "OCCDesktop-windows-x64.zip"
+            ),
+            style="Ghost.TButton",
+        ).pack(side=tk.LEFT, padx=(8, 0))
+
+        ttk.Button(
+            link_frame,
+            text=_tr("Open Setup installer", "Abrir instalador Setup"),
+            command=lambda: webbrowser.open(
+                "https://github.com/MarcoAIsaac/OCC/releases/latest/download/"
+                "OCCDesktop-Setup-windows-x64.exe"
             ),
             style="Ghost.TButton",
         ).pack(side=tk.LEFT, padx=(8, 0))
@@ -888,6 +1104,11 @@ class OCCDesktopApp(tk.Tk):
         if self._proc is not None:
             try:
                 self._proc.terminate()
+            except Exception:
+                pass
+        if self._db_conn is not None:
+            try:
+                self._db_conn.close()
             except Exception:
                 pass
         self.destroy()
@@ -987,17 +1208,49 @@ class OCCDesktopApp(tk.Tk):
 
     def _record_history(
         self,
+        started_at: str,
         action: str,
         rc: int,
         duration_s: float,
         verdict: str,
         command: Sequence[str],
+        output_excerpt: str,
+    ) -> None:
+        db_id = self._persist_history_row(
+            started_at=started_at,
+            action=action,
+            rc=rc,
+            duration_s=duration_s,
+            verdict=verdict,
+            command=command,
+            output_excerpt=output_excerpt,
+        )
+        self._insert_history_row(
+            started_at=started_at,
+            action=action,
+            rc=rc,
+            duration_s=duration_s,
+            verdict=verdict,
+            command=command,
+            db_id=db_id,
+        )
+        self._update_stats(action, rc, duration_s, verdict)
+
+    def _insert_history_row(
+        self,
+        started_at: str,
+        action: str,
+        rc: int,
+        duration_s: float,
+        verdict: str,
+        command: Sequence[str],
+        db_id: Optional[int],
     ) -> None:
         iid = self.history_tree.insert(
             "",
             tk.END,
             values=(
-                _now_text(),
+                started_at,
                 action,
                 rc,
                 f"{duration_s:.2f}s",
@@ -1005,7 +1258,35 @@ class OCCDesktopApp(tk.Tk):
             ),
         )
         self._history_commands[str(iid)] = list(command)
-        self._update_stats(action, rc, duration_s, verdict)
+        if db_id is not None:
+            self._history_db_ids[str(iid)] = db_id
+
+    def _refresh_stats_from_tree(self) -> None:
+        rows = list(self.history_tree.get_children())
+        self._stats_total_runs = len(rows)
+        self._stats_pass = 0
+        self._stats_fail = 0
+        self._stats_no_eval = 0
+
+        for iid in rows:
+            values = self.history_tree.item(iid).get("values", [])
+            verdict_text = str(values[4] if len(values) >= 5 else "")
+            norm = verdict_text.upper()
+            if norm.startswith("PASS"):
+                self._stats_pass += 1
+            elif norm.startswith("FAIL"):
+                self._stats_fail += 1
+            elif norm.startswith("NO-EVAL"):
+                self._stats_no_eval += 1
+
+        self.metrics_var.set(
+            _tr(
+                f"Runs: {self._stats_total_runs} | PASS: {self._stats_pass} | "
+                f"FAIL: {self._stats_fail} | NO-EVAL: {self._stats_no_eval}",
+                f"Ejecuciones: {self._stats_total_runs} | PASS: {self._stats_pass} | "
+                f"FAIL: {self._stats_fail} | NO-EVAL: {self._stats_no_eval}",
+            )
+        )
 
     def _update_stats(self, action: str, rc: int, duration_s: float, verdict: str) -> None:
         self._stats_total_runs += 1
@@ -1032,6 +1313,53 @@ class OCCDesktopApp(tk.Tk):
             )
         )
 
+    def _export_history_csv(self) -> None:
+        selected = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("CSV", "*.csv"), (_tr("All", "Todos"), "*.*")],
+            title=_tr("Export history to CSV", "Exportar historial a CSV"),
+        )
+        if not selected:
+            return
+
+        rows = self.history_tree.get_children()
+        with Path(selected).open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.writer(handle)
+            writer.writerow(["time", "action", "rc", "duration", "verdict", "command"])
+            for iid in rows:
+                values = self.history_tree.item(iid).get("values", [])
+                command = _fmt_cmd(self._history_commands.get(str(iid), []))
+                writer.writerow(list(values) + [command])
+
+        self.status_var.set(_tr("History CSV exported", "Historial exportado a CSV"))
+
+    def _clear_history(self) -> None:
+        ok = messagebox.askyesno(
+            "OCC Desktop",
+            _tr(
+                "Delete all persisted run history from this workstation?",
+                "Eliminar todo el historial persistente de esta estacion?",
+            ),
+        )
+        if not ok:
+            return
+
+        for iid in self.history_tree.get_children():
+            self.history_tree.delete(iid)
+        self._history_commands.clear()
+        self._history_db_ids.clear()
+
+        if self._db_conn is not None:
+            try:
+                self._db_conn.execute("DELETE FROM run_history")
+                self._db_conn.commit()
+            except Exception:
+                pass
+
+        self.last_run_var.set("-")
+        self._refresh_stats_from_tree()
+        self.status_var.set(_tr("History cleared", "Historial limpiado"))
+
     def _rerun_selected_history(self, _event: Optional[tk.Event[Any]] = None) -> None:
         selected = self.history_tree.selection()
         if not selected:
@@ -1040,7 +1368,13 @@ class OCCDesktopApp(tk.Tk):
         cmd = self._history_commands.get(iid)
         if not cmd:
             return
-        self._start_command("history-rerun", cmd)
+        rerun_cmd = list(cmd)
+        if len(rerun_cmd) == 1 and " " in rerun_cmd[0]:
+            try:
+                rerun_cmd = shlex.split(rerun_cmd[0])
+            except Exception:
+                pass
+        self._start_command("history-rerun", rerun_cmd)
 
     def _copy_selected_history_command(self) -> None:
         selected = self.history_tree.selection()
@@ -1067,8 +1401,10 @@ class OCCDesktopApp(tk.Tk):
 
         self._running_label = label
         self._running_started_at = time.monotonic()
+        self._running_started_text = _now_text()
         self._current_verdict = ""
         self._last_cmd = list(cmd)
+        self._run_log_buffer = []
         self.verdict_var.set("-")
 
         cmd_text = _fmt_cmd(cmd)
@@ -1077,7 +1413,7 @@ class OCCDesktopApp(tk.Tk):
         self._set_running(True)
         self.status_var.set(_tr(f"Running: {label}", f"Ejecutando: {label}"))
         self._append_output("\n" + "=" * 88 + "\n", "command")
-        self._append_output(f"[{_now_text()}] $ {cmd_text}\n\n", "command")
+        self._append_output(f"[{self._running_started_text}] $ {cmd_text}\n\n", "command")
 
         def worker() -> None:
             try:
@@ -1121,7 +1457,16 @@ class OCCDesktopApp(tk.Tk):
                 label = str(payload.get("label") or self._running_label)
                 verdict = self._current_verdict
 
-                self._record_history(label, rc, duration, verdict, self._last_cmd)
+                output_excerpt = "".join(self._run_log_buffer)[-8000:]
+                self._record_history(
+                    started_at=self._running_started_text,
+                    action=label,
+                    rc=rc,
+                    duration_s=duration,
+                    verdict=verdict,
+                    command=self._last_cmd,
+                    output_excerpt=output_excerpt,
+                )
 
                 if rc == 0:
                     self.status_var.set(_tr("Done (exit 0)", "Terminado (salida 0)"))
@@ -1135,6 +1480,7 @@ class OCCDesktopApp(tk.Tk):
         self.after(120, self._drain_queue)
 
     def _handle_output_line(self, line: str) -> None:
+        self._run_log_buffer.append(line)
         verdict_hit = self.VERDICT_RE.search(line)
         if verdict_hit:
             self._current_verdict = verdict_hit.group(0)

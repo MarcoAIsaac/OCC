@@ -93,9 +93,15 @@ Run desktop frontend:
 occ-desktop
 ```
 
+Desktop stores persistent local data in:
+
+- `~/.occ_desktop/settings.json`
+- `~/.occ_desktop/occ_desktop.db` (SQLite run history)
+
 Download latest prebuilt Windows package:
 
 - Release page (always available): [Latest release](https://github.com/MarcoAIsaac/OCC/releases/latest)
+- Installer (recommended): [`OCCDesktop-Setup-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-Setup-windows-x64.exe)
 - ZIP (recommended): [`OCCDesktop-windows-x64.zip`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.zip)
 - EXE: [`OCCDesktop-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.exe)
 - Checksums: [`OCCDesktop-windows-x64.sha256`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.sha256)
@@ -129,6 +135,9 @@ To reduce SmartScreen warnings in distributed binaries, configure repository sec
 
 - `WINDOWS_CODESIGN_PFX_B64`: base64-encoded `.pfx` certificate.
 - `WINDOWS_CODESIGN_PFX_PASSWORD`: password for the `.pfx`.
+
+Without a trusted code-signing certificate (ideally EV), SmartScreen warnings cannot be fully
+eliminated for fresh binaries.
 
 ## Maintenance helpers
 

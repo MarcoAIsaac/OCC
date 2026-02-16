@@ -12,6 +12,7 @@ The format is based on *Keep a Changelog* and this project adheres to *Semantic 
 - Windows packaging script `scripts/build_windows_desktop.ps1` generating:
   - `OCCDesktop-windows-x64.exe`
   - `OCCDesktop-windows-x64.zip`
+  - `OCCDesktop-Setup-windows-x64.exe` (Inno Setup installer)
   - `OCCDesktop-windows-x64.sha256`
 - Release workflow `.github/workflows/windows_desktop_release.yml` to build/upload desktop assets on published releases.
 - New desktop entry smoke test (`tests/test_desktop_entry.py`).
@@ -23,6 +24,7 @@ The format is based on *Keep a Changelog* and this project adheres to *Semantic 
 - Releasing docs EN/ES now document automatic Windows desktop asset publication.
 - Desktop UI upgraded with Fluent-style workbench improvements, execution telemetry (last run + PASS/FAIL/NO-EVAL counters), and improved dark-theme consistency.
 - Windows release pipeline now supports optional Authenticode signing when code-sign secrets are configured.
+- Desktop app now persists run history in local SQLite (`~/.occ_desktop/occ_desktop.db`) with CSV export and history reset.
 
 ## [1.2.0] - 2026-02-16
 

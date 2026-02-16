@@ -27,6 +27,10 @@ jobs:
           python-version: "3.11"
           cache: pip
 
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
       - name: Build Windows desktop assets
         shell: pwsh
         run: |
@@ -52,4 +56,5 @@ jobs:
           files: |
             release-windows/OCCDesktop-windows-x64.exe
             release-windows/OCCDesktop-windows-x64.zip
+            release-windows/OCCDesktop-Setup-windows-x64.exe
             release-windows/OCCDesktop-windows-x64.sha256

@@ -93,9 +93,15 @@ Ejecutar frontend de escritorio:
 occ-desktop
 ```
 
+La app de escritorio guarda datos persistentes en:
+
+- `~/.occ_desktop/settings.json`
+- `~/.occ_desktop/occ_desktop.db` (historial SQLite)
+
 Descargar paquete preconstruido más reciente para Windows:
 
 - Página de release (siempre disponible): [Último release](https://github.com/MarcoAIsaac/OCC/releases/latest)
+- Instalador (recomendado): [`OCCDesktop-Setup-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-Setup-windows-x64.exe)
 - ZIP (recomendado): [`OCCDesktop-windows-x64.zip`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.zip)
 - EXE: [`OCCDesktop-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.exe)
 - Checksums: [`OCCDesktop-windows-x64.sha256`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.sha256)
@@ -129,6 +135,9 @@ Para reducir avisos de SmartScreen en binarios distribuidos, configura secretos 
 
 - `WINDOWS_CODESIGN_PFX_B64`: certificado `.pfx` codificado en base64.
 - `WINDOWS_CODESIGN_PFX_PASSWORD`: contraseña del `.pfx`.
+
+Sin un certificado de firma confiable (idealmente EV), no se puede eliminar por completo
+la advertencia de SmartScreen en binarios nuevos.
 
 ## Utilidades de mantenimiento
 

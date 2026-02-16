@@ -5,10 +5,48 @@ param(
   [string]$CodeSignPassword = "",
   [string]$TimestampServer = "http://timestamp.digicert.com",
   [string]$FileDescription = "OCC Desktop",
-  [string]$ProductName = "OCC Desktop"
+  [string]$ProductName = "OCC Desktop",
+  [switch]$BuildInstaller = $true
 )
 
 $ErrorActionPreference = "Stop"
+
+function Sign-Binary {
+  param(
+    [string]$TargetPath,
+    [string]$PfxPath,
+    [string]$PfxPassword,
+    [string]$SignTimestampServer,
+    [string]$SignFileDescription,
+    [string]$SignProductName
+  )
+
+  $signtool = Get-Command signtool.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+  if ($null -eq $signtool) {
+    throw "signtool.exe not found on PATH. Install Windows SDK signing tools."
+  }
+
+  & $signtool.Source sign `
+    /fd SHA256 `
+    /td SHA256 `
+    /f $PfxPath `
+    /p $PfxPassword `
+    /tr $SignTimestampServer `
+    /d $SignFileDescription `
+    /du "https://github.com/MarcoAIsaac/OCC" `
+    /n $SignProductName `
+    $TargetPath
+
+  if ($LASTEXITCODE -ne 0) {
+    throw "signtool failed with exit code $LASTEXITCODE for $TargetPath"
+  }
+
+  $signature = Get-AuthenticodeSignature -FilePath $TargetPath
+  Write-Host "Authenticode signature status for $TargetPath : $($signature.Status)"
+  if ($signature.Status -ne "Valid") {
+    throw "Signature is not valid for $TargetPath . Status: $($signature.Status)"
+  }
+}
 
 Write-Host "Building Windows desktop executable with PyInstaller..."
 
@@ -20,12 +58,21 @@ if (Test-Path "dist") { Remove-Item -Recurse -Force "dist" }
 if (Test-Path "build") { Remove-Item -Recurse -Force "build" }
 if (Test-Path "release-windows") { Remove-Item -Recurse -Force "release-windows" }
 
+New-Item -ItemType Directory -Path "build" | Out-Null
+
+$iconPath = "build/occ_desktop.ico"
+& $Python scripts/generate_windows_icon.py --ico-out $iconPath | Out-Null
+if (!(Test-Path $iconPath)) {
+  throw "Failed to generate icon at $iconPath"
+}
+
 & $Python -m PyInstaller `
   --noconfirm `
   --clean `
   --windowed `
   --onefile `
   --name $Name `
+  --icon $iconPath `
   --hidden-import occ.cli `
   --hidden-import occ.module_autogen `
   occ/desktop.py
@@ -34,48 +81,30 @@ New-Item -ItemType Directory -Path "release-windows" | Out-Null
 
 $exeSource = "dist/$Name.exe"
 $exeTarget = "release-windows/OCCDesktop-windows-x64.exe"
-
 Copy-Item $exeSource $exeTarget -Force
 
-if (![string]::IsNullOrWhiteSpace($CodeSignPfxBase64) -and ![string]::IsNullOrWhiteSpace($CodeSignPassword)) {
-  Write-Host "Code signing executable with Authenticode..."
-  $signtool = Get-Command signtool.exe -ErrorAction SilentlyContinue | Select-Object -First 1
-  if ($null -eq $signtool) {
-    throw "signtool.exe not found on PATH. Install Windows SDK signing tools."
-  }
+$tempDir = if (![string]::IsNullOrWhiteSpace($env:RUNNER_TEMP)) {
+  $env:RUNNER_TEMP
+} else {
+  [System.IO.Path]::GetTempPath()
+}
+$pfxPath = Join-Path $tempDir "occ_codesign.pfx"
+$doSign = (![string]::IsNullOrWhiteSpace($CodeSignPfxBase64) -and ![string]::IsNullOrWhiteSpace($CodeSignPassword))
 
-  $tempDir = if (![string]::IsNullOrWhiteSpace($env:RUNNER_TEMP)) {
-    $env:RUNNER_TEMP
-  } else {
-    [System.IO.Path]::GetTempPath()
-  }
-  $pfxPath = Join-Path $tempDir "occ_codesign.pfx"
+if ($doSign) {
+  Write-Host "Code signing enabled."
   [System.IO.File]::WriteAllBytes($pfxPath, [System.Convert]::FromBase64String($CodeSignPfxBase64))
-
   try {
-    & $signtool.Source sign `
-      /fd SHA256 `
-      /td SHA256 `
-      /f $pfxPath `
-      /p $CodeSignPassword `
-      /tr $TimestampServer `
-      /d $FileDescription `
-      /du "https://github.com/MarcoAIsaac/OCC" `
-      /n $ProductName `
-      $exeTarget
-
-    if ($LASTEXITCODE -ne 0) {
-      throw "signtool failed with exit code $LASTEXITCODE"
-    }
+    Sign-Binary `
+      -TargetPath $exeTarget `
+      -PfxPath $pfxPath `
+      -PfxPassword $CodeSignPassword `
+      -SignTimestampServer $TimestampServer `
+      -SignFileDescription $FileDescription `
+      -SignProductName $ProductName
   }
-  finally {
-    Remove-Item $pfxPath -Force -ErrorAction SilentlyContinue
-  }
-
-  $signature = Get-AuthenticodeSignature -FilePath $exeTarget
-  Write-Host "Authenticode signature status: $($signature.Status)"
-  if ($signature.Status -ne "Valid") {
-    throw "Executable signature is not valid. Status: $($signature.Status)"
+  catch {
+    throw
   }
 }
 else {
@@ -85,16 +114,57 @@ else {
 $zipTarget = "release-windows/OCCDesktop-windows-x64.zip"
 Compress-Archive -Path $exeTarget -DestinationPath $zipTarget -Force
 
-$exeHash = (Get-FileHash -Path $exeTarget -Algorithm SHA256).Hash.ToLowerInvariant()
-$zipHash = (Get-FileHash -Path $zipTarget -Algorithm SHA256).Hash.ToLowerInvariant()
+$setupTarget = "release-windows/OCCDesktop-Setup-windows-x64.exe"
+if ($BuildInstaller) {
+  $iscc = Get-Command iscc.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+  if ($null -eq $iscc) {
+    throw "iscc.exe not found. Install Inno Setup to build installer."
+  }
+
+  $appVersion = (& $Python -c "from occ.version import get_version; print(get_version())").Trim()
+  if ([string]::IsNullOrWhiteSpace($appVersion)) {
+    $appVersion = "0.0.0"
+  }
+
+  & $iscc.Source `
+    "/DAppVersion=$appVersion" `
+    "/DExeFile=$exeTarget" `
+    "/DOutputDir=release-windows" `
+    "/DSetupIconFile=$iconPath" `
+    "scripts/windows/OCCDesktopSetup.iss"
+
+  if (!(Test-Path $setupTarget)) {
+    throw "Installer not generated at $setupTarget"
+  }
+
+  if ($doSign) {
+    Sign-Binary `
+      -TargetPath $setupTarget `
+      -PfxPath $pfxPath `
+      -PfxPassword $CodeSignPassword `
+      -SignTimestampServer $TimestampServer `
+      -SignFileDescription "$FileDescription Installer" `
+      -SignProductName $ProductName
+  }
+}
+
+if (Test-Path $pfxPath) {
+  Remove-Item $pfxPath -Force -ErrorAction SilentlyContinue
+}
+
+$hashLines = @()
+$hashLines += "$((Get-FileHash -Path $exeTarget -Algorithm SHA256).Hash.ToLowerInvariant())  OCCDesktop-windows-x64.exe"
+$hashLines += "$((Get-FileHash -Path $zipTarget -Algorithm SHA256).Hash.ToLowerInvariant())  OCCDesktop-windows-x64.zip"
+if (Test-Path $setupTarget) {
+  $hashLines += "$((Get-FileHash -Path $setupTarget -Algorithm SHA256).Hash.ToLowerInvariant())  OCCDesktop-Setup-windows-x64.exe"
+}
+
 $hashPath = "release-windows/OCCDesktop-windows-x64.sha256"
-@(
-  "$exeHash  OCCDesktop-windows-x64.exe",
-  "$zipHash  OCCDesktop-windows-x64.zip"
-) | Set-Content -Path $hashPath -Encoding ascii
+$hashLines | Set-Content -Path $hashPath -Encoding ascii
 
 Write-Host ""
 Write-Host "Done. Release assets:"
 Write-Host "  release-windows/OCCDesktop-windows-x64.exe"
 Write-Host "  release-windows/OCCDesktop-windows-x64.zip"
+if (Test-Path $setupTarget) { Write-Host "  release-windows/OCCDesktop-Setup-windows-x64.exe" }
 Write-Host "  release-windows/OCCDesktop-windows-x64.sha256"

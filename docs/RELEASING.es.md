@@ -13,6 +13,7 @@ Este repositorio ya está técnicamente listo. Para maximizar alcance científic
 2. Crea una publicación de versión en GitHub (por ejemplo `v1.0.0`).
 3. Los assets de escritorio para Windows se construyen automáticamente con
    `.github/workflows/windows_desktop_release.yml` y se adjuntan al release:
+   - `OCCDesktop-Setup-windows-x64.exe`
    - `OCCDesktop-windows-x64.zip`
    - `OCCDesktop-windows-x64.exe`
    - `OCCDesktop-windows-x64.sha256`
@@ -27,8 +28,8 @@ Para reducir avisos de SmartScreen en Windows, configura estos secretos:
 - `WINDOWS_CODESIGN_PFX_B64`: certificado de firma `.pfx` codificado en base64.
 - `WINDOWS_CODESIGN_PFX_PASSWORD`: contraseña del certificado.
 
-Cuando esos secretos existen, el workflow `windows_desktop_release.yml` firma el EXE,
-aplica timestamp y valida el estado de la firma.
+Cuando esos secretos existen, el workflow `windows_desktop_release.yml` firma el EXE y el
+instalador, aplica timestamp y valida el estado de la firma.
 
 ### Plantilla de distintivo
 
