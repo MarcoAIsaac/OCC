@@ -2,14 +2,16 @@ name: Windows desktop release
 
 on:
   push:
+    branches:
+      - "main"
     tags:
       - "v*"
       - "*.*.*"
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "Existing release tag to upload assets to (example: v1.3.0)"
-        required: true
+        description: "Tag/channel to upload assets to (example: v1.4.0 or desktop-latest)"
+        required: false
         type: string
 
 permissions:
@@ -33,22 +35,40 @@ jobs:
         shell: pwsh
         run: choco install innosetup --no-progress -y
 
-      - name: Resolve release tag
-        id: resolve_tag
+      - name: Resolve release channel
+        id: resolve_channel
         shell: pwsh
         run: |
           $eventName = "${{ github.event_name }}"
-          if ($eventName -eq "workflow_dispatch") {
-            $tag = "${{ github.event.inputs.release_tag }}"
+          $refType = "${{ github.ref_type }}"
+          $refName = "${{ github.ref_name }}"
+          $manualTag = "${{ github.event.inputs.release_tag }}"
+
+          if ($eventName -eq "workflow_dispatch" -and ![string]::IsNullOrWhiteSpace($manualTag)) {
+            $tag = $manualTag
+          } elseif ($refType -eq "tag") {
+            $tag = $refName
+          } elseif ($refName -eq "main") {
+            # Rolling channel that always points to latest main build.
+            $tag = "desktop-latest"
           } else {
-            $tag = "${{ github.ref_name }}"
+            throw "Unable to resolve release tag/channel."
           }
 
           if ([string]::IsNullOrWhiteSpace($tag)) {
-            throw "Unable to resolve release tag."
+            throw "Resolved tag/channel is empty."
+          }
+
+          $isRolling = ($tag -eq "desktop-latest")
+          if ($isRolling) {
+            $releaseName = "OCC Desktop - rolling latest (main)"
+          } else {
+            $releaseName = "OCC Desktop $tag"
           }
 
           "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "is_rolling=$isRolling" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "release_name=$releaseName" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Build Windows desktop assets
         shell: pwsh
@@ -67,14 +87,34 @@ jobs:
           path: release-windows/*
           if-no-files-found: error
 
-      - name: Upload assets to GitHub Release
+      - name: Upload rolling assets (desktop-latest)
+        if: steps.resolve_channel.outputs.is_rolling == 'True'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.resolve_tag.outputs.tag }}
+          tag_name: ${{ steps.resolve_channel.outputs.tag }}
+          name: ${{ steps.resolve_channel.outputs.release_name }}
+          prerelease: true
+          make_latest: false
+          generate_release_notes: false
+          overwrite_files: true
+          files: |
+            release-windows/OCCDesktop-windows-x64.exe
+            release-windows/OCCDesktop-windows-x64.zip
+            release-windows/OCCDesktop-Setup-windows-x64.exe
+            release-windows/OCCDesktop-build-info.json
+            release-windows/OCCDesktop-windows-x64.sha256
+
+      - name: Upload versioned assets (tags/manual)
+        if: steps.resolve_channel.outputs.is_rolling != 'True'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.resolve_channel.outputs.tag }}
+          name: ${{ steps.resolve_channel.outputs.release_name }}
           generate_release_notes: true
           overwrite_files: true
           files: |
             release-windows/OCCDesktop-windows-x64.exe
             release-windows/OCCDesktop-windows-x64.zip
             release-windows/OCCDesktop-Setup-windows-x64.exe
+            release-windows/OCCDesktop-build-info.json
             release-windows/OCCDesktop-windows-x64.sha256

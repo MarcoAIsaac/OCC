@@ -113,27 +113,28 @@ Experiment Lab (nuevo en 1.4.0):
 - CLI:
   `occ lab run --claims-dir examples/claim_specs --profiles core nuclear --out .occ_lab/latest`
 
-Descargar paquete preconstruido más reciente para Windows:
+Descargar paquete preconstruido para Windows:
 
-- Página de release (siempre disponible): [Último release](https://github.com/MarcoAIsaac/OCC/releases/latest)
-- Instalador (recomendado): [`OCCDesktop-Setup-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-Setup-windows-x64.exe)
-- ZIP (recomendado): [`OCCDesktop-windows-x64.zip`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.zip)
-- EXE: [`OCCDesktop-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.exe)
-- Checksums: [`OCCDesktop-windows-x64.sha256`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.sha256)
+- Canal automático rolling (siempre el último build de `main`):
+  - Instalador (recomendado): [`OCCDesktop-Setup-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/download/desktop-latest/OCCDesktop-Setup-windows-x64.exe)
+  - Build info: [`OCCDesktop-build-info.json`](https://github.com/MarcoAIsaac/OCC/releases/download/desktop-latest/OCCDesktop-build-info.json)
+  - Checksums: [`OCCDesktop-windows-x64.sha256`](https://github.com/MarcoAIsaac/OCC/releases/download/desktop-latest/OCCDesktop-windows-x64.sha256)
+- Canal estable (último tag de versión): [Último release](https://github.com/MarcoAIsaac/OCC/releases/latest)
 
-Si los enlaces directos devuelven `404`, abre la página del release y espera a que el workflow
-`Windows desktop release` termine de subir los assets.
-Ese pipeline corre automáticamente cuando empujas un tag de versión (por ejemplo `1.4.0` o `v1.4.0`).
-Si hace falta, ejecuta ese workflow manualmente y usa `release_tag` con la versión
-(ejemplo `1.4.0`) para adjuntar assets a un release ya existente.
+Si el enlace directo del instalador devuelve `404`, abre la página del último release y espera a
+que el workflow `Windows desktop release` termine de subir los assets.
+Ese pipeline corre automáticamente en cada push a `main` (rolling `desktop-latest`)
+y también en tags de versión (por ejemplo `1.4.0` o `v1.4.0`).
+Si hace falta, ejecútalo manualmente y usa `release_tag`
+(ejemplo `1.4.0` o `desktop-latest`) para refrescar assets.
 
 Verificación SHA256 en Windows:
 
 ```powershell
-certutil -hashfile .\OCCDesktop-windows-x64.exe SHA256
+certutil -hashfile .\OCCDesktop-Setup-windows-x64.exe SHA256
 ```
 
-Compara con `OCCDesktop-windows-x64.sha256`.
+Compara con la fila `OCCDesktop-Setup-windows-x64.exe` en `OCCDesktop-windows-x64.sha256`.
 
 Desde código fuente sin entrypoint instalado:
 
@@ -154,6 +155,42 @@ Para reducir avisos de SmartScreen en binarios distribuidos, configura secretos 
 
 Sin un certificado de firma confiable (idealmente EV), no se puede eliminar por completo
 la advertencia de SmartScreen en binarios nuevos.
+
+## App móvil (Android)
+
+La app compañera Android (`android/`) incluye:
+
+- Pestaña Workbench (claim YAML + perfiles `core`/`nuclear`)
+- Pestaña Lab (matriz de perfiles sobre claims de muestra con resumen de divergencia)
+- Pestaña Assistant (guía OCC offline)
+- Pestaña History (base de datos local Room)
+
+Permisos Android requeridos:
+
+- `INTERNET` (endpoints/enlaces online opcionales)
+- `ACCESS_NETWORK_STATE` (comprobación de conectividad)
+
+Compilar localmente:
+
+```bash
+cd android
+./gradlew assembleRelease
+```
+
+Prerequisitos: JDK 17 y Android SDK (`ANDROID_HOME` configurado).
+
+APK generado:
+
+- `android/app/build/outputs/apk/release/app-release.apk`
+
+Descargar APK preconstruido del último release:
+
+- [`OCCMobile-android.apk`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCMobile-android.apk)
+- [`OCCMobile-android.sha256`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCMobile-android.sha256)
+
+Automatización de release:
+
+- El workflow `.github/workflows/android_release.yml` publica assets Android automáticamente al empujar tags de versión (`1.4.0` o `v1.4.0`).
 
 ## Utilidades de mantenimiento
 
@@ -225,9 +262,9 @@ Para ejecuciones largas, conviene usar el flujo manual de verificación completa
 
 ## Expansiones de dominio
 
-`v1.4.0` mantiene el conjunto de candados nucleares (`nuclear_guard`, `NUC*`) y agrega
+`v1.4.0` mantiene el conjunto de candados nucleares (`j4_nuclear_guard`, `L4C*/L4E*`) y agrega
 flujos matriciales de Experiment Lab junto con distribución de escritorio para Windows vía GitHub Releases
-(`OCCDesktop-windows-x64.exe/.zip`).
+(`OCCDesktop-Setup-windows-x64.exe`).
 
 ## Estructura del repositorio
 

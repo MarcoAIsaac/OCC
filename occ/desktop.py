@@ -85,6 +85,13 @@ def _fmt_cmd(cmd: Sequence[str]) -> str:
     return " ".join(shlex.quote(x) for x in cmd)
 
 
+RELEASE_STABLE_URL = "https://github.com/MarcoAIsaac/OCC/releases/latest"
+RELEASE_DESKTOP_ROLLING_URL = "https://github.com/MarcoAIsaac/OCC/releases/tag/desktop-latest"
+RELEASE_DESKTOP_ROLLING_BASE = (
+    "https://github.com/MarcoAIsaac/OCC/releases/download/desktop-latest/"
+)
+
+
 class OCCDesktopApp(tk.Tk):
     BG = "#0b1220"
     SURFACE = "#111827"
@@ -549,7 +556,7 @@ class OCCDesktopApp(tk.Tk):
         )
         help_menu.add_command(
             label=_tr("Latest release", "Ultimo release"),
-            command=lambda: webbrowser.open("https://github.com/MarcoAIsaac/OCC/releases/latest"),
+            command=lambda: webbrowser.open(RELEASE_STABLE_URL),
         )
         help_menu.add_separator()
         help_menu.add_command(label=_tr("About", "Acerca de"), command=self._show_about_dialog)
@@ -817,8 +824,8 @@ class OCCDesktopApp(tk.Tk):
         link_row.pack(fill=tk.X, pady=(6, 0))
         release_btn = self._create_modern_button(
             link_row,
-            label=_tr("Open latest release", "Abrir ultimo release"),
-            command=lambda: self._open_url("https://github.com/MarcoAIsaac/OCC/releases/latest"),
+            label=_tr("Open desktop-latest release", "Abrir release desktop-latest"),
+            command=lambda: self._open_url(RELEASE_DESKTOP_ROLLING_URL),
             variant="ghost",
         )
         release_btn.pack(fill=tk.X)
@@ -981,8 +988,8 @@ class OCCDesktopApp(tk.Tk):
         ).grid(row=0, column=1, sticky="e")
         ttk.Button(
             hero,
-            text=_tr("Open release page", "Abrir pagina release"),
-            command=lambda: webbrowser.open("https://github.com/MarcoAIsaac/OCC/releases/latest"),
+            text=_tr("Open desktop-latest page", "Abrir pagina desktop-latest"),
+            command=lambda: webbrowser.open(RELEASE_DESKTOP_ROLLING_URL),
             style="Ghost.TButton",
         ).grid(row=1, column=1, sticky="e", pady=(4, 0))
 
@@ -1684,40 +1691,12 @@ class OCCDesktopApp(tk.Tk):
 
         ttk.Button(
             link_frame,
-            text=_tr("Open latest release", "Abrir ultimo release"),
-            command=lambda: webbrowser.open("https://github.com/MarcoAIsaac/OCC/releases/latest"),
+            text=_tr("Download Setup installer", "Descargar instalador Setup"),
+            command=lambda: webbrowser.open(
+                RELEASE_DESKTOP_ROLLING_BASE + "OCCDesktop-Setup-windows-x64.exe"
+            ),
             style="Primary.TButton",
         ).pack(side=tk.LEFT)
-
-        ttk.Button(
-            link_frame,
-            text=_tr("Open latest ZIP", "Abrir ultimo ZIP"),
-            command=lambda: webbrowser.open(
-                "https://github.com/MarcoAIsaac/OCC/releases/latest/download/"
-                "OCCDesktop-windows-x64.zip"
-            ),
-            style="Ghost.TButton",
-        ).pack(side=tk.LEFT, padx=(8, 0))
-
-        ttk.Button(
-            link_frame,
-            text=_tr("Open Setup installer", "Abrir instalador Setup"),
-            command=lambda: webbrowser.open(
-                "https://github.com/MarcoAIsaac/OCC/releases/latest/download/"
-                "OCCDesktop-Setup-windows-x64.exe"
-            ),
-            style="Ghost.TButton",
-        ).pack(side=tk.LEFT, padx=(8, 0))
-
-        ttk.Button(
-            link_frame,
-            text=_tr("Open latest EXE", "Abrir ultimo EXE"),
-            command=lambda: webbrowser.open(
-                "https://github.com/MarcoAIsaac/OCC/releases/latest/download/"
-                "OCCDesktop-windows-x64.exe"
-            ),
-            style="Ghost.TButton",
-        ).pack(side=tk.LEFT, padx=(8, 0))
 
         ttk.Button(
             tab,

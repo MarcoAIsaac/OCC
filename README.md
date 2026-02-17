@@ -113,27 +113,28 @@ Experiment Lab (new in 1.4.0):
 - CLI:
   `occ lab run --claims-dir examples/claim_specs --profiles core nuclear --out .occ_lab/latest`
 
-Download latest prebuilt Windows package:
+Download prebuilt Windows package:
 
-- Release page (always available): [Latest release](https://github.com/MarcoAIsaac/OCC/releases/latest)
-- Installer (recommended): [`OCCDesktop-Setup-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-Setup-windows-x64.exe)
-- ZIP (recommended): [`OCCDesktop-windows-x64.zip`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.zip)
-- EXE: [`OCCDesktop-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.exe)
-- Checksums: [`OCCDesktop-windows-x64.sha256`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCDesktop-windows-x64.sha256)
+- Automatic rolling channel (always latest `main` build):
+  - Installer (recommended): [`OCCDesktop-Setup-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/download/desktop-latest/OCCDesktop-Setup-windows-x64.exe)
+  - Build info: [`OCCDesktop-build-info.json`](https://github.com/MarcoAIsaac/OCC/releases/download/desktop-latest/OCCDesktop-build-info.json)
+  - Checksums: [`OCCDesktop-windows-x64.sha256`](https://github.com/MarcoAIsaac/OCC/releases/download/desktop-latest/OCCDesktop-windows-x64.sha256)
+- Stable channel (latest version tag): [Latest release](https://github.com/MarcoAIsaac/OCC/releases/latest)
 
-If direct download links return `404`, open the release page and wait for workflow
+If the direct installer link returns `404`, open the latest release page and wait for workflow
 `Windows desktop release` to finish uploading assets.
-This pipeline runs automatically when you push a version tag (for example `1.4.0` or `v1.4.0`).
-If needed, trigger that workflow manually and set `release_tag` to your version
-(example `1.4.0`) to attach assets to an existing release.
+This pipeline runs automatically on every push to `main` (rolling `desktop-latest`)
+and on version tags (for example `1.4.0` or `v1.4.0`).
+If needed, trigger the workflow manually and set `release_tag`
+(example `1.4.0` or `desktop-latest`) to refresh assets.
 
 Windows checksum verification:
 
 ```powershell
-certutil -hashfile .\OCCDesktop-windows-x64.exe SHA256
+certutil -hashfile .\OCCDesktop-Setup-windows-x64.exe SHA256
 ```
 
-Compare with `OCCDesktop-windows-x64.sha256`.
+Compare with the `OCCDesktop-Setup-windows-x64.exe` row in `OCCDesktop-windows-x64.sha256`.
 
 From source without install entrypoint:
 
@@ -154,6 +155,42 @@ To reduce SmartScreen warnings in distributed binaries, configure repository sec
 
 Without a trusted code-signing certificate (ideally EV), SmartScreen warnings cannot be fully
 eliminated for fresh binaries.
+
+## Mobile app (Android)
+
+Android companion app (`android/`) includes:
+
+- Workbench tab (claim YAML + `core`/`nuclear` judge profiles)
+- Lab tab (profile matrix over sample claims with divergence summary)
+- Assistant tab (offline OCC guidance)
+- History tab (local Room database)
+
+Required Android permissions:
+
+- `INTERNET` (optional online endpoints / links)
+- `ACCESS_NETWORK_STATE` (network availability checks)
+
+Build locally:
+
+```bash
+cd android
+./gradlew assembleRelease
+```
+
+Prerequisites: JDK 17 and Android SDK (`ANDROID_HOME` configured).
+
+Generated APK:
+
+- `android/app/build/outputs/apk/release/app-release.apk`
+
+Download prebuilt APK from latest release:
+
+- [`OCCMobile-android.apk`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCMobile-android.apk)
+- [`OCCMobile-android.sha256`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCMobile-android.sha256)
+
+Release automation:
+
+- Workflow `.github/workflows/android_release.yml` publishes Android assets automatically on pushed version tags (`1.4.0` or `v1.4.0`).
 
 ## Maintenance helpers
 
@@ -225,9 +262,9 @@ For long runs, prefer the manual full-suite workflow in GitHub Actions.
 
 ## Domain expansions
 
-`v1.4.0` keeps the nuclear-domain lock set (`nuclear_guard`, `NUC*`) and adds
+`v1.4.0` keeps the nuclear-domain lock set (`j4_nuclear_guard`, `L4C*/L4E*`) and adds
 Experiment Lab matrix workflows plus Windows desktop distribution via GitHub Releases
-(`OCCDesktop-windows-x64.exe/.zip`).
+(`OCCDesktop-Setup-windows-x64.exe`).
 
 ## Repository layout
 
