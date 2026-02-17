@@ -8,6 +8,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -123,7 +124,7 @@ private fun OCCMobileApp(vm: MainViewModel) {
         },
         bottomBar = {
             NavigationBar(containerColor = Color(0xFF06152C)) {
-                AppTab.entries.forEach { candidate ->
+                AppTab.values().forEach { candidate ->
                     NavigationBarItem(
                         selected = candidate == tab,
                         onClick = { tab = candidate },
@@ -170,7 +171,7 @@ private fun WorkbenchScreen(vm: MainViewModel) {
                 modifier = Modifier.horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                SampleClaim.entries.forEach { sample ->
+                SampleClaim.values().forEach { sample ->
                     AssistChip(
                         onClick = { vm.loadSample(sample) },
                         label = { Text(sample.title) },
@@ -361,7 +362,7 @@ private fun HistoryScreen(vm: MainViewModel) {
 }
 
 @Composable
-private fun SurfaceCard(title: String, content: @Composable Column.() -> Unit) {
+private fun SurfaceCard(title: String, content: @Composable ColumnScope.() -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
