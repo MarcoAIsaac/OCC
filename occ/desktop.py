@@ -85,11 +85,9 @@ def _fmt_cmd(cmd: Sequence[str]) -> str:
     return " ".join(shlex.quote(x) for x in cmd)
 
 
-RELEASE_STABLE_URL = "https://github.com/MarcoAIsaac/OCC/releases/latest"
-RELEASE_DESKTOP_ROLLING_URL = "https://github.com/MarcoAIsaac/OCC/releases/tag/desktop-latest"
-RELEASE_DESKTOP_ROLLING_BASE = (
-    "https://github.com/MarcoAIsaac/OCC/releases/download/desktop-latest/"
-)
+RELEASE_TAG = get_version().split("+", 1)[0]
+RELEASE_STABLE_URL = f"https://github.com/MarcoAIsaac/OCC/releases/tag/{RELEASE_TAG}"
+RELEASE_STABLE_BASE = f"https://github.com/MarcoAIsaac/OCC/releases/download/{RELEASE_TAG}/"
 
 
 class OCCDesktopApp(tk.Tk):
@@ -824,8 +822,8 @@ class OCCDesktopApp(tk.Tk):
         link_row.pack(fill=tk.X, pady=(6, 0))
         release_btn = self._create_modern_button(
             link_row,
-            label=_tr("Open desktop-latest release", "Abrir release desktop-latest"),
-            command=lambda: self._open_url(RELEASE_DESKTOP_ROLLING_URL),
+            label=_tr(f"Open v{RELEASE_TAG} release", f"Abrir release v{RELEASE_TAG}"),
+            command=lambda: self._open_url(RELEASE_STABLE_URL),
             variant="ghost",
         )
         release_btn.pack(fill=tk.X)
@@ -988,8 +986,8 @@ class OCCDesktopApp(tk.Tk):
         ).grid(row=0, column=1, sticky="e")
         ttk.Button(
             hero,
-            text=_tr("Open desktop-latest page", "Abrir pagina desktop-latest"),
-            command=lambda: webbrowser.open(RELEASE_DESKTOP_ROLLING_URL),
+            text=_tr(f"Open release v{RELEASE_TAG}", f"Abrir release v{RELEASE_TAG}"),
+            command=lambda: webbrowser.open(RELEASE_STABLE_URL),
             style="Ghost.TButton",
         ).grid(row=1, column=1, sticky="e", pady=(4, 0))
 
@@ -1691,9 +1689,12 @@ class OCCDesktopApp(tk.Tk):
 
         ttk.Button(
             link_frame,
-            text=_tr("Download Setup installer", "Descargar instalador Setup"),
+            text=_tr(
+                f"Download Setup installer v{RELEASE_TAG}",
+                f"Descargar instalador Setup v{RELEASE_TAG}",
+            ),
             command=lambda: webbrowser.open(
-                RELEASE_DESKTOP_ROLLING_BASE + "OCCDesktop-Setup-windows-x64.exe"
+                RELEASE_STABLE_BASE + "OCCDesktop-Setup-windows-x64.exe"
             ),
             style="Primary.TButton",
         ).pack(side=tk.LEFT)

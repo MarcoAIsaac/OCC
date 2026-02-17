@@ -73,6 +73,14 @@ def _extract_readme_doi(text: str) -> Optional[str]:
     return m.group(1).strip().rstrip(")")
 
 
+def _has_versioned_asset_link(text: str, version: str, asset_name: str) -> bool:
+    pat = (
+        r"https://github\.com/MarcoAIsaac/OCC/releases/download/"
+        rf"{re.escape(version)}/{re.escape(asset_name)}"
+    )
+    return bool(re.search(pat, text))
+
+
 def _resolve_doi(doi: str, timeout_s: int = 12) -> Tuple[bool, str]:
     url = f"https://doi.org/{doi}"
     req = urllib.request.Request(url, method="HEAD")
@@ -137,6 +145,115 @@ def run_checks(root: Path, expected_doi: Optional[str], resolve_doi: bool) -> Li
 
     en_text = _read_text(readme_en)
     es_text = _read_text(readme_es)
+
+    desktop_asset = "OCCDesktop-Setup-windows-x64.exe"
+    android_asset = "OCCMobile-android.apk"
+    if _has_versioned_asset_link(en_text, version, desktop_asset):
+        checks.append(
+            Check(
+                "readme.en.desktop.link",
+                "PASS",
+                f"README.md desktop link targets version {version}",
+            )
+        )
+    else:
+        checks.append(
+            Check(
+                "readme.en.desktop.link",
+                "FAIL",
+                f"README.md missing versioned desktop link for {version}",
+            )
+        )
+    if _has_versioned_asset_link(es_text, version, desktop_asset):
+        checks.append(
+            Check(
+                "readme.es.desktop.link",
+                "PASS",
+                f"README.es.md desktop link targets version {version}",
+            )
+        )
+    else:
+        checks.append(
+            Check(
+                "readme.es.desktop.link",
+                "FAIL",
+                f"README.es.md missing versioned desktop link for {version}",
+            )
+        )
+    if _has_versioned_asset_link(en_text, version, android_asset):
+        checks.append(
+            Check(
+                "readme.en.android.link",
+                "PASS",
+                f"README.md Android link targets version {version}",
+            )
+        )
+    else:
+        checks.append(
+            Check(
+                "readme.en.android.link",
+                "FAIL",
+                f"README.md missing versioned Android link for {version}",
+            )
+        )
+    if _has_versioned_asset_link(es_text, version, android_asset):
+        checks.append(
+            Check(
+                "readme.es.android.link",
+                "PASS",
+                f"README.es.md Android link targets version {version}",
+            )
+        )
+    else:
+        checks.append(
+            Check(
+                "readme.es.android.link",
+                "FAIL",
+                f"README.es.md missing versioned Android link for {version}",
+            )
+        )
+
+    en_uses_latest_asset = (
+        "releases/latest/download/OCCDesktop" in en_text
+        or "releases/latest/download/OCCMobile" in en_text
+    )
+    if en_uses_latest_asset:
+        checks.append(
+            Check(
+                "readme.en.asset.latest",
+                "FAIL",
+                "README.md still uses /releases/latest/download/ app asset links",
+            )
+        )
+    else:
+        checks.append(
+            Check(
+                "readme.en.asset.latest",
+                "PASS",
+                "README.md app asset links avoid /releases/latest/download/",
+            )
+        )
+
+    es_uses_latest_asset = (
+        "releases/latest/download/OCCDesktop" in es_text
+        or "releases/latest/download/OCCMobile" in es_text
+    )
+    if es_uses_latest_asset:
+        checks.append(
+            Check(
+                "readme.es.asset.latest",
+                "FAIL",
+                "README.es.md still uses /releases/latest/download/ app asset links",
+            )
+        )
+    else:
+        checks.append(
+            Check(
+                "readme.es.asset.latest",
+                "PASS",
+                "README.es.md app asset links avoid /releases/latest/download/",
+            )
+        )
     if "DOI-pending" in en_text or "DOI: pending" in en_text:
         checks.append(Check("readme.en.doi", "FAIL", "README.md still uses DOI pending badge"))
     if "DOI-pending" in es_text or "DOI: pending" in es_text:

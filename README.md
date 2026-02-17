@@ -115,14 +115,14 @@ Experiment Lab (new in 1.4.0):
 
 Download prebuilt Windows package:
 
-- Automatic rolling channel (always latest `main` build):
-  - Installer (recommended): [`OCCDesktop-Setup-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/download/desktop-latest/OCCDesktop-Setup-windows-x64.exe)
-  - Build info: [`OCCDesktop-build-info.json`](https://github.com/MarcoAIsaac/OCC/releases/download/desktop-latest/OCCDesktop-build-info.json)
-  - Checksums: [`OCCDesktop-windows-x64.sha256`](https://github.com/MarcoAIsaac/OCC/releases/download/desktop-latest/OCCDesktop-windows-x64.sha256)
-- Stable channel (latest version tag): [Latest release](https://github.com/MarcoAIsaac/OCC/releases/latest)
+- Current stable desktop version: `1.4.0`
+- Installer (recommended): [`OCCDesktop-Setup-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/download/1.4.0/OCCDesktop-Setup-windows-x64.exe)
+- Build info: [`OCCDesktop-build-info.json`](https://github.com/MarcoAIsaac/OCC/releases/download/1.4.0/OCCDesktop-build-info.json)
+- Checksums: [`OCCDesktop-windows-x64.sha256`](https://github.com/MarcoAIsaac/OCC/releases/download/1.4.0/OCCDesktop-windows-x64.sha256)
+- Rolling channel (optional, latest `main` build): [desktop-latest](https://github.com/MarcoAIsaac/OCC/releases/tag/desktop-latest)
 
-If the direct installer link returns `404`, open the latest release page and wait for workflow
-`Windows desktop release` to finish uploading assets.
+If the direct installer link returns `404`, open release `1.4.0` and wait for workflow
+`Windows desktop release` to finish uploading assets for that tag.
 This pipeline runs automatically on every push to `main` (rolling `desktop-latest`)
 and on version tags (for example `1.4.0` or `v1.4.0`).
 If needed, trigger the workflow manually and set `release_tag`
@@ -183,10 +183,11 @@ Generated APK:
 
 - `android/app/build/outputs/apk/release/app-release.apk`
 
-Download prebuilt APK from latest release:
+Download prebuilt APK:
 
-- [`OCCMobile-android.apk`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCMobile-android.apk)
-- [`OCCMobile-android.sha256`](https://github.com/MarcoAIsaac/OCC/releases/latest/download/OCCMobile-android.sha256)
+- Current stable mobile version: `1.4.0`
+- [`OCCMobile-android.apk`](https://github.com/MarcoAIsaac/OCC/releases/download/1.4.0/OCCMobile-android.apk)
+- [`OCCMobile-android.sha256`](https://github.com/MarcoAIsaac/OCC/releases/download/1.4.0/OCCMobile-android.sha256)
 
 Release automation:
 
