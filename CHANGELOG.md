@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on *Keep a Changelog* and this project adheres to *Semantic Versioning*.
 
+## [1.5.0] - 2026-02-17
+
+### Added
+
+- Automated compendium integration workflow:
+  `.github/workflows/compendium_integration.yml` to normalize sources, run i18n/CI
+  audits, rebuild EN/ES compendiums, and commit outputs back to `main`.
+- New compendium build pipeline via `scripts/build_compendium_pdf.py` and
+  `make integrate-all` for repeatable bilingual artifact generation.
+- Canonical v1.5.0 compendiums:
+  - `docs/OCC_Canonical_Compendium_EN_v1.5.0.pdf`
+  - `docs/OCC_Compendio_Canonico_ES_v1.5.0.pdf`
+
+### Changed
+
+- Version metadata bumped to `1.5.0` across runtime and publication files:
+  `pyproject.toml`, `android/app/build.gradle.kts`, `CITATION.cff`, `.zenodo.json`.
+- README EN/ES and release docs EN/ES now point stable desktop/mobile download
+  links and version-tag examples to `1.5.0`.
+
 ## [1.4.0] - 2026-02-16
 
 ### Added

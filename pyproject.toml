@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "occ-mrd-runner"
-version = "1.4.0"
+version = "1.5.0"
 description = "OCC (Operational Consistency Compiler) runtime + MRD suite runner"
 readme = "README.md"
 requires-python = ">=3.10"

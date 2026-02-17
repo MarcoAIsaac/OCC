@@ -4,8 +4,8 @@ authors:
   - family-names: Isaac
     given-names: Marco A.
 title: "Operational Consistency Compiler (OCC) runtime and MRD suite"
-version: "1.4.0"
-date-released: 2026-02-16
+version: "1.5.0"
+date-released: 2026-02-17
 doi: "10.5281/zenodo.18656426"
 license: Apache-2.0
 repository-code: "https://github.com/MarcoAIsaac/OCC"

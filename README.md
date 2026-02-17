@@ -123,18 +123,18 @@ Experiment Lab (new in 1.4.0):
 
 Download prebuilt Windows package:
 
-- Current stable desktop version: `1.4.0`
-- Installer (recommended): [`OCCDesktop-Setup-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/download/1.4.0/OCCDesktop-Setup-windows-x64.exe)
-- Build info: [`OCCDesktop-build-info.json`](https://github.com/MarcoAIsaac/OCC/releases/download/1.4.0/OCCDesktop-build-info.json)
-- Checksums: [`OCCDesktop-windows-x64.sha256`](https://github.com/MarcoAIsaac/OCC/releases/download/1.4.0/OCCDesktop-windows-x64.sha256)
+- Current stable desktop version: `1.5.0`
+- Installer (recommended): [`OCCDesktop-Setup-windows-x64.exe`](https://github.com/MarcoAIsaac/OCC/releases/download/1.5.0/OCCDesktop-Setup-windows-x64.exe)
+- Build info: [`OCCDesktop-build-info.json`](https://github.com/MarcoAIsaac/OCC/releases/download/1.5.0/OCCDesktop-build-info.json)
+- Checksums: [`OCCDesktop-windows-x64.sha256`](https://github.com/MarcoAIsaac/OCC/releases/download/1.5.0/OCCDesktop-windows-x64.sha256)
 - Rolling channel (optional, latest `main` build): [desktop-latest](https://github.com/MarcoAIsaac/OCC/releases/tag/desktop-latest)
 
-If the direct installer link returns `404`, open release `1.4.0` and wait for workflow
+If the direct installer link returns `404`, open release `1.5.0` and wait for workflow
 `Windows desktop release` to finish uploading assets for that tag.
 This pipeline runs automatically on every push to `main` (rolling `desktop-latest`)
-and on version tags (for example `1.4.0` or `v1.4.0`).
+and on version tags (for example `1.5.0` or `v1.5.0`).
 If needed, trigger the workflow manually and set `release_tag`
-(example `1.4.0` or `desktop-latest`) to refresh assets.
+(example `1.5.0` or `desktop-latest`) to refresh assets.
 
 Windows checksum verification:
 
@@ -193,13 +193,13 @@ Generated APK:
 
 Download prebuilt APK:
 
-- Current stable mobile version: `1.4.0`
-- [`OCCMobile-android.apk`](https://github.com/MarcoAIsaac/OCC/releases/download/1.4.0/OCCMobile-android.apk)
-- [`OCCMobile-android.sha256`](https://github.com/MarcoAIsaac/OCC/releases/download/1.4.0/OCCMobile-android.sha256)
+- Current stable mobile version: `1.5.0`
+- [`OCCMobile-android.apk`](https://github.com/MarcoAIsaac/OCC/releases/download/1.5.0/OCCMobile-android.apk)
+- [`OCCMobile-android.sha256`](https://github.com/MarcoAIsaac/OCC/releases/download/1.5.0/OCCMobile-android.sha256)
 
 Release automation:
 
-- Workflow `.github/workflows/android_release.yml` publishes Android assets automatically on pushed version tags (`1.4.0` or `v1.4.0`).
+- Workflow `.github/workflows/android_release.yml` publishes Android assets automatically on pushed version tags (`1.5.0` or `v1.5.0`).
 
 ## Maintenance helpers
 
@@ -271,7 +271,7 @@ For long runs, prefer the manual full-suite workflow in GitHub Actions.
 
 ## Domain expansions
 
-`v1.4.0` keeps the nuclear-domain lock set (`j4_nuclear_guard`, `L4C*/L4E*`) and adds
+`v1.5.0` keeps the nuclear-domain lock set (`j4_nuclear_guard`, `L4C*/L4E*`) and adds
 Experiment Lab matrix workflows plus Windows desktop distribution via GitHub Releases
 (`OCCDesktop-Setup-windows-x64.exe`).
 
