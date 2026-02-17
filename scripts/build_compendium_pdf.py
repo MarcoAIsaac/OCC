@@ -36,8 +36,10 @@ FRONT_EN = ROOT / "docs" / "canonical" / "OCC_FRONT_EN_v1.5.0.pdf"
 FRONT_ES = ROOT / "docs" / "canonical" / "OCC_FRONT_ES_v1.5.0.pdf"
 MARKER_EN = "NUCLEAR-INTEGRATED-SECTION-EN-V1.5.0"
 MARKER_ES = "NUCLEAR-INTEGRATED-SECTION-ES-V1.5.0"
-INSERT_AFTER_PAGE = 82  # after Documento A - Metodologia
+DEFAULT_INSERT_AFTER_PAGE = 82
 TOC_REPLACE_PAGE = 4
+PREDICTIONS_START_PAGE = 331
+PREDICTIONS_END_PAGE = 340
 
 logging.getLogger("pypdf").setLevel(logging.ERROR)
 
@@ -54,6 +56,29 @@ def _contains_marker(reader: PdfReader, marker: str) -> bool:
         if marker in _extract_text(page):
             return True
     return False
+
+
+def _find_marker_page(reader: PdfReader, marker: str) -> int | None:
+    for idx, page in enumerate(reader.pages, start=1):
+        if marker in _extract_text(page):
+            return idx
+    return None
+
+
+def _find_insert_after_page(reader: PdfReader) -> int:
+    """Find where J4 should be inserted so it remains adjacent to J0..J3."""
+
+    for idx, page in enumerate(reader.pages, start=1):
+        text = _extract_text(page).lower()
+        if "4. integración con el flujo" in text or "4. integration with the flow" in text:
+            return idx
+
+    for idx, page in enumerate(reader.pages, start=1):
+        text = _extract_text(page).lower()
+        if "3. j3" in text and ("rfs" in text or "recursos finitos" in text):
+            return idx
+
+    return DEFAULT_INSERT_AFTER_PAGE
 
 
 def _resolve_base(path: Path) -> Path:
@@ -317,6 +342,22 @@ def build_integrated_nuclear_section(path: Path, lang: str, marker: str) -> None
                 st["body"],
             )
         )
+        story.append(
+            Paragraph(
+                "J4 is evaluated as the immediate continuation of J0->J3: "
+                "J0 bounds operational access, J1 certifies projection, J2 certifies "
+                "identifiability, J3 certifies finite-resource stability, and J4 closes "
+                "domain-specific nuclear consistency against observational anchors.",
+                st["body"],
+            )
+        )
+        story.append(
+            Paragraph(
+                "If J4 declarations are absent -> NO-EVAL(L4C*/L4E*). "
+                "If declarations are present but physically inconsistent -> FAIL(L4E5).",
+                st["body"],
+            )
+        )
         story.append(Paragraph("2. Operational lock semantics", st["h1"]))
         story.append(
             Paragraph(
@@ -375,6 +416,22 @@ def build_integrated_nuclear_section(path: Path, lang: str, marker: str) -> None
                 "Las restricciones del dominio nuclear se integran como J4 con familias "
                 "de candados L4C* (consistencia/evaluabilidad) y "
                 "L4E* (evidencia/procedencia).",
+                st["body"],
+            )
+        )
+        story.append(
+            Paragraph(
+                "J4 se evalua como continuacion inmediata de J0->J3: "
+                "J0 acota acceso operacional, J1 certifica proyeccion, J2 certifica "
+                "identificabilidad, J3 certifica estabilidad con recursos finitos, y J4 "
+                "cierra consistencia nuclear especifica contra anclajes observacionales.",
+                st["body"],
+            )
+        )
+        story.append(
+            Paragraph(
+                "Si faltan declaraciones J4 -> NO-EVAL(L4C*/L4E*). "
+                "Si hay declaraciones pero son fisicamente inconsistentes -> FAIL(L4E5).",
                 st["body"],
             )
         )
@@ -455,7 +512,16 @@ def build_integrated_nuclear_section(path: Path, lang: str, marker: str) -> None
     doc.build(story)
 
 
-def _toc_entries(lang: str) -> List[Tuple[str, int]]:
+def _toc_entries(lang: str, integrated_page: int) -> List[Tuple[str, int]]:
+    prediction_pages = {
+        "section": 331,
+        "p1": 331,
+        "p2": 332,
+        "p3": 333,
+        "p4": 334,
+        "p5": 335,
+    }
+
     if lang == "en":
         return [
             ("Scope", 1),
@@ -463,8 +529,8 @@ def _toc_entries(lang: str) -> List[Tuple[str, int]]:
             ("Roadmap", 3),
             ("Document A+ - Formal Defense (OCC)", 5),
             ("Addendum - Real-Judge Upgrade", 48),
-            ("Document A - Methodology (J0-J3 judges and locks)", 53),
-            ("Integrated section - Nuclear domain (J4/L4C*/L4E*)", 83),
+            ("Document A - Methodology (J0-J4 judges and locks)", 53),
+            ("Integrated section - Nuclear domain (J4/L4C*/L4E*)", integrated_page),
             ("Closed modules (MRD)", 85),
             ("Module - Observability and instrumentation (ISAAC)", 85),
             ("Module - UV projection -> Omega_I (auditable)", 101),
@@ -481,12 +547,15 @@ def _toc_entries(lang: str) -> List[Tuple[str, int]]:
             ("Module 4F - Dynamic unification (multi-front consistency)", 283),
             ("Module - Amplitudes: analyticity, unitarity, positivity", 299),
             ("Module - Baryogenesis: EDM-GW correlation", 316),
-            ("Predictions", 331),
-            ("Prediction 1 - aQGC (VBS): positivity (one-operator)", 331),
-            ("Prediction 2 - Cosmology: OCC prior + local-cosmo bridge", 333),
-            ("Prediction 3 - Baryogenesis: EDM-GW correlation", 335),
-            ("Prediction 4 - IR gravity: PPN + gravitational waves", 337),
-            ("Prediction 5 - Dynamic 4F unification: multi-front consistency", 339),
+            ("Predictions", prediction_pages["section"]),
+            ("Prediction 1 - aQGC (VBS): positivity (one-operator)", prediction_pages["p1"]),
+            ("Prediction 2 - Cosmology: OCC prior + local-cosmo bridge", prediction_pages["p2"]),
+            ("Prediction 3 - Baryogenesis: EDM-GW correlation", prediction_pages["p3"]),
+            ("Prediction 4 - IR gravity: PPN + gravitational waves", prediction_pages["p4"]),
+            (
+                "Prediction 5 - Dynamic 4F unification: multi-front consistency",
+                prediction_pages["p5"],
+            ),
         ]
     return [
         ("Alcance", 1),
@@ -494,8 +563,8 @@ def _toc_entries(lang: str) -> List[Tuple[str, int]]:
         ("Mapa del compendio", 3),
         ("Documento A+ - Defensa formal (OCC)", 5),
         ("Addendum - Real-Judge Upgrade", 48),
-        ("Documento A - Metodologia (jueces y candados J0-J3)", 53),
-        ("Seccion integrada - Dominio nuclear (J4/L4C*/L4E*)", 83),
+        ("Documento A - Metodologia (jueces y candados J0-J4)", 53),
+        ("Seccion integrada - Dominio nuclear (J4/L4C*/L4E*)", integrated_page),
         ("Modulos cerrados (MRD)", 85),
         ("Modulo - Observabilidad e instrumentacion (ISAAC)", 85),
         ("Modulo - Proyeccion UV -> Omega_I (auditable)", 101),
@@ -512,16 +581,19 @@ def _toc_entries(lang: str) -> List[Tuple[str, int]]:
         ("Modulo 4F - Unificacion dinamica (consistencia multifrente)", 283),
         ("Modulo - Amplitudes: analiticidad, unitariedad, positividad", 299),
         ("Modulo - Bariogenesis: correlacion EDM-GW", 316),
-        ("Predicciones", 331),
-        ("Prediccion 1 - aQGC (VBS): positividad (one-operator)", 331),
-        ("Prediccion 2 - Cosmologia: prior OCC + puente local-cosmo", 333),
-        ("Prediccion 3 - Bariogenesis: correlacion EDM-GW", 335),
-        ("Prediccion 4 - Gravedad IR: PPN + ondas gravitacionales", 337),
-        ("Prediccion 5 - Unificacion dinamica 4F: consistencia multifrente", 339),
+        ("Predicciones", prediction_pages["section"]),
+        ("Prediccion 1 - aQGC (VBS): positividad (one-operator)", prediction_pages["p1"]),
+        ("Prediccion 2 - Cosmologia: prior OCC + puente local-cosmo", prediction_pages["p2"]),
+        ("Prediccion 3 - Bariogenesis: correlacion EDM-GW", prediction_pages["p3"]),
+        ("Prediccion 4 - Gravedad IR: PPN + ondas gravitacionales", prediction_pages["p4"]),
+        (
+            "Prediccion 5 - Unificacion dinamica 4F: consistencia multifrente",
+            prediction_pages["p5"],
+        ),
     ]
 
 
-def build_toc_patch(path: Path, lang: str) -> None:
+def build_toc_patch(path: Path, lang: str, integrated_page: int) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     doc = SimpleDocTemplate(
         str(path),
@@ -542,7 +614,7 @@ def build_toc_patch(path: Path, lang: str) -> None:
     story.append(Spacer(1, 0.2 * cm))
 
     data: List[List[object]] = []
-    for label, page in _toc_entries(lang):
+    for label, page in _toc_entries(lang, integrated_page):
         data.append([Paragraph(label, st["toc_label"]), Paragraph(str(page), st["toc_label"])])
 
     table = Table(data, colWidths=[14.8 * cm, 1.5 * cm], hAlign="LEFT")
@@ -572,10 +644,11 @@ def _iter_with_insert(
     pages: Iterable[object],
     inserted_pages: List[object],
     add_inserted: bool,
+    insert_after_page: int,
 ) -> Iterable[Tuple[int, object, bool]]:
     for idx, page in enumerate(pages, start=1):
         yield idx, page, False
-        if add_inserted and idx == INSERT_AFTER_PAGE:
+        if add_inserted and idx == insert_after_page:
             for inserted in inserted_pages:
                 yield idx, inserted, True
 
@@ -588,6 +661,7 @@ def build_compendium(
     out_pdf: Path,
     marker: str,
     lang: str,
+    insert_after_page: int,
 ) -> dict[str, object]:
     base_pdf = _resolve_base(base_pdf)
     if not front_pdf.is_file():
@@ -603,7 +677,8 @@ def build_compendium(
     toc_reader = PdfReader(str(toc_pdf))
     writer = PdfWriter()
 
-    already_integrated = _contains_marker(base_reader, marker)
+    marker_page = _find_marker_page(base_reader, marker)
+    already_integrated = marker_page is not None
     inserted_pages = list(section_reader.pages)
     did_insert = False
 
@@ -611,6 +686,7 @@ def build_compendium(
         base_reader.pages,
         inserted_pages,
         not already_integrated,
+        insert_after_page,
     ):
         if is_inserted:
             writer.add_page(page)
@@ -644,8 +720,9 @@ def build_compendium(
     out_pdf.write_bytes(tmp_path.read_bytes())
     tmp_path.unlink(missing_ok=True)
 
-    _normalize_prediction_language_pages(out_pdf, lang)
+    normalization = _normalize_prediction_language_pages(out_pdf, lang)
     out_reader = PdfReader(str(out_pdf))
+    integrated_page = marker_page or (insert_after_page + 1)
     return {
         "base": str(base_pdf),
         "front_patch": str(front_pdf),
@@ -657,33 +734,35 @@ def build_compendium(
         "output_pages": len(out_reader.pages),
         "already_integrated": already_integrated,
         "section_inserted": did_insert,
+        "insert_after_page": insert_after_page,
+        "integrated_page": integrated_page,
         "marker": marker,
         "lang": lang,
+        "prediction_normalization": normalization,
     }
 
 
-def _normalize_prediction_language_pages(out_pdf: Path, lang: str) -> None:
-    """Normalize prediction pair pages to reduce visible ES/EN mixing.
-
-    Base pattern in current compendium tail is paired pages:
-    - odd: ES prediction page
-    - even: EN context page
-    """
+def _normalize_prediction_language_pages(out_pdf: Path, lang: str) -> dict[str, int]:
+    """Keep only language-matching prediction pages instead of duplicating pairs."""
 
     reader = PdfReader(str(out_pdf))
-    writer = PdfWriter()
     total = len(reader.pages)
 
-    if lang == "es":
-        replacement_map = {332: 331, 334: 333, 336: 335, 338: 337, 340: 339}
-    else:
-        replacement_map = {331: 332, 333: 334, 335: 336, 337: 338, 339: 340}
+    # Idempotence: once normalized, output has fewer than the paired-tail span.
+    if total < PREDICTIONS_END_PAGE:
+        return {"removed_pages": 0, "total_before": total, "total_after": total}
+
+    writer = PdfWriter()
+    removed_pages = 0
 
     for idx in range(1, total + 1):
-        source = replacement_map.get(idx, idx)
-        if source < 1 or source > total:
-            source = idx
-        writer.add_page(reader.pages[source - 1])
+        if PREDICTIONS_START_PAGE <= idx <= PREDICTIONS_END_PAGE:
+            is_even = idx % 2 == 0
+            keep = is_even if lang == "en" else not is_even
+            if not keep:
+                removed_pages += 1
+                continue
+        writer.add_page(reader.pages[idx - 1])
 
     if reader.metadata:
         writer.add_metadata(dict(reader.metadata))
@@ -692,6 +771,8 @@ def _normalize_prediction_language_pages(out_pdf: Path, lang: str) -> None:
         tmp_path = Path(tmp.name)
     out_pdf.write_bytes(tmp_path.read_bytes())
     tmp_path.unlink(missing_ok=True)
+
+    return {"removed_pages": removed_pages, "total_before": total, "total_after": len(writer.pages)}
 
 
 def audit_language_traces(pdf_path: Path, lang: str) -> dict[str, object]:
@@ -752,10 +833,25 @@ def main() -> int:
         marker = MARKER_ES
         out = args.out or DEFAULT_OUT_ES
 
+    base = _resolve_base(args.base)
+    base_reader = PdfReader(str(base))
+    marker_page = _find_marker_page(base_reader, marker)
+    insert_after_page = _find_insert_after_page(base_reader)
+    integrated_page_for_toc = marker_page or (insert_after_page + 1)
+
     build_front_patch(front, args.lang)
     build_integrated_nuclear_section(section, args.lang, marker)
-    build_toc_patch(toc, args.lang)
-    result = build_compendium(args.base, front, section, toc, out, marker, args.lang)
+    build_toc_patch(toc, args.lang, integrated_page_for_toc)
+    result = build_compendium(
+        base,
+        front,
+        section,
+        toc,
+        out,
+        marker,
+        args.lang,
+        insert_after_page,
+    )
 
     print("Built integrated compendium:")
     print(f"  lang: {result['lang']}")
@@ -767,8 +863,16 @@ def main() -> int:
     print(f"  base_pages: {result['base_pages']}")
     print(f"  section_pages: {result['section_pages']}")
     print(f"  output_pages: {result['output_pages']}")
+    print(f"  insert_after_page: {result['insert_after_page']}")
+    print(f"  integrated_page: {result['integrated_page']}")
     print(f"  section_inserted: {result['section_inserted']}")
     print(f"  already_integrated: {result['already_integrated']}")
+    norm = result["prediction_normalization"]
+    print(
+        "  prediction_normalization: "
+        f"removed={norm['removed_pages']} "
+        f"before={norm['total_before']} after={norm['total_after']}"
+    )
 
     if args.replace_main:
         main_pdf = DEFAULT_MAIN
