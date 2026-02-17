@@ -25,7 +25,7 @@ En `docs/canonical/`:
 - `OCC_Documento_A_defensa_formal.pdf`
 - `ILSC_OCC_Documento_A_defensa_formal.pdf`
 - `ILSC_OCC_Addendum_RealJudge.pdf`
-- `OCC_Addendum_Nuclear_v1.2.0.pdf`
+- `OCC_Addendum_Nuclear_v1.4.0.pdf`
 - `OCC_FrontMatter_v1.0.0.pdf`
 - `OCC_FrontMatter_v1.1.0.pdf`
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build and integrate the OCC v1.2.0 nuclear addendum PDF.
+"""Build and integrate the OCC v1.4.0 nuclear addendum PDF.
 
 This script creates a canonical addendum page set and appends/replaces it in
 the principal compendium PDF.
@@ -19,8 +19,11 @@ from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer
 
 ROOT = Path(__file__).resolve().parents[1]
 MAIN_PDF = ROOT / "docs" / "OCC_Compendio_Canonico_Completo.pdf"
-ADDENDUM_PDF = ROOT / "docs" / "canonical" / "OCC_Addendum_Nuclear_v1.2.0.pdf"
-MARKER = "NUCLEAR-LOCK-PACKAGE-V1.2.0"
+ADDENDUM_PDF = ROOT / "docs" / "canonical" / "OCC_Addendum_Nuclear_v1.4.0.pdf"
+MARKER = "NUCLEAR-LOCK-PACKAGE-V1.4.0"
+LEGACY_MARKERS = [
+    "NUCLEAR-LOCK-PACKAGE-V1.2.0",
+]
 
 # Existing canonical PDF can contain legacy metadata entries that trigger
 # non-fatal parser warnings in pypdf; keep script output clean.
@@ -77,25 +80,26 @@ def build_addendum_pdf(path: Path) -> None:
 
     story.append(
         Paragraph(
-            "OCC Canonical Addendum — Nuclear Domain Expansion (v1.2.0)",
+            "OCC Canonical Addendum — Nuclear Domain Expansion (v1.4.0)",
             st["title"],
         )
     )
     story.append(
         Paragraph(
             f"Marker: <b>{MARKER}</b><br/>Date: 2026-02-16<br/>"
-            "Scope: Formal integration of nuclear-domain locks, MRD module, and prediction anchor.",
+            "Scope: Formal integration of the numbered nuclear judge/locks (J4, L4C/L4E), "
+            "MRD module, prediction anchor, and batch Experiment Lab alignment.",
             st["body"],
         )
     )
 
-    story.append(Paragraph("1. Canonical alignment (J0-J3 preserved)", st["h1"]))
+    story.append(Paragraph("1. Canonical alignment and numbering", st["h1"]))
     story.append(
         Paragraph(
-            "This addendum does <b>not</b> introduce a new foundational J-judge. "
             "Foundational judges remain J0–J3 (ISAAC/PA/IO/RFS), as defined in Documento A+. "
-            "Nuclear integration is implemented as a domain lock package NUC* under the same "
-            "operational semantics: evaluability first, then consistency and evidence anchors.",
+            "This addendum introduces the operational nuclear frontend judge <b>J4</b>, with "
+            "numbered lock families <b>L4C*</b> (consistency/evaluability) and <b>L4E*</b> "
+            "(evidence anchor/provenance).",
             st["body"],
         )
     )
@@ -104,9 +108,9 @@ def build_addendum_pdf(path: Path) -> None:
     story.append(
         Paragraph(
             "<b>Class C (consistency / evaluability in Ω_I):</b> "
-            "declare energy window, isotope set, "
-            "reaction channel, and detector set. Missing declarations imply NO-EVAL(NUC*). "
-            "Malformed numerical declarations imply FAIL(NUC*).",
+            "declare energy window, isotope set, reaction channel, and detector set. "
+            "Missing declarations imply NO-EVAL(L4C*). "
+            "Malformed numerical declarations imply FAIL(L4C*).",
             st["body"],
         )
     )
@@ -115,12 +119,19 @@ def build_addendum_pdf(path: Path) -> None:
         Paragraph(
             "<b>Class E (evidence anchor):</b> compare model prediction "
             "against declared observable anchor with uncertainty and source provenance "
-            "(dataset reference + URL/DOI locator).",
+            "(dataset reference + URL/DOI locator). Missing anchors imply NO-EVAL(L4E*).",
             st["body"],
         )
     )
     story.append(Paragraph("Eq. (2): z = |sigma_pred - sigma_obs| / sigma_obs_err", st["mono"]))
-    story.append(Paragraph("PASS(E) iff z <= z_max; FAIL(NUC12E) iff z > z_max.", st["mono"]))
+    story.append(Paragraph("PASS(E) iff z <= z_max; FAIL(L4E5) iff z > z_max.", st["mono"]))
+    story.append(
+        Paragraph(
+            "Lock map: L4C1..L4C7 (domain declarations) and L4E1..L4E7 "
+            "(evidence/provenance anchor).",
+            st["body"],
+        )
+    )
 
     story.append(Paragraph("3. Operational semantics of violations", st["h1"]))
     story.append(
@@ -129,7 +140,7 @@ def build_addendum_pdf(path: Path) -> None:
             "(missing domain/evidence declarations).<br/>"
             "- FAIL: claim is compilable but inconsistent with declared "
             "consistency/evidence locks.<br/>"
-            "- PASS: claim satisfies declared lock set inside Ω_I, with explicit witness values.",
+            "- PASS: claim satisfies J4 lock set inside Ω_I, with explicit witness values.",
             st["body"],
         )
     )
@@ -138,8 +149,9 @@ def build_addendum_pdf(path: Path) -> None:
     story.append(
         Paragraph(
             "Extension module: <b>ILSC_MRD_suite_extensions/mrd_nuclear_guard</b><br/>"
-            "Cases: PASS, NO-EVAL(NUC6), FAIL(NUC12E)<br/>"
-            "Prediction anchor extension: registry entry P-0004.",
+            "Cases: PASS(J4), NO-EVAL(L4C6), FAIL(L4E5)<br/>"
+            "Prediction anchor extension: registry entry P-0004.<br/>"
+            "Batch matrix workflow: `occ lab run --claims-dir ... --profiles core nuclear`.",
             st["body"],
         )
     )
@@ -159,12 +171,12 @@ def build_addendum_pdf(path: Path) -> None:
     )
 
     story.append(PageBreak())
-    story.append(Paragraph("Anexo ES — Integración nuclear formal (resumen)", st["h1"]))
+    story.append(Paragraph("Anexo ES — Integración nuclear formal (v1.4.0)", st["h1"]))
     story.append(
         Paragraph(
-            "Este anexo integra candados nucleares NUC* compatibles con la arquitectura OCC y "
-            "conserva la jerarquía canónica: J0-J3 como jueces fundacionales, candados por "
-            "frontend/dominio para consistencia y evidencia.",
+            "Este anexo integra el juez nuclear numerado J4 y su paquete de candados "
+            "L4C*/L4E* compatible con la arquitectura OCC. "
+            "La jerarquía canónica se conserva: J0-J3 siguen como jueces fundacionales.",
             st["body"],
         )
     )
@@ -179,7 +191,8 @@ def build_addendum_pdf(path: Path) -> None:
     story.append(Paragraph("z = |sigma_pred - sigma_obs| / sigma_obs_err <= z_max", st["mono"]))
     story.append(
         Paragraph(
-            "Si faltan anclajes: NO-EVAL. Si hay contradicción cuantitativa: FAIL(NUC12E).",
+            "Si faltan anclajes: NO-EVAL(L4E*). "
+            "Si hay contradicción cuantitativa: FAIL(L4E5).",
             st["body"],
         )
     )
@@ -207,6 +220,11 @@ def _find_marker_page(pdf_path: Path, marker: str) -> int | None:
 
 def integrate_addendum_to_main(main_pdf: Path, addendum_pdf: Path, marker: str) -> str:
     marker_page = _find_marker_page(main_pdf, marker)
+    if marker_page is None:
+        for legacy in LEGACY_MARKERS:
+            marker_page = _find_marker_page(main_pdf, legacy)
+            if marker_page is not None:
+                break
 
     reader_main = PdfReader(str(main_pdf))
     reader_add = PdfReader(str(addendum_pdf))
@@ -243,7 +261,7 @@ def main() -> int:
 
     build_addendum_pdf(ADDENDUM_PDF)
     action = integrate_addendum_to_main(MAIN_PDF, ADDENDUM_PDF, MARKER)
-    print(f"{action.title()} nuclear addendum in main compendium: {MAIN_PDF}")
+    print(f"{action.title()} nuclear addendum v1.4.0 in main compendium: {MAIN_PDF}")
     print(f"Addendum PDF: {ADDENDUM_PDF}")
     return 0
 

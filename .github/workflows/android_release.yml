@@ -1,0 +1,89 @@
+name: Android mobile release
+
+on:
+  push:
+    tags:
+      - "v*"
+      - "*.*.*"
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Existing release tag to upload assets to (example: v1.4.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Resolve release tag
+        id: resolve_tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            tag="${{ github.event.inputs.release_tag }}"
+          else
+            tag="${{ github.ref_name }}"
+          fi
+
+          if [ -z "$tag" ]; then
+            echo "Unable to resolve release tag" >&2
+            exit 1
+          fi
+
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Build Android APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x android/gradlew
+          cd android
+          ./gradlew --no-daemon :app:assembleRelease
+
+      - name: Prepare release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-android
+          cp android/app/build/outputs/apk/release/app-release.apk \
+            release-android/OCCMobile-android.apk
+          sha256sum release-android/OCCMobile-android.apk \
+            > release-android/OCCMobile-android.sha256
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: occ-android-mobile
+          path: release-android/*
+          if-no-files-found: error
+
+      - name: Upload assets to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.resolve_tag.outputs.tag }}
+          overwrite_files: true
+          files: |
+            release-android/OCCMobile-android.apk
+            release-android/OCCMobile-android.sha256

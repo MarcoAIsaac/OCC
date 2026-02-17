@@ -1,0 +1,8 @@
+<resources>
+    <color name="occ_bg">#071226</color>
+    <color name="occ_surface">#0E1C38</color>
+    <color name="occ_primary">#17A6B6</color>
+    <color name="occ_secondary">#19C37D</color>
+    <color name="occ_warning">#EAB308</color>
+    <color name="occ_danger">#EF4444</color>
+</resources>

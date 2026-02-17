@@ -1,4 +1,4 @@
-# Example: nuclear claim satisfying NUC Class-C and Class-E locks -> PASS
+# Example: nuclear claim satisfying J4/L4C/L4E locks -> PASS
 # Evidence anchor uses published U-238 thermal capture cross section (n,gamma).
 
 claim_id: "CLAIM-NUCLEAR-0001"

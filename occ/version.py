@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 import re
+import sys
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
@@ -18,10 +19,13 @@ _VERSION_RE = re.compile(r'^\s*version\s*=\s*"([^"]+)"\s*$')
 
 
 def _read_pyproject_version() -> str | None:
+    meipass = getattr(sys, "_MEIPASS", "")
     candidates = [
         Path(__file__).resolve().parents[1] / "pyproject.toml",
         Path.cwd() / "pyproject.toml",
     ]
+    if meipass:
+        candidates.insert(0, Path(str(meipass)) / "pyproject.toml")
     for candidate in candidates:
         try:
             if not candidate.is_file():

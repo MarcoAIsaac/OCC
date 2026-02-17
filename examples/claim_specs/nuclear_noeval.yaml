@@ -1,4 +1,4 @@
-# Example: nuclear claim with missing reaction channel -> NO-EVAL(NUC6)
+# Example: nuclear claim with missing reaction channel -> NO-EVAL(L4C6)
 
 claim_id: "CLAIM-NUCLEAR-0002"
 title: "Incomplete nuclear claim"

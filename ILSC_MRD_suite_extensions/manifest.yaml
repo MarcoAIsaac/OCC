@@ -27,6 +27,6 @@ modules:
       - input: pass.yaml
         expect: "PASS"
       - input: noeval_missing_reaction.yaml
-        expect: "NO-EVAL(NUC6)"
+        expect: "NO-EVAL(L4C6)"
       - input: fail_data_anchor.yaml
-        expect: "FAIL(NUC12E)"
+        expect: "FAIL(L4E5)"

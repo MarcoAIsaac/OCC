@@ -12,14 +12,22 @@ This repository is technically ready. To maximize scientific reach, two publicat
 1. Connect GitHub with Zenodo and enable this repository.
 2. Push a version tag (for example `1.4.0` or `v1.4.0`).
 3. Windows desktop assets are built automatically by workflow
-   `.github/workflows/windows_desktop_release.yml` and attached to the release:
+   `.github/workflows/windows_desktop_release.yml`:
+   - on every push to `main` (rolling channel tag: `desktop-latest`),
+   - on version tags (`1.4.0` / `v1.4.0`) for stable releases.
+   Assets attached:
    - `OCCDesktop-Setup-windows-x64.exe`
    - `OCCDesktop-windows-x64.zip`
    - `OCCDesktop-windows-x64.exe`
+   - `OCCDesktop-build-info.json`
    - `OCCDesktop-windows-x64.sha256`
-   - If needed, run workflow manually with input `release_tag` (example `1.4.0`).
-4. Wait for Zenodo to archive the release and assign a DOI.
-5. Update README with DOI badge.
+4. Android mobile assets are built automatically by workflow
+   `.github/workflows/android_release.yml` and attached to the same release:
+   - `OCCMobile-android.apk`
+   - `OCCMobile-android.sha256`
+   - If needed, run workflows manually with input `release_tag` (example `1.4.0` or `desktop-latest`).
+5. Wait for Zenodo to archive the release and assign a DOI.
+6. Update README with DOI badge.
 
 ### Optional: Authenticode signing (recommended)
 

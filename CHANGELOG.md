@@ -15,11 +15,23 @@ The format is based on *Keep a Changelog* and this project adheres to *Semantic 
   divergence metrics, and artifact summary viewer.
 - New **offline assistant provider** for OCC Desktop (`offline`) with deterministic guidance
   for judge outcomes, CI/release triage, module flow, and lab workflows.
+- New **Android companion app** (`android/`) with Workbench/Lab/Assistant/History screens,
+  local Room persistence, and release-ready APK packaging.
+- New GitHub Actions workflow `.github/workflows/android_release.yml` to automatically
+  build and upload `OCCMobile-android.apk` + checksum on version tags.
 
 ### Changed
 
 - Desktop sidebar and run menu now include direct Experiment Lab execution.
 - Assistant provider selection now supports both `offline` and `openai`.
+- Nuclear judge numbering normalized to canonical ids:
+  `j4_nuclear_guard` with lock families `L4C*` / `L4E*`
+  (legacy `NUC*` codes remain in report details for backward traceability).
+- Windows desktop release automation now publishes a rolling channel tag
+  `desktop-latest` on every push to `main`, plus stable assets on version tags.
+- Windows release artifacts now include `OCCDesktop-build-info.json`
+  (version/commit stamp) and desktop version resolution now supports frozen bundles
+  via bundled `pyproject.toml`.
 
 ## [1.3.3] - 2026-02-16
 

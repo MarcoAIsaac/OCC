@@ -54,8 +54,10 @@ def test_nuclear_guard_pass() -> None:
     }
     report = run_pipeline(claim, default_judges(strict_trace=False, include_nuclear=True))
     assert str(report["verdict"]).startswith("PASS")
-    nuclear = next(j for j in report["judges"] if j["judge"] == "nuclear_guard")
-    assert nuclear["verdict"] == "PASS(NUC)"
+    nuclear = next(j for j in report["judges"] if j["judge"] == "j4_nuclear_guard")
+    assert nuclear["verdict"] == "PASS(J4)"
+    assert nuclear["code"] == "J4"
+    assert nuclear["details"]["lock_id"] == "L4"
 
 
 def test_nuclear_guard_missing_reaction_channel() -> None:
@@ -72,9 +74,11 @@ def test_nuclear_guard_missing_reaction_channel() -> None:
         },
     }
     report = run_pipeline(claim, default_judges(strict_trace=False, include_nuclear=True))
-    assert report["verdict"] == "NO-EVAL(NUC6)"
-    nuclear = next(j for j in report["judges"] if j["judge"] == "nuclear_guard")
-    assert nuclear["verdict"] == "NO-EVAL(NUC6)"
+    assert report["verdict"] == "NO-EVAL(L4C6)"
+    nuclear = next(j for j in report["judges"] if j["judge"] == "j4_nuclear_guard")
+    assert nuclear["verdict"] == "NO-EVAL(L4C6)"
+    assert nuclear["code"] == "L4C6"
+    assert nuclear["details"]["legacy_code"] == "NUC6"
 
 
 def test_nuclear_guard_requires_provenance_locator() -> None:
@@ -99,4 +103,4 @@ def test_nuclear_guard_requires_provenance_locator() -> None:
         },
     }
     report = run_pipeline(claim, default_judges(strict_trace=False, include_nuclear=True))
-    assert report["verdict"] == "NO-EVAL(NUC14E)"
+    assert report["verdict"] == "NO-EVAL(L4E7)"

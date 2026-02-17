@@ -54,6 +54,19 @@ Write-Host "Building Windows desktop executable with PyInstaller..."
 & $Python -m pip install -e ".[dev]"
 & $Python -m pip install pyinstaller
 
+$appVersion = (& $Python -c "from occ.version import get_version; print(get_version())").Trim()
+if ([string]::IsNullOrWhiteSpace($appVersion)) {
+  $appVersion = "0.0.0"
+}
+
+$gitSha = ""
+try {
+  $gitSha = (& git rev-parse --short=12 HEAD).Trim()
+}
+catch {
+  $gitSha = ""
+}
+
 if (Test-Path "dist") { Remove-Item -Recurse -Force "dist" }
 if (Test-Path "build") { Remove-Item -Recurse -Force "build" }
 if (Test-Path "release-windows") { Remove-Item -Recurse -Force "release-windows" }
@@ -74,6 +87,7 @@ $iconPath = (Resolve-Path $iconPath).Path
   --onefile `
   --name $Name `
   --icon $iconPath `
+  --add-data "pyproject.toml;." `
   --copy-metadata occ-mrd-runner `
   --hidden-import occ.cli `
   --hidden-import occ.module_autogen `
@@ -85,6 +99,14 @@ $releaseDir = (Resolve-Path "release-windows").Path
 $exeSource = "dist/$Name.exe"
 $exeTarget = Join-Path $releaseDir "OCCDesktop-windows-x64.exe"
 Copy-Item $exeSource $exeTarget -Force
+
+$buildInfo = [ordered]@{
+  app_version = $appVersion
+  git_sha = $gitSha
+  built_at_utc = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+}
+$buildInfoPath = Join-Path $releaseDir "OCCDesktop-build-info.json"
+$buildInfo | ConvertTo-Json -Depth 3 | Set-Content -Path $buildInfoPath -Encoding utf8
 
 $tempDir = if (![string]::IsNullOrWhiteSpace($env:RUNNER_TEMP)) {
   $env:RUNNER_TEMP
@@ -124,11 +146,6 @@ if ($BuildInstaller) {
     throw "iscc.exe not found. Install Inno Setup to build installer."
   }
 
-  $appVersion = (& $Python -c "from occ.version import get_version; print(get_version())").Trim()
-  if ([string]::IsNullOrWhiteSpace($appVersion)) {
-    $appVersion = "0.0.0"
-  }
-
   $issScript = (Resolve-Path "scripts/windows/OCCDesktopSetup.iss").Path
 
   & $iscc.Source `
@@ -160,6 +177,9 @@ if (Test-Path $pfxPath) {
 $hashLines = @()
 $hashLines += "$((Get-FileHash -Path $exeTarget -Algorithm SHA256).Hash.ToLowerInvariant())  OCCDesktop-windows-x64.exe"
 $hashLines += "$((Get-FileHash -Path $zipTarget -Algorithm SHA256).Hash.ToLowerInvariant())  OCCDesktop-windows-x64.zip"
+if (Test-Path $buildInfoPath) {
+  $hashLines += "$((Get-FileHash -Path $buildInfoPath -Algorithm SHA256).Hash.ToLowerInvariant())  OCCDesktop-build-info.json"
+}
 if (Test-Path $setupTarget) {
   $hashLines += "$((Get-FileHash -Path $setupTarget -Algorithm SHA256).Hash.ToLowerInvariant())  OCCDesktop-Setup-windows-x64.exe"
 }
@@ -171,5 +191,6 @@ Write-Host ""
 Write-Host "Done. Release assets:"
 Write-Host "  $exeTarget"
 Write-Host "  $zipTarget"
+Write-Host "  $buildInfoPath"
 if (Test-Path $setupTarget) { Write-Host "  $setupTarget" }
 Write-Host "  $hashPath"

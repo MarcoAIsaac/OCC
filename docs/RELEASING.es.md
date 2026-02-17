@@ -12,14 +12,22 @@ Este repositorio ya está técnicamente listo. Para maximizar alcance científic
 1. Conecta GitHub con Zenodo y habilita este repositorio.
 2. Empuja un tag de versión (por ejemplo `1.4.0` o `v1.4.0`).
 3. Los assets de escritorio para Windows se construyen automáticamente con
-   `.github/workflows/windows_desktop_release.yml` y se adjuntan al release:
+   `.github/workflows/windows_desktop_release.yml`:
+   - en cada push a `main` (canal rolling: `desktop-latest`),
+   - en tags de versión (`1.4.0` / `v1.4.0`) para releases estables.
+   Assets publicados:
    - `OCCDesktop-Setup-windows-x64.exe`
    - `OCCDesktop-windows-x64.zip`
    - `OCCDesktop-windows-x64.exe`
+   - `OCCDesktop-build-info.json`
    - `OCCDesktop-windows-x64.sha256`
-   - Si hace falta, ejecuta el workflow manualmente con `release_tag` (ejemplo `1.4.0`).
-4. Espera a que Zenodo archive la versión y asigne DOI.
-5. Actualiza `README` con el distintivo del DOI.
+4. Los assets móviles para Android se construyen automáticamente con
+   `.github/workflows/android_release.yml` y se adjuntan al mismo release:
+   - `OCCMobile-android.apk`
+   - `OCCMobile-android.sha256`
+   - Si hace falta, ejecuta los workflows manualmente con `release_tag` (ejemplo `1.4.0` o `desktop-latest`).
+5. Espera a que Zenodo archive la versión y asigne DOI.
+6. Actualiza `README` con el distintivo del DOI.
 
 ### Opcional: firma Authenticode (recomendado)
 

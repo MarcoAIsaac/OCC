@@ -651,7 +651,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--profile",
         default="core",
         choices=["core", "nuclear"],
-        help="Judge profile: core (default) or nuclear (adds NUC lock package).",
+        help="Judge profile: core (default) or nuclear (adds J4/L4 nuclear lock package).",
     )
     pj.add_argument("--json", action="store_true", help="Emit full judge report as JSON")
     pj.add_argument("--out", help="Write report JSON to this path")

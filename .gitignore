@@ -42,6 +42,11 @@ verification_summary.json
 # Local scratch
 .tmp*/
 
+# Android local/build artifacts
+android/.gradle/
+android/local.properties
+android/**/build/
+
 # Archives (publish via GitHub Releases instead)
 *.zip
 *.tar.gz

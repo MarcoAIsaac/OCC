@@ -10,7 +10,7 @@ It includes example meta-MRDs to:
 
 - validate claim spec structure,
 - demonstrate UV guard behavior,
-- demonstrate nuclear guard behavior,
+- demonstrate numbered nuclear guard behavior (J4, L4C*/L4E*),
 - validate `predictions/registry.yaml`.
 
 ## Run

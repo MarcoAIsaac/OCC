@@ -31,10 +31,15 @@ materialmente los observables.
 
 Si los afectan, el resultado es **NO-EVAL(UV*)**.
 
-### `nuclear_guard` (NUC*) — paquete de candados por dominio
+### `j4_nuclear_guard` (J4 / L4C* / L4E*) — paquete de candados por dominio
 
-Es un paquete de candados por dominio (clase C / clase E), no un juez fundacional J.
+Es el paquete de candados nucleares alineado con numeración canónica:
+- id del juez: **J4**
+- candados clase C: **L4C1..L4C7**
+- candados clase E: **L4E1..L4E7**
+
 Los jueces fundacionales siguen siendo J0–J3 (ISAAC/PA/IO/RFS) según el compendio.
+J4 extiende el frontend operacional para claims nucleares.
 
 Se usa con:
 
@@ -54,8 +59,8 @@ Chequeo de anclaje de evidencia (clase E):
 - `z = |sigma_pred - sigma_obs| / sigma_obs_err <= z_max`
 - metadatos de trazabilidad: `evidence.dataset_ref` y (`evidence.source_url` o `evidence.dataset_doi`)
 
-Si faltan declaraciones obligatorias, el resultado es **NO-EVAL(NUC*)**.
-Si el anclaje numérico es inconsistente, el resultado es **FAIL(NUC12E)**.
+Si faltan declaraciones obligatorias, el resultado es **NO-EVAL(L4C*/L4E*)**.
+Si el anclaje numérico es inconsistente, el resultado es **FAIL(L4E5)**.
 
 ### `trace` (TR*)
 

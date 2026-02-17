@@ -1,6 +1,6 @@
 # mrd_nuclear_guard
 
-Meta-MRD for nuclear-domain lock package (`NUC*`).
+Meta-MRD for the numbered nuclear-domain lock package (`J4`, `L4C*`, `L4E*`).
 
 This module implements two lock classes aligned with the canonical framework:
 
@@ -18,8 +18,8 @@ This module implements two lock classes aligned with the canonical framework:
 ## Inputs
 
 - `pass.yaml`: complete Class-C + Class-E declaration, expected `PASS`.
-- `noeval_missing_reaction.yaml`: missing Class-C field, expected `NO-EVAL(NUC6)`.
-- `fail_data_anchor.yaml`: inconsistent Class-E anchor, expected `FAIL(NUC12E)`.
+- `noeval_missing_reaction.yaml`: missing Class-C field, expected `NO-EVAL(L4C6)`.
+- `fail_data_anchor.yaml`: inconsistent Class-E anchor, expected `FAIL(L4E5)`.
 
 ## Run manually
 

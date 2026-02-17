@@ -9,5 +9,5 @@ def test_offline_assistant_mentions_lab_for_matrix_prompt() -> None:
 
 
 def test_offline_assistant_handles_no_eval_context() -> None:
-    reply = ask_offline("help", context="latest verdict NO-EVAL(NUC6)")
+    reply = ask_offline("help", context="latest verdict NO-EVAL(L4C6)")
     assert "NO-EVAL" in reply

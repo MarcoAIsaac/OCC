@@ -30,10 +30,15 @@ Checks that inaccessible (or unknown-accessibility) parameters do not materially
 
 If they do, verdict is **NO-EVAL(UV*)**.
 
-### `nuclear_guard` (NUC*) — domain lock package
+### `j4_nuclear_guard` (J4 / L4C* / L4E*) — domain lock package
 
-This is a domain lock package (Class C / Class E), not a foundational J-judge.
+This is the nuclear domain lock package aligned with canonical numbering:
+- Judge id: **J4**
+- Class-C locks: **L4C1..L4C7**
+- Class-E locks: **L4E1..L4E7**
+
 Foundational judges remain J0-J3 (ISAAC/PA/IO/RFS) in the canonical compendium.
+J4 extends the operational frontend for nuclear claims.
 
 Use it via:
 
@@ -53,8 +58,8 @@ Class-E anchor check:
 - `z = |sigma_pred - sigma_obs| / sigma_obs_err <= z_max`
 - evidence provenance metadata: `evidence.dataset_ref` and (`evidence.source_url` or `evidence.dataset_doi`)
 
-Missing mandatory declarations produce **NO-EVAL(NUC*)**.
-Inconsistent numerical anchors produce **FAIL(NUC12E)**.
+Missing mandatory declarations produce **NO-EVAL(L4C*/L4E*)**.
+Inconsistent numerical anchors produce **FAIL(L4E5)**.
 
 ### `trace` (TR*)
 

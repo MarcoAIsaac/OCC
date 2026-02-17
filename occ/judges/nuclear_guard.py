@@ -47,24 +47,45 @@ def claim_is_nuclear(claim: Mapping[str, Any]) -> bool:
 
 
 class NuclearGuardJudge:
-    name = "nuclear_guard"
+    name = "j4_nuclear_guard"
+    legacy_name = "nuclear_guard"
+    judge_id = "J4"
+
+    @staticmethod
+    def _details(
+        lock_id: str,
+        lock_class: str,
+        legacy_code: str,
+        extra: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "judge_id": "J4",
+            "lock_id": lock_id,
+            "lock_class": lock_class,
+            "legacy_code": legacy_code,
+        }
+        if extra:
+            payload.update(dict(extra))
+        return payload
 
     def evaluate(self, claim: Mapping[str, Any]) -> JudgeResult:
         if not claim_is_nuclear(claim):
             return JudgeResult(
                 judge=self.name,
-                verdict="PASS(NUC0)",
-                code="NUC0",
+                verdict="PASS(J4-NA)",
+                code="J4-NA",
                 message="Nuclear lock package not applicable for this claim.",
+                details=self._details("L4N0", "N", "NUC0"),
             )
 
         domain = claim.get("domain")
         if not isinstance(domain, Mapping):
             return JudgeResult(
                 judge=self.name,
-                verdict="NO-EVAL(NUC1)",
-                code="NUC1",
+                verdict="NO-EVAL(L4C1)",
+                code="L4C1",
                 message="Nuclear claims must declare domain mapping.",
+                details=self._details("L4C1", "C", "NUC1"),
             )
 
         # Class C (consistency / operational closure for nuclear domain)
@@ -72,10 +93,10 @@ class NuclearGuardJudge:
         if not isinstance(energy, Mapping):
             return JudgeResult(
                 judge=self.name,
-                verdict="NO-EVAL(NUC2)",
-                code="NUC2",
+                verdict="NO-EVAL(L4C2)",
+                code="L4C2",
                 message="Missing Class-C lock: domain.energy_range_mev.",
-                details={"lock_class": "C"},
+                details=self._details("L4C2", "C", "NUC2"),
             )
 
         min_mev = _as_float(energy.get("min_mev"))
@@ -83,48 +104,48 @@ class NuclearGuardJudge:
         if min_mev is None or max_mev is None:
             return JudgeResult(
                 judge=self.name,
-                verdict="FAIL(NUC3)",
-                code="NUC3",
+                verdict="FAIL(L4C3)",
+                code="L4C3",
                 message="Class-C lock violation: energy_range_mev bounds must be numeric.",
-                details={"lock_class": "C"},
+                details=self._details("L4C3", "C", "NUC3"),
             )
         if min_mev < 0 or max_mev <= min_mev:
             return JudgeResult(
                 judge=self.name,
-                verdict="FAIL(NUC4)",
-                code="NUC4",
+                verdict="FAIL(L4C4)",
+                code="L4C4",
                 message="Class-C lock violation: expected 0 <= min_mev < max_mev.",
-                details={"lock_class": "C"},
+                details=self._details("L4C4", "C", "NUC4"),
             )
 
         isotopes = domain.get("isotopes")
         if not isinstance(isotopes, list) or not isotopes:
             return JudgeResult(
                 judge=self.name,
-                verdict="NO-EVAL(NUC5)",
-                code="NUC5",
+                verdict="NO-EVAL(L4C5)",
+                code="L4C5",
                 message="Missing Class-C lock: domain.isotopes[] must be non-empty.",
-                details={"lock_class": "C"},
+                details=self._details("L4C5", "C", "NUC5"),
             )
 
         reaction_channel = domain.get("reaction_channel")
         if not isinstance(reaction_channel, str) or not reaction_channel.strip():
             return JudgeResult(
                 judge=self.name,
-                verdict="NO-EVAL(NUC6)",
-                code="NUC6",
+                verdict="NO-EVAL(L4C6)",
+                code="L4C6",
                 message="Missing Class-C lock: domain.reaction_channel.",
-                details={"lock_class": "C"},
+                details=self._details("L4C6", "C", "NUC6"),
             )
 
         detectors = domain.get("detectors")
         if not isinstance(detectors, list) or not detectors:
             return JudgeResult(
                 judge=self.name,
-                verdict="NO-EVAL(NUC7)",
-                code="NUC7",
+                verdict="NO-EVAL(L4C7)",
+                code="L4C7",
                 message="Missing Class-C lock: domain.detectors[] must be non-empty.",
-                details={"lock_class": "C"},
+                details=self._details("L4C7", "C", "NUC7"),
             )
 
         # Class E (evidence anchor): z = |pred-obs|/sigma <= z_max
@@ -132,10 +153,10 @@ class NuclearGuardJudge:
         if not isinstance(evidence, Mapping):
             return JudgeResult(
                 judge=self.name,
-                verdict="NO-EVAL(NUC8E)",
-                code="NUC8E",
+                verdict="NO-EVAL(L4E1)",
+                code="L4E1",
                 message="Missing Class-E lock: evidence anchor not declared.",
-                details={"lock_class": "E"},
+                details=self._details("L4E1", "E", "NUC8E"),
             )
 
         observed = _as_float(evidence.get("observed_cross_section_barns"))
@@ -143,33 +164,33 @@ class NuclearGuardJudge:
         if observed is None or sigma is None or sigma <= 0:
             return JudgeResult(
                 judge=self.name,
-                verdict="NO-EVAL(NUC9E)",
-                code="NUC9E",
+                verdict="NO-EVAL(L4E2)",
+                code="L4E2",
                 message=(
                     "Invalid Class-E anchor: observed_cross_section_barns "
                     "and sigma>0 required."
                 ),
-                details={"lock_class": "E"},
+                details=self._details("L4E2", "E", "NUC9E"),
             )
 
         model = claim.get("model")
         if not isinstance(model, Mapping):
             return JudgeResult(
                 judge=self.name,
-                verdict="NO-EVAL(NUC10E)",
-                code="NUC10E",
+                verdict="NO-EVAL(L4E3)",
+                code="L4E3",
                 message="Missing model prediction for Class-E anchor comparison.",
-                details={"lock_class": "E"},
+                details=self._details("L4E3", "E", "NUC10E"),
             )
 
         predicted = _as_float(model.get("predicted_cross_section_barns"))
         if predicted is None:
             return JudgeResult(
                 judge=self.name,
-                verdict="NO-EVAL(NUC11E)",
-                code="NUC11E",
+                verdict="NO-EVAL(L4E4)",
+                code="L4E4",
                 message="Missing model.predicted_cross_section_barns.",
-                details={"lock_class": "E"},
+                details=self._details("L4E4", "E", "NUC11E"),
             )
 
         z_max = _as_float(evidence.get("max_sigma"))
@@ -180,13 +201,13 @@ class NuclearGuardJudge:
         if not isinstance(dataset_ref, str) or not dataset_ref.strip():
             return JudgeResult(
                 judge=self.name,
-                verdict="NO-EVAL(NUC13E)",
-                code="NUC13E",
+                verdict="NO-EVAL(L4E6)",
+                code="L4E6",
                 message=(
                     "Missing Class-E provenance: evidence.dataset_ref must cite "
                     "the observational source."
                 ),
-                details={"lock_class": "E"},
+                details=self._details("L4E6", "E", "NUC13E"),
             )
 
         dataset_doi = evidence.get("dataset_doi")
@@ -196,46 +217,55 @@ class NuclearGuardJudge:
         if not (has_doi or has_url):
             return JudgeResult(
                 judge=self.name,
-                verdict="NO-EVAL(NUC14E)",
-                code="NUC14E",
+                verdict="NO-EVAL(L4E7)",
+                code="L4E7",
                 message=(
                     "Missing Class-E provenance locator: provide evidence.source_url "
                     "or evidence.dataset_doi."
                 ),
-                details={"lock_class": "E"},
+                details=self._details("L4E7", "E", "NUC14E"),
             )
 
         z_score = abs(predicted - observed) / sigma
         if z_score > z_max:
             return JudgeResult(
                 judge=self.name,
-                verdict="FAIL(NUC12E)",
-                code="NUC12E",
+                verdict="FAIL(L4E5)",
+                code="L4E5",
                 message=(
                     "Class-E lock violation: prediction inconsistent with "
                     "declared evidence anchor."
                 ),
-                details={
-                    "lock_class": "E",
-                    "z_score": z_score,
-                    "z_max": z_max,
-                    "equation": "z = |sigma_pred - sigma_obs| / sigma_obs_err",
-                },
+                details=self._details(
+                    "L4E5",
+                    "E",
+                    "NUC12E",
+                    {
+                        "z_score": z_score,
+                        "z_max": z_max,
+                        "equation": "z = |sigma_pred - sigma_obs| / sigma_obs_err",
+                    },
+                ),
             )
 
         return JudgeResult(
             judge=self.name,
-            verdict="PASS(NUC)",
-            code="NUC",
+            verdict="PASS(J4)",
+            code="J4",
             message="Nuclear lock package satisfied (Class C + Class E).",
-            details={
-                "lock_classes": ["C", "E"],
-                "energy_range_mev": {"min_mev": min_mev, "max_mev": max_mev},
-                "isotopes": [str(x) for x in isotopes],
-                "reaction_channel": reaction_channel.strip(),
-                "detectors": [str(x) for x in detectors],
-                "z_score": z_score,
-                "z_max": z_max,
-                "equation": "z = |sigma_pred - sigma_obs| / sigma_obs_err",
-            },
+            details=self._details(
+                "L4",
+                "C+E",
+                "NUC",
+                {
+                    "lock_classes": ["C", "E"],
+                    "energy_range_mev": {"min_mev": min_mev, "max_mev": max_mev},
+                    "isotopes": [str(x) for x in isotopes],
+                    "reaction_channel": reaction_channel.strip(),
+                    "detectors": [str(x) for x in detectors],
+                    "z_score": z_score,
+                    "z_max": z_max,
+                    "equation": "z = |sigma_pred - sigma_obs| / sigma_obs_err",
+                },
+            ),
         )
