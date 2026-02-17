@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import re
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Iterable, List, Tuple
@@ -38,8 +39,6 @@ MARKER_EN = "NUCLEAR-INTEGRATED-SECTION-EN-V1.5.0"
 MARKER_ES = "NUCLEAR-INTEGRATED-SECTION-ES-V1.5.0"
 DEFAULT_INSERT_AFTER_PAGE = 82
 TOC_REPLACE_PAGE = 4
-PREDICTIONS_START_PAGE = 331
-PREDICTIONS_END_PAGE = 340
 
 logging.getLogger("pypdf").setLevel(logging.ERROR)
 
@@ -211,7 +210,7 @@ def build_front_patch(path: Path, lang: str) -> None:
         )
         onboarding = [
             "1) Formal foundations (Document A+)",
-            "2) Methodology and lock architecture (J0-J3 + integrated J4 domain package)",
+            "2) Methodology and lock architecture (J0-J4 integrated in one judge sequence)",
             "3) MRD modules and reproducible PASS/FAIL/NO-EVAL workflows",
             "4) Prediction set and experimental-facing witness logic",
         ]
@@ -223,8 +222,7 @@ def build_front_patch(path: Path, lang: str) -> None:
         data = [
             ["Section", "Purpose"],
             ["Document A+", "Formal operational semantics and judge structure."],
-            ["Document A", "Methodological constraints and lock contracts."],
-            ["Integrated nuclear section", "J4/L4C*/L4E* domain package in-line."],
+            ["Document A", "Methodological constraints and judge/lock contracts J0-J4."],
             ["MRD modules", "Executable reproducibility and verdict artifacts."],
             ["Predictions", "Operationally falsifiable outputs and witness mapping."],
         ]
@@ -267,7 +265,7 @@ def build_front_patch(path: Path, lang: str) -> None:
         )
         onboarding = [
             "1) Fundamentos formales (Documento A+)",
-            "2) Metodologia y arquitectura de candados (J0-J3 + paquete J4 integrado)",
+            "2) Metodologia y arquitectura de candados (J0-J4 integrados en una secuencia)",
             "3) Modulos MRD y flujos reproducibles PASS/FAIL/NO-EVAL",
             "4) Set de predicciones y logica de testigos para contrastacion experimental",
         ]
@@ -279,8 +277,7 @@ def build_front_patch(path: Path, lang: str) -> None:
         data = [
             ["Seccion", "Proposito"],
             ["Documento A+", "Semantica operacional formal y estructura de jueces."],
-            ["Documento A", "Restricciones metodologicas y contratos de candados."],
-            ["Seccion nuclear integrada", "Paquete de dominio J4/L4C*/L4E* en linea."],
+            ["Documento A", "Restricciones metodologicas y contratos de jueces/candados J0-J4."],
             ["Modulos MRD", "Reproducibilidad ejecutable y artefactos de veredicto."],
             ["Predicciones", "Salidas falsables operacionalmente y mapeo de testigos."],
         ]
@@ -320,207 +317,177 @@ def build_integrated_nuclear_section(path: Path, lang: str, marker: str) -> None
     story = []
 
     if lang == "en":
+        story.append(Paragraph("4. J4 — Nuclear Domain Guard (J4 / L4C* / L4E*)", st["h1"]))
         story.append(
             Paragraph(
-                "OCC Integrated Section - Nuclear Domain (J4 / L4C* / L4E*) v1.5.0",
-                st["title"],
-            )
-        )
-        story.append(
-            Paragraph(
-                f"Marker: <b>{marker}</b><br/>Date: 2026-02-17<br/>"
-                "Editorial status: integrated canonical section (not detached addendum).",
+                "Concept (invariant): a nuclear claim is evaluable only if the nuclear domain "
+                "is explicitly declared and observationally anchored with reproducible provenance. "
+                "J4 is not an optional add-on; it is the domain continuation of J0-J3.",
                 st["body"],
             )
         )
-        story.append(Paragraph("1. Canonical placement and numbering", st["h1"]))
+        story.append(Paragraph("4.1 Why J4 is unavoidable", st["h1"]))
         story.append(
             Paragraph(
-                "Foundational judges remain J0-J3 (ISAAC/PA/IO/RFS). "
-                "Nuclear-domain constraints are integrated as J4 with lock families "
-                "L4C* (consistency/evaluability) and L4E* (evidence/provenance).",
+                "Without domain declarations, nuclear claims become tuneable narratives: "
+                "the same statement can be made compatible with mutually incompatible channels "
+                "or detector regimes. J4 prevents this by forcing explicit energy windows, "
+                "isotopes, reaction channels, detector context, and evidence anchors.",
                 st["body"],
             )
         )
+        story.append(Paragraph("4.2 Concept-to-equation bridge", st["h1"]))
         story.append(
             Paragraph(
-                "J4 is evaluated as the immediate continuation of J0->J3: "
-                "J0 bounds operational access, J1 certifies projection, J2 certifies "
-                "identifiability, J3 certifies finite-resource stability, and J4 closes "
-                "domain-specific nuclear consistency against observational anchors.",
-                st["body"],
-            )
-        )
-        story.append(
-            Paragraph(
-                "If J4 declarations are absent -> NO-EVAL(L4C*/L4E*). "
-                "If declarations are present but physically inconsistent -> FAIL(L4E5).",
-                st["body"],
-            )
-        )
-        story.append(Paragraph("2. Operational lock semantics", st["h1"]))
-        story.append(
-            Paragraph(
-                "Class C requires explicit domain declarations (energy range, isotopes, "
-                "reaction channel, detectors). Missing declarations -> NO-EVAL(L4C*). "
-                "Malformed domain constraints -> FAIL(L4C*).",
+                "Invariant concept: evaluability in Ω_I and no hidden nuclear knob reinjection. "
+                "Data-dependent equations: threshold checks, residual checks, and anchor tests.",
                 st["body"],
             )
         )
         story.append(Paragraph("Eq. (1): 0 <= E_min < E_max  [MeV]", st["mono"]))
+        story.append(Paragraph("Eq. (2): z = |sigma_pred - sigma_obs| / sigma_obs_err", st["mono"]))
+        story.append(Paragraph("PASS(E) iff z <= z_max; FAIL(L4E5) iff z > z_max.", st["mono"]))
+        story.append(Paragraph("4.3 L4C* locks (consistency/evaluability)", st["h1"]))
+        l4c = [
+            ("L4C1", "Declare domain.energy_range_mev.{min_mev,max_mev}; missing -> NO-EVAL."),
+            ("L4C2", "Declare isotopes[] and reaction_channel; missing -> NO-EVAL."),
+            ("L4C3", "Declare detectors[] and operational resolution context."),
+            ("L4C4", "Units and thresholds must be explicit and internally consistent."),
+            ("L4C5", "Channel and isotope mapping must be non-ambiguous in Ω_I."),
+            ("L4C6", "No hidden control knob may carry claim support in Ω_I."),
+            ("L4C7", "Finite, reproducible computation path is mandatory for judgment."),
+        ]
+        for code, text in l4c:
+            story.append(Paragraph(f"<b>{code}</b>. {text}", st["body"]))
+
+        story.append(PageBreak())
+        story.append(Paragraph("4.4 L4E* locks (evidence/provenance)", st["h1"]))
+        l4e = [
+            ("L4E1", "Evidence anchor must include dataset_ref."),
+            ("L4E2", "Provenance locator is required: source_url or dataset_doi."),
+            ("L4E3", "sigma_obs and sigma_obs_err must be declared with units."),
+            ("L4E4", "sigma_pred must reference the same observable definition."),
+            ("L4E5", "Residual z-test is mandatory; violation -> FAIL(L4E5)."),
+            ("L4E6", "Evidence timestamp/version and run trace must be reproducible."),
+            ("L4E7", "If anchors are incomplete/untraceable -> NO-EVAL(L4E*)."),
+        ]
+        for code, text in l4e:
+            story.append(Paragraph(f"<b>{code}</b>. {text}", st["body"]))
+        story.append(Paragraph("4.5 Integration with J0-J3 flow", st["h1"]))
         story.append(
             Paragraph(
-                "Class E requires an evidence anchor and provenance reference.",
+                "Evaluation order remains J0 -> J1 -> J2 -> J3 -> J4. "
+                "J4 certifies domain-specific evaluability after projection, "
+                "identifiability, and finite-resource stability are already satisfied.",
                 st["body"],
             )
         )
-        story.append(Paragraph("Eq. (2): z = |sigma_pred - sigma_obs| / sigma_obs_err", st["mono"]))
-        story.append(Paragraph("PASS(E) iff z <= z_max; FAIL(L4E5) iff z > z_max.", st["mono"]))
-        story.append(Paragraph("3. MRD and prediction coupling", st["h1"]))
+        story.append(Paragraph("4.6 Runtime coupling (MRD and predictions)", st["h1"]))
         story.append(
             Paragraph(
-                "Integrated assets in OCC runtime: "
-                "occ/judges/nuclear_guard.py, "
+                "Runtime assets: occ/judges/nuclear_guard.py, "
                 "ILSC_MRD_suite_extensions/mrd_nuclear_guard/, "
-                "examples/claim_specs/nuclear_*.yaml, "
-                "predictions/registry.yaml (P-0004).",
+                "examples/claim_specs/nuclear_*.yaml, and predictions/registry.yaml (P-0004).",
                 st["body"],
             )
         )
         story.append(
             Paragraph(
                 "CLI path:<br/>"
-                "occ judge examples/claim_specs/nuclear_pass.yaml --profile auto<br/>"
+                "occ judge examples/claim_specs/nuclear_pass.yaml --profile nuclear<br/>"
                 "occ verify --suite extensions --strict --timeout 60",
                 st["mono"],
             )
         )
     else:
+        story.append(Paragraph("4. J4 — Guardia de Dominio Nuclear (J4 / L4C* / L4E*)", st["h1"]))
         story.append(
             Paragraph(
-                "OCC Seccion Integrada - Dominio Nuclear (J4 / L4C* / L4E*) v1.5.0",
-                st["title"],
-            )
-        )
-        story.append(
-            Paragraph(
-                f"Marca: <b>{marker}</b><br/>Fecha: 2026-02-17<br/>"
-                "Estado editorial: seccion canonica integrada (no addendum externo).",
+                "Concepto (invariante): un claim nuclear solo es evaluable si declara "
+                "explícitamente su dominio nuclear y lo ancla a evidencia trazable. "
+                "J4 no es un extra opcional; es la continuación de J0-J3 en dominio nuclear.",
                 st["body"],
             )
         )
-        story.append(Paragraph("1. Ubicacion canonica y numeracion", st["h1"]))
+        story.append(Paragraph("4.1 Por qué J4 es inevitable", st["h1"]))
         story.append(
             Paragraph(
-                "Los jueces fundacionales siguen siendo J0-J3 (ISAAC/PA/IO/RFS). "
-                "Las restricciones del dominio nuclear se integran como J4 con familias "
-                "de candados L4C* (consistencia/evaluabilidad) y "
-                "L4E* (evidencia/procedencia).",
+                "Sin declaraciones de dominio, un mismo claim puede ajustarse "
+                "artificialmente a canales o detectores incompatibles. J4 evita esa "
+                "maleabilidad exigiendo ventana energética, isotopos, canal de reacción, "
+                "contexto instrumental y anclaje observacional reproducible.",
                 st["body"],
             )
         )
+        story.append(Paragraph("4.2 Puente concepto->ecuacion", st["h1"]))
         story.append(
             Paragraph(
-                "J4 se evalua como continuacion inmediata de J0->J3: "
-                "J0 acota acceso operacional, J1 certifica proyeccion, J2 certifica "
-                "identificabilidad, J3 certifica estabilidad con recursos finitos, y J4 "
-                "cierra consistencia nuclear especifica contra anclajes observacionales.",
-                st["body"],
-            )
-        )
-        story.append(
-            Paragraph(
-                "Si faltan declaraciones J4 -> NO-EVAL(L4C*/L4E*). "
-                "Si hay declaraciones pero son fisicamente inconsistentes -> FAIL(L4E5).",
-                st["body"],
-            )
-        )
-        story.append(Paragraph("2. Semantica operacional de candados", st["h1"]))
-        story.append(
-            Paragraph(
-                "La Clase C exige declaraciones explicitas de dominio (energia, isotopos, "
-                "canal de reaccion, detectores). Ausencias -> NO-EVAL(L4C*). "
-                "Inconsistencias de dominio -> FAIL(L4C*).",
+                "Concepto invariante: evaluabilidad en Ω_I sin reinyección de perillas "
+                "ocultas. Ecuaciones dependientes de datos: chequeos de umbral, "
+                "residuales y trazabilidad de anclajes.",
                 st["body"],
             )
         )
         story.append(Paragraph("Ec. (1): 0 <= E_min < E_max  [MeV]", st["mono"]))
+        story.append(Paragraph("Ec. (2): z = |sigma_pred - sigma_obs| / sigma_obs_err", st["mono"]))
+        story.append(Paragraph("PASS(E) si z <= z_max; FAIL(L4E5) si z > z_max.", st["mono"]))
+        story.append(Paragraph("4.3 Familia L4C* (consistencia/evaluabilidad)", st["h1"]))
+        l4c = [
+            ("L4C1", "Declarar domain.energy_range_mev.{min_mev,max_mev}; ausencia -> NO-EVAL."),
+            ("L4C2", "Declarar isotopes[] y reaction_channel; ausencia -> NO-EVAL."),
+            ("L4C3", "Declarar detectors[] y contexto de resolución operacional."),
+            ("L4C4", "Unidades y umbrales explícitos, coherentes y auditables."),
+            ("L4C5", "Mapeo no ambiguo entre canal/isótopos y observables en Ω_I."),
+            ("L4C6", "Prohibida perilla oculta que sostenga el claim en Ω_I."),
+            ("L4C7", "Ruta computacional finita y reproducible para emitir veredicto."),
+        ]
+        for code, text in l4c:
+            story.append(Paragraph(f"<b>{code}</b>. {text}", st["body"]))
+
+        story.append(PageBreak())
+        story.append(Paragraph("4.4 Familia L4E* (evidencia/procedencia)", st["h1"]))
+        l4e = [
+            ("L4E1", "Anclaje obligatorio con evidence.dataset_ref."),
+            ("L4E2", "Localizador de procedencia obligatorio: source_url o dataset_doi."),
+            ("L4E3", "sigma_obs y sigma_obs_err declarados con unidades."),
+            ("L4E4", "sigma_pred debe referir exactamente el mismo observable."),
+            ("L4E5", "Test residual z obligatorio; violación -> FAIL(L4E5)."),
+            ("L4E6", "Versionado temporal y traza de corrida reproducibles."),
+            ("L4E7", "Anclajes incompletos/no trazables -> NO-EVAL(L4E*)."),
+        ]
+        for code, text in l4e:
+            story.append(Paragraph(f"<b>{code}</b>. {text}", st["body"]))
+        story.append(Paragraph("4.5 Integración en el flujo J0-J3", st["h1"]))
         story.append(
             Paragraph(
-                "La Clase E exige anclaje observacional y referencia de procedencia.",
+                "El orden de evaluación se mantiene: J0 -> J1 -> J2 -> J3 -> J4. "
+                "J4 certifica evaluabilidad nuclear específica después de cumplir "
+                "proyección, identificabilidad y estabilidad con recursos finitos.",
                 st["body"],
             )
         )
-        story.append(Paragraph("Ec. (2): z = |sigma_pred - sigma_obs| / sigma_obs_err", st["mono"]))
-        story.append(Paragraph("PASS(E) si z <= z_max; FAIL(L4E5) si z > z_max.", st["mono"]))
-        story.append(Paragraph("3. Acoplamiento MRD y predicciones", st["h1"]))
+        story.append(Paragraph("4.6 Acoplamiento con MRD y predicciones", st["h1"]))
         story.append(
             Paragraph(
-                "Activos integrados en OCC runtime: "
-                "occ/judges/nuclear_guard.py, "
+                "Activos de runtime: occ/judges/nuclear_guard.py, "
                 "ILSC_MRD_suite_extensions/mrd_nuclear_guard/, "
-                "examples/claim_specs/nuclear_*.yaml, "
-                "predictions/registry.yaml (P-0004).",
+                "examples/claim_specs/nuclear_*.yaml y predictions/registry.yaml (P-0004).",
                 st["body"],
             )
         )
         story.append(
             Paragraph(
                 "Ruta CLI:<br/>"
-                "occ judge examples/claim_specs/nuclear_pass.yaml --profile auto<br/>"
+                "occ judge examples/claim_specs/nuclear_pass.yaml --profile nuclear<br/>"
                 "occ verify --suite extensions --strict --timeout 60",
                 st["mono"],
-            )
-        )
-
-    story.append(PageBreak())
-    if lang == "en":
-        story.append(Paragraph("Nuclear integration checklist (J4/L4) - operational", st["h1"]))
-        story.append(
-            Paragraph(
-                "Required claim declarations: domain.energy_range_mev, domain.isotopes, "
-                "domain.reaction_channel, domain.detectors, evidence anchor, "
-                "dataset reference and URL/DOI locator.",
-                st["body"],
-            )
-        )
-        story.append(
-            Paragraph(
-                "Editorial policy: all future judge/lock/module/prediction updates must be "
-                "integrated in-line in the compendium flow with numbering continuity.",
-                st["body"],
-            )
-        )
-    else:
-        story.append(Paragraph("Checklist de integracion nuclear (J4/L4) - operacional", st["h1"]))
-        story.append(
-            Paragraph(
-                "Declaraciones obligatorias del claim: domain.energy_range_mev, "
-                "domain.isotopes, domain.reaction_channel, domain.detectors, "
-                "anclaje de evidencia, referencia de dataset y localizador URL/DOI.",
-                st["body"],
-            )
-        )
-        story.append(
-            Paragraph(
-                "Politica editorial: toda actualizacion futura de jueces/candados/modulos/"
-                "predicciones debe integrarse en linea en el flujo del compendio, "
-                "respetando continuidad de numeracion.",
-                st["body"],
             )
         )
     doc.build(story)
 
 
-def _toc_entries(lang: str, integrated_page: int) -> List[Tuple[str, int]]:
-    prediction_pages = {
-        "section": 331,
-        "p1": 331,
-        "p2": 332,
-        "p3": 333,
-        "p4": 334,
-        "p5": 335,
-    }
+def _toc_entries(lang: str) -> List[Tuple[str, int]]:
+    prediction_pages = {"section": 331, "p1": 331, "p2": 332, "p3": 333, "p4": 334, "p5": 335}
 
     if lang == "en":
         return [
@@ -530,7 +497,6 @@ def _toc_entries(lang: str, integrated_page: int) -> List[Tuple[str, int]]:
             ("Document A+ - Formal Defense (OCC)", 5),
             ("Addendum - Real-Judge Upgrade", 48),
             ("Document A - Methodology (J0-J4 judges and locks)", 53),
-            ("Integrated section - Nuclear domain (J4/L4C*/L4E*)", integrated_page),
             ("Closed modules (MRD)", 85),
             ("Module - Observability and instrumentation (ISAAC)", 85),
             ("Module - UV projection -> Omega_I (auditable)", 101),
@@ -564,7 +530,6 @@ def _toc_entries(lang: str, integrated_page: int) -> List[Tuple[str, int]]:
         ("Documento A+ - Defensa formal (OCC)", 5),
         ("Addendum - Real-Judge Upgrade", 48),
         ("Documento A - Metodologia (jueces y candados J0-J4)", 53),
-        ("Seccion integrada - Dominio nuclear (J4/L4C*/L4E*)", integrated_page),
         ("Modulos cerrados (MRD)", 85),
         ("Modulo - Observabilidad e instrumentacion (ISAAC)", 85),
         ("Modulo - Proyeccion UV -> Omega_I (auditable)", 101),
@@ -593,7 +558,7 @@ def _toc_entries(lang: str, integrated_page: int) -> List[Tuple[str, int]]:
     ]
 
 
-def build_toc_patch(path: Path, lang: str, integrated_page: int) -> None:
+def build_toc_patch(path: Path, lang: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     doc = SimpleDocTemplate(
         str(path),
@@ -614,7 +579,7 @@ def build_toc_patch(path: Path, lang: str, integrated_page: int) -> None:
     story.append(Spacer(1, 0.2 * cm))
 
     data: List[List[object]] = []
-    for label, page in _toc_entries(lang, integrated_page):
+    for label, page in _toc_entries(lang):
         data.append([Paragraph(label, st["toc_label"]), Paragraph(str(page), st["toc_label"])])
 
     table = Table(data, colWidths=[14.8 * cm, 1.5 * cm], hAlign="LEFT")
@@ -742,27 +707,52 @@ def build_compendium(
     }
 
 
+def _prediction_candidate_pages(reader: PdfReader) -> List[int]:
+    pages: List[int] = []
+    for idx, page in enumerate(reader.pages, start=1):
+        text = _extract_text(page).lower()
+        if "predicción #" in text or "prediccion #" in text or _is_english_prediction_page(text):
+            pages.append(idx)
+    return pages
+
+
+def _is_english_prediction_page(text: str) -> bool:
+    return re.search(r"\benglish\s+context:", text) is not None
+
+
 def _normalize_prediction_language_pages(out_pdf: Path, lang: str) -> dict[str, int]:
     """Keep only language-matching prediction pages instead of duplicating pairs."""
 
     reader = PdfReader(str(out_pdf))
     total = len(reader.pages)
-
-    # Idempotence: once normalized, output has fewer than the paired-tail span.
-    if total < PREDICTIONS_END_PAGE:
+    candidates = _prediction_candidate_pages(reader)
+    if not candidates:
         return {"removed_pages": 0, "total_before": total, "total_after": total}
+
+    span_start = min(candidates)
+    span_end = max(candidates)
 
     writer = PdfWriter()
     removed_pages = 0
-
+    kept_prediction_pages = 0
     for idx in range(1, total + 1):
-        if PREDICTIONS_START_PAGE <= idx <= PREDICTIONS_END_PAGE:
-            is_even = idx % 2 == 0
-            keep = is_even if lang == "en" else not is_even
-            if not keep:
-                removed_pages += 1
-                continue
-        writer.add_page(reader.pages[idx - 1])
+        page = reader.pages[idx - 1]
+        if span_start <= idx <= span_end:
+            text = _extract_text(page).lower()
+            if (
+                "predicción #" in text
+                or "prediccion #" in text
+                or _is_english_prediction_page(text)
+            ):
+                if lang == "en":
+                    keep = _is_english_prediction_page(text)
+                else:
+                    keep = not _is_english_prediction_page(text)
+                if not keep:
+                    removed_pages += 1
+                    continue
+                kept_prediction_pages += 1
+        writer.add_page(page)
 
     if reader.metadata:
         writer.add_metadata(dict(reader.metadata))
@@ -772,7 +762,14 @@ def _normalize_prediction_language_pages(out_pdf: Path, lang: str) -> dict[str, 
     out_pdf.write_bytes(tmp_path.read_bytes())
     tmp_path.unlink(missing_ok=True)
 
-    return {"removed_pages": removed_pages, "total_before": total, "total_after": len(writer.pages)}
+    return {
+        "removed_pages": removed_pages,
+        "total_before": total,
+        "total_after": len(writer.pages),
+        "prediction_span_start": span_start,
+        "prediction_span_end": span_end,
+        "kept_prediction_pages": kept_prediction_pages,
+    }
 
 
 def audit_language_traces(pdf_path: Path, lang: str) -> dict[str, object]:
@@ -835,13 +832,11 @@ def main() -> int:
 
     base = _resolve_base(args.base)
     base_reader = PdfReader(str(base))
-    marker_page = _find_marker_page(base_reader, marker)
     insert_after_page = _find_insert_after_page(base_reader)
-    integrated_page_for_toc = marker_page or (insert_after_page + 1)
 
     build_front_patch(front, args.lang)
     build_integrated_nuclear_section(section, args.lang, marker)
-    build_toc_patch(toc, args.lang, integrated_page_for_toc)
+    build_toc_patch(toc, args.lang)
     result = build_compendium(
         base,
         front,
