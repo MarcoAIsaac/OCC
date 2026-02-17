@@ -53,6 +53,12 @@ def test_occ_judge_nuclear_pass() -> None:
     assert "PASS" in proc.stdout
 
 
+def test_occ_judge_auto_profile_nuclear_pass() -> None:
+    proc = _occ("judge", "examples/claim_specs/nuclear_pass.yaml", "--profile", "auto", "--json")
+    assert proc.returncode == 0, proc.stderr
+    assert "\"profile_resolved\": \"nuclear\"" in proc.stdout
+
+
 def test_occ_judge_json_contract() -> None:
     proc = _occ("judge", "examples/claim_specs/minimal_pass.yaml", "--json")
     assert proc.returncode == 0, proc.stderr
@@ -62,3 +68,10 @@ def test_occ_judge_json_contract() -> None:
 def test_occ_verify_extensions_strict() -> None:
     proc = _occ("verify", "--suite", "extensions", "--strict", "--timeout", "60")
     assert proc.returncode == 0, proc.stderr
+
+
+def test_occ_quickstart() -> None:
+    proc = _occ("quickstart")
+    assert proc.returncode == 0, proc.stderr
+    assert "occ doctor" in proc.stdout
+    assert "occ lab run" in proc.stdout

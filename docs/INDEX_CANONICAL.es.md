@@ -8,7 +8,9 @@ Este índice ayuda a encontrar rápidamente:
 
 ## Documentos principales
 
-- Compendio (PDF): [`OCC_Compendio_Canonico_Completo.pdf`](OCC_Compendio_Canonico_Completo.pdf)
+- Compendio en ingles (por defecto): [`OCC_Canonical_Compendium_EN_v1.5.0.pdf`](OCC_Canonical_Compendium_EN_v1.5.0.pdf)
+- Compendio en espanol: [`OCC_Compendio_Canonico_ES_v1.5.0.pdf`](OCC_Compendio_Canonico_ES_v1.5.0.pdf)
+- Ruta estable (apunta a EN por defecto): [`OCC_Compendio_Canonico_Completo.pdf`](OCC_Compendio_Canonico_Completo.pdf)
 - Guía de inicio: [`START_HERE.es.md`](START_HERE.es.md)
 - Resumen ejecutivo: [`EXECUTIVE_SUMMARY.es.md`](EXECUTIVE_SUMMARY.es.md)
 - Glosario: [`GLOSSARY.es.md`](GLOSSARY.es.md)
@@ -26,6 +28,8 @@ En `docs/canonical/`:
 - `ILSC_OCC_Documento_A_defensa_formal.pdf`
 - `ILSC_OCC_Addendum_RealJudge.pdf`
 - `OCC_Addendum_Nuclear_v1.4.0.pdf`
+- `OCC_Integrated_Nuclear_Section_EN_v1.5.0.pdf`
+- `OCC_Seccion_Integrada_Nuclear_ES_v1.5.0.pdf`
 - `OCC_FrontMatter_v1.0.0.pdf`
 - `OCC_FrontMatter_v1.1.0.pdf`
 

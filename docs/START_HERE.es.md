@@ -84,7 +84,7 @@ occ verify --suite all
 
 PDF principal:
 
-- `docs/OCC_Compendio_Canonico_Completo.pdf`
+- `docs/OCC_Compendio_Canonico_ES_v1.5.0.pdf`
 
 Sugerencia:
 

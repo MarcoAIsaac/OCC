@@ -16,6 +16,9 @@ object OfflineAssistant {
         if (containsAny(full, "release", "doi", "zenodo", "version")) {
             return "Release checklist: sync version across pyproject.toml, CITATION.cff, .zenodo.json; publish GitHub Release tag; verify DOI badge target URL."
         }
+        if (containsAny(full, "quickstart", "guide", "commands", "command map")) {
+            return "Use the OCC command guide to cover doctor, list, run, verify, judge, lab, predict, explain, research, and module auto flows."
+        }
         if (containsAny(full, "lab", "matrix", "profiles")) {
             return "Use Lab to compare claims across core and nuclear profiles. Focus on divergence cases first; they usually reveal missing domain declarations or profile-scoped lock requirements."
         }

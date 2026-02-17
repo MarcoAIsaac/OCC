@@ -23,6 +23,7 @@ except ModuleNotFoundError:
 
 from . import get_version
 from .catalog import build_catalog
+from .judges.nuclear_guard import claim_is_nuclear
 from .judges.pipeline import default_judges, run_pipeline
 from .lab import LabConfig, discover_claim_files, run_experiment_lab
 from .module_autogen import auto_generate_module, load_claim_file
@@ -276,12 +277,19 @@ def cmd_judge(args: argparse.Namespace) -> int:
             )
         )
 
-    include_nuclear = str(args.profile) == "nuclear"
+    requested_profile = str(args.profile)
+    resolved_profile = requested_profile
+    if requested_profile == "auto":
+        resolved_profile = "nuclear" if claim_is_nuclear(claim) else "core"
+
+    include_nuclear = resolved_profile == "nuclear"
     pipeline = default_judges(
         strict_trace=bool(args.strict_trace),
         include_nuclear=include_nuclear,
     )
     report = run_pipeline(claim, pipeline)
+    report["profile_requested"] = requested_profile
+    report["profile_resolved"] = resolved_profile
     verdict = report.get("verdict")
 
     if args.json:
@@ -339,6 +347,87 @@ def cmd_doctor(args: argparse.Namespace) -> int:
             f"Registry de predicciones: {info['predictions_registry']}",
         )
     )
+    return 0
+
+
+def _format_rel(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(Path.cwd().resolve()))
+    except Exception:
+        return str(path.resolve())
+
+
+def _build_quickstart_commands(start: Path) -> Dict[str, str]:
+    claim_min = start / "examples" / "claim_specs" / "minimal_pass.yaml"
+    claim_nuc = start / "examples" / "claim_specs" / "nuclear_pass.yaml"
+    bundle = (
+        start
+        / "ILSC_MRD_suite_15_modulos_CANON"
+        / "mrd_obs_isaac"
+        / "inputs"
+        / "mrd_obs_isaac"
+        / "pass.yaml"
+    )
+
+    min_path = (
+        _format_rel(claim_min)
+        if claim_min.exists()
+        else "examples/claim_specs/minimal_pass.yaml"
+    )
+    nuc_path = (
+        _format_rel(claim_nuc)
+        if claim_nuc.exists()
+        else "examples/claim_specs/nuclear_pass.yaml"
+    )
+    bundle_path = (
+        _format_rel(bundle)
+        if bundle.exists()
+        else (
+            "ILSC_MRD_suite_15_modulos_CANON/mrd_obs_isaac/"
+            "inputs/mrd_obs_isaac/pass.yaml"
+        )
+    )
+
+    return {
+        "doctor": "occ doctor",
+        "catalog": "occ list --suite all",
+        "judge_core": f"occ judge {min_path}",
+        "judge_auto": f"occ judge {nuc_path} --profile auto",
+        "run_bundle": f"occ run {bundle_path} --out out/",
+        "verify_extensions": "occ verify --suite extensions --strict --timeout 60",
+        "predict_list": "occ predict list",
+        "predict_show": "occ predict show P-0003",
+        "research": f"occ research {min_path} --show 3",
+        "module_auto": f"occ module auto {min_path} --create-prediction",
+        "lab_matrix": (
+            "occ lab run --claims-dir examples/claim_specs "
+            "--profiles core nuclear --out .occ_lab/latest"
+        ),
+    }
+
+
+def cmd_quickstart(args: argparse.Namespace) -> int:
+    commands = _build_quickstart_commands(Path.cwd())
+    payload: Dict[str, Any] = {
+        "schema": "occ.quickstart.v1",
+        "occ_version": get_version(),
+        "language": CLI_LANGUAGE,
+        "commands": commands,
+    }
+
+    if args.json:
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return 0
+
+    RPRINT(_tr(f"OCC quickstart (v{get_version()})", f"Inicio rapido OCC (v{get_version()})"))
+    RPRINT(
+        _tr(
+            "Use these commands to cover the full OCC operational flow:",
+            "Usa estos comandos para cubrir el flujo operacional completo de OCC:",
+        )
+    )
+    for key, cmd in commands.items():
+        RPRINT(f"- {key}: {cmd}")
     return 0
 
 
@@ -650,8 +739,11 @@ def build_parser() -> argparse.ArgumentParser:
     pj.add_argument(
         "--profile",
         default="core",
-        choices=["core", "nuclear"],
-        help="Judge profile: core (default) or nuclear (adds J4/L4 nuclear lock package).",
+        choices=["core", "nuclear", "auto"],
+        help=(
+            "Judge profile: core (default), nuclear, or auto "
+            "(auto enables nuclear package when claim is nuclear-domain)."
+        ),
     )
     pj.add_argument("--json", action="store_true", help="Emit full judge report as JSON")
     pj.add_argument("--out", help="Write report JSON to this path")
@@ -663,6 +755,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     pd.add_argument("--json", action="store_true", help="Emit JSON")
     pd.set_defaults(func=cmd_doctor)
+
+    pqs = sub.add_parser(
+        "quickstart",
+        help=_tr(
+            "Print a compact command map covering the full OCC workflow",
+            "Imprime un mapa compacto de comandos para cubrir el flujo completo OCC",
+        ),
+    )
+    pqs.add_argument("--json", action="store_true", help="Emit JSON")
+    pqs.set_defaults(func=cmd_quickstart)
 
     pp = sub.add_parser(
         "predict",

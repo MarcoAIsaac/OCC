@@ -1,0 +1,49 @@
+name: Compendium integration
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - "scripts/build_compendium_pdf.py"
+      - "Makefile"
+  workflow_dispatch:
+
+jobs:
+  build-compendiums:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install PDF build deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pypdf reportlab
+
+      - name: Integrate compendiums (EN + ES)
+        run: make integrate-all
+
+      - name: Upload generated artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: occ-compendiums
+          path: |
+            docs/OCC_Canonical_Compendium_EN_v1.5.0.pdf
+            docs/OCC_Compendio_Canonico_ES_v1.5.0.pdf
+            docs/OCC_Compendio_Canonico_Completo.pdf
+            docs/canonical/OCC_FRONT_EN_v1.5.0.pdf
+            docs/canonical/OCC_FRONT_ES_v1.5.0.pdf
+            docs/canonical/OCC_TOC_EN_v1.5.0.pdf
+            docs/canonical/OCC_TOC_ES_v1.5.0.pdf
+            docs/canonical/OCC_Integrated_Nuclear_Section_EN_v1.5.0.pdf
+            docs/canonical/OCC_Seccion_Integrada_Nuclear_ES_v1.5.0.pdf
+          if-no-files-found: error

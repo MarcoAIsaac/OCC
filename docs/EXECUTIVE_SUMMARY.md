@@ -6,7 +6,7 @@ This document answers, in 5 to 10 minutes:
 
 If you need formal detail, the full compendium is here:
 
-- [`OCC_Compendio_Canonico_Completo.pdf`](OCC_Compendio_Canonico_Completo.pdf)
+- [`OCC_Canonical_Compendium_EN_v1.5.0.pdf`](OCC_Canonical_Compendium_EN_v1.5.0.pdf)
 
 ## 1) The problem OCC addresses
 

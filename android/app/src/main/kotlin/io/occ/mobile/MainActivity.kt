@@ -295,6 +295,10 @@ private fun AssistantScreen(vm: MainViewModel) {
             Button(onClick = vm::askAssistant, modifier = Modifier.fillMaxWidth()) {
                 Text("Ask Assistant")
             }
+            Spacer(Modifier.height(8.dp))
+            Button(onClick = vm::showCommandGuide, modifier = Modifier.fillMaxWidth()) {
+                Text("Show OCC Command Guide")
+            }
         }
         SurfaceCard(title = "Response") {
             Text(vm.assistantReply, color = Color(0xFFE2E8F0))

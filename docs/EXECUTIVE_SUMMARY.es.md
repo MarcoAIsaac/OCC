@@ -4,9 +4,9 @@ Este documento responde, en 5-10 minutos, a la pregunta:
 
 > ¿Para qué sirve OCC y cómo se usa sin leer 300+ páginas?
 
-Si necesitas detalle formal completo, el compendio está aquí:
+Si necesitas detalle formal completo, el compendio en espanol esta aqui:
 
-- [`OCC_Compendio_Canonico_Completo.pdf`](OCC_Compendio_Canonico_Completo.pdf)
+- [`OCC_Compendio_Canonico_ES_v1.5.0.pdf`](OCC_Compendio_Canonico_ES_v1.5.0.pdf)
 
 ## 1) El problema que OCC busca resolver
 

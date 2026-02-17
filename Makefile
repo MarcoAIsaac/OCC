@@ -9,7 +9,7 @@ endif
 
 PY := $(VENV_BIN)/python
 
-.PHONY: help venv bootstrap install-dev install-docs smoke lint format typecheck test check verify docs-serve docs-build release-doctor docs-i18n ci-doctor release-notes desktop
+.PHONY: help venv bootstrap install-dev install-docs smoke lint format typecheck test check verify docs-serve docs-build release-doctor docs-i18n ci-doctor release-notes desktop integrate-all
 
 help:
 	@echo "Targets:"
@@ -24,6 +24,7 @@ help:
 	@echo "  ci-doctor       Summarize recent failing GitHub Actions runs (requires gh auth)"
 	@echo "  release-notes   Generate release notes from CHANGELOG + commits"
 	@echo "  desktop         Launch OCC desktop app"
+	@echo "  integrate-all   Build EN/ES compendiums + stable default + docs audits"
 
 venv:
 	$(PYTHON) -m venv $(VENV)
@@ -77,3 +78,8 @@ release-notes:
 
 desktop:
 	$(PYTHON) -m occ.desktop
+
+integrate-all:
+	$(PYTHON) scripts/build_compendium_pdf.py --lang en --replace-main --audit-lang
+	$(PYTHON) scripts/build_compendium_pdf.py --lang es --audit-lang
+	$(PYTHON) scripts/check_docs_i18n.py --strict

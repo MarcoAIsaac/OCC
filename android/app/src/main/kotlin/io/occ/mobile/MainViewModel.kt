@@ -143,6 +143,39 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         )
     }
 
+    fun showCommandGuide() {
+        assistantReply = buildString {
+            appendLine("OCC command guide (v${BuildConfig.VERSION_NAME})")
+            appendLine()
+            appendLine("Core operations:")
+            appendLine("- occ doctor")
+            appendLine("- occ list --suite all")
+            appendLine("- occ run <bundle.yaml> --suite auto --out out/")
+            appendLine("- occ verify --suite extensions --strict --timeout 60")
+            appendLine()
+            appendLine("Claims and judges:")
+            appendLine("- occ judge examples/claim_specs/minimal_pass.yaml")
+            appendLine("- occ judge examples/claim_specs/nuclear_pass.yaml --profile auto")
+            appendLine("- occ lab run --claims-dir examples/claim_specs --profiles core nuclear --out .occ_lab/latest")
+            appendLine()
+            appendLine("Prediction and explainability:")
+            appendLine("- occ predict list")
+            appendLine("- occ predict show P-0003")
+            appendLine("- occ explain mrd_obs_isaac")
+            appendLine()
+            appendLine("Autogen and research:")
+            appendLine("- occ research examples/claim_specs/minimal_pass.yaml --show 5")
+            appendLine("- occ module auto examples/claim_specs/minimal_pass.yaml --create-prediction")
+        }
+        persist(
+            mode = "assistant",
+            profile = "offline",
+            verdict = "INFO",
+            code = "GUIDE",
+            summary = "Generated OCC command guide",
+        )
+    }
+
     fun clearHistory() {
         viewModelScope.launch(Dispatchers.IO) {
             dao.clearAll()

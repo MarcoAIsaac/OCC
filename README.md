@@ -29,7 +29,8 @@ OCC does not replace experiment. It improves pre-experimental triage quality.
 - Executive summary: [`docs/EXECUTIVE_SUMMARY.md`](docs/EXECUTIVE_SUMMARY.md)
 - Glossary: [`docs/GLOSSARY.md`](docs/GLOSSARY.md)
 - Canonical index: [`docs/INDEX_CANONICAL.md`](docs/INDEX_CANONICAL.md)
-- Full compendium PDF: [`docs/OCC_Compendio_Canonico_Completo.pdf`](docs/OCC_Compendio_Canonico_Completo.pdf)
+- Full compendium PDF (EN): [`docs/OCC_Canonical_Compendium_EN_v1.5.0.pdf`](docs/OCC_Canonical_Compendium_EN_v1.5.0.pdf)
+- Full compendium PDF (ES): [`docs/OCC_Compendio_Canonico_ES_v1.5.0.pdf`](docs/OCC_Compendio_Canonico_ES_v1.5.0.pdf)
 
 ## Quickstart
 
@@ -45,6 +46,12 @@ To run docs locally:
 
 ```bash
 make docs-serve
+```
+
+To integrate compendiums automatically (EN + ES + audits):
+
+```bash
+make integrate-all
 ```
 
 ### macOS / Linux
@@ -78,6 +85,7 @@ pytest -q
 ## Discoverability commands
 
 ```bash
+occ quickstart
 occ doctor
 occ list
 occ predict list

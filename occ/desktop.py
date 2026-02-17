@@ -127,7 +127,7 @@ class OCCDesktopApp(tk.Tk):
         self.claim_var = tk.StringVar(
             value=str(self.repo_root / "examples" / "claim_specs" / "minimal_pass.yaml")
         )
-        self.profile_var = tk.StringVar(value="core")
+        self.profile_var = tk.StringVar(value="auto")
         self.suite_var = tk.StringVar(value="extensions")
         self.module_name_var = tk.StringVar(value="")
         self.create_prediction_var = tk.BooleanVar(value=True)
@@ -478,12 +478,40 @@ class OCCDesktopApp(tk.Tk):
             command=lambda: self._run_action("judge"),
         )
         run_menu.add_command(
+            label=_tr("Run bundle", "Ejecutar bundle"),
+            command=lambda: self._run_action("run_bundle"),
+        )
+        run_menu.add_command(
             label=_tr("Verify suite", "Verificar suite"),
             command=lambda: self._run_action("verify"),
         )
         run_menu.add_command(
+            label=_tr("List modules", "Listar modulos"),
+            command=lambda: self._run_action("list_modules"),
+        )
+        run_menu.add_command(
+            label=_tr("Explain module", "Explicar modulo"),
+            command=lambda: self._run_action("explain_module"),
+        )
+        run_menu.add_command(
             label=_tr("Module flow", "Flujo de modulo"),
             command=lambda: self._run_action("module_flow"),
+        )
+        run_menu.add_command(
+            label=_tr("Research claim", "Investigar claim"),
+            command=lambda: self._run_action("research_claim"),
+        )
+        run_menu.add_command(
+            label=_tr("Predict list", "Listado predicciones"),
+            command=lambda: self._run_action("predict_list"),
+        )
+        run_menu.add_command(
+            label=_tr("Predict show (from field)", "Mostrar prediccion (del campo)"),
+            command=lambda: self._run_action("predict_show"),
+        )
+        run_menu.add_command(
+            label=_tr("Quickstart map", "Mapa quickstart"),
+            command=lambda: self._run_action("quickstart"),
         )
         run_menu.add_command(
             label=_tr("Run experiment lab", "Ejecutar experiment lab"),
@@ -774,9 +802,58 @@ class OCCDesktopApp(tk.Tk):
         )
 
         self._add_sidebar_button(sidebar, _tr("Judge claim", "Evaluar claim"), "judge")
+        self._add_sidebar_button(sidebar, _tr("Run bundle", "Ejecutar bundle"), "run_bundle")
         self._add_sidebar_button(sidebar, _tr("Verify suite", "Verificar suite"), "verify")
         self._add_sidebar_button(sidebar, _tr("Module flow", "Flujo de modulo"), "module_flow")
         self._add_sidebar_button(sidebar, _tr("Experiment lab", "Experiment lab"), "lab_run")
+
+        ttk.Separator(sidebar, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=10)
+        ttk.Label(
+            sidebar,
+            text=_tr("CLI Coverage", "Cobertura CLI"),
+            style="SidebarTitle.TLabel",
+        ).pack(
+            fill=tk.X,
+            pady=(0, 8),
+        )
+
+        self._add_sidebar_button(
+            sidebar,
+            _tr("List modules", "Listar modulos"),
+            "list_modules",
+            primary=False,
+        )
+        self._add_sidebar_button(
+            sidebar,
+            _tr("Explain module", "Explicar modulo"),
+            "explain_module",
+            primary=False,
+        )
+        self._add_sidebar_button(
+            sidebar,
+            _tr("Research claim", "Investigar claim"),
+            "research_claim",
+            primary=False,
+        )
+        self._add_sidebar_button(
+            sidebar,
+            _tr("Predict list", "Listado predicciones"),
+            "predict_list",
+            primary=False,
+        )
+        self._add_sidebar_button(
+            sidebar,
+            _tr("Predict show", "Mostrar prediccion"),
+            "predict_show",
+            primary=False,
+        )
+        self._add_sidebar_button(
+            sidebar,
+            _tr("Quickstart map", "Mapa quickstart"),
+            "quickstart",
+            primary=False,
+        )
+        self._add_sidebar_button(sidebar, _tr("Doctor", "Doctor"), "doctor", primary=False)
 
         ttk.Separator(sidebar, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=10)
         ttk.Label(
@@ -1019,7 +1096,11 @@ class OCCDesktopApp(tk.Tk):
             style="Ghost.TButton",
         ).grid(row=0, column=2, sticky="w", padx=(8, 0))
 
-        ttk.Label(context, text=_tr("Claim file", "Archivo claim"), style="Body.TLabel").grid(
+        ttk.Label(
+            context,
+            text=_tr("Claim / bundle file", "Archivo claim / bundle"),
+            style="Body.TLabel",
+        ).grid(
             row=1,
             column=0,
             sticky="w",
@@ -1048,7 +1129,7 @@ class OCCDesktopApp(tk.Tk):
         ttk.Combobox(
             context,
             textvariable=self.profile_var,
-            values=["core", "nuclear"],
+            values=["auto", "core", "nuclear"],
             state="readonly",
             style="Input.TCombobox",
             width=12,
@@ -1074,7 +1155,11 @@ class OCCDesktopApp(tk.Tk):
         options.grid(row=2, column=0, sticky="ew", pady=(10, 0))
         options.grid_columnconfigure(0, weight=1)
 
-        ttk.Label(options, text=_tr("Module name", "Nombre modulo"), style="Body.TLabel").grid(
+        ttk.Label(
+            options,
+            text=_tr("Module / prediction ID", "Modulo / ID prediccion"),
+            style="Body.TLabel",
+        ).grid(
             row=0,
             column=0,
             sticky="w",
@@ -1085,6 +1170,14 @@ class OCCDesktopApp(tk.Tk):
             column=1,
             sticky="w",
         )
+        ttk.Label(
+            options,
+            text=_tr(
+                "Used by Explain module and Predict show actions.",
+                "Usado por acciones Explicar modulo y Mostrar prediccion.",
+            ),
+            style="Muted.TLabel",
+        ).grid(row=1, column=1, sticky="w", pady=(4, 0))
         ttk.Checkbutton(
             options,
             text=_tr("Create prediction draft", "Crear borrador de prediccion"),
@@ -2571,7 +2664,7 @@ class OCCDesktopApp(tk.Tk):
     def _build_action_command(self, action: str) -> Optional[Tuple[str, List[str]]]:
         py = sys.executable
 
-        if action in {"judge", "module_flow"}:
+        if action in {"judge", "module_flow", "run_bundle", "research_claim"}:
             claim = self._claim()
             if claim is None:
                 return None
@@ -2586,9 +2679,23 @@ class OCCDesktopApp(tk.Tk):
                 "judge",
                 str(claim),
                 "--profile",
-                self.profile_var.get().strip() or "core",
+                self.profile_var.get().strip() or "auto",
             ]
             return ("judge", cmd)
+
+        if action == "run_bundle":
+            suite = (self.suite_var.get().strip() or "canon").lower()
+            run_suite = "auto" if suite == "all" else suite
+            cmd = [
+                py,
+                "-m",
+                "occ.cli",
+                "run",
+                str(claim),
+                "--suite",
+                run_suite,
+            ]
+            return ("run-bundle", cmd)
 
         if action == "verify":
             suite = self.suite_var.get().strip() or "extensions"
@@ -2606,6 +2713,34 @@ class OCCDesktopApp(tk.Tk):
             ]
             return ("verify", cmd)
 
+        if action == "list_modules":
+            suite = self.suite_var.get().strip() or "all"
+            if suite not in {"canon", "extensions", "all"}:
+                suite = "all"
+            cmd = [
+                py,
+                "-m",
+                "occ.cli",
+                "list",
+                "--suite",
+                suite,
+            ]
+            return ("list-modules", cmd)
+
+        if action == "explain_module":
+            module_name = self.module_name_var.get().strip()
+            if not module_name:
+                messagebox.showwarning(
+                    "OCC Desktop",
+                    _tr(
+                        "Set 'Module / prediction ID' first (for example mrd_obs_isaac).",
+                        "Define primero 'Modulo / ID prediccion' (por ejemplo mrd_obs_isaac).",
+                    ),
+                )
+                return None
+            cmd = [py, "-m", "occ.cli", "explain", module_name]
+            return ("explain-module", cmd)
+
         if action == "module_flow":
             script = self._resolve_script("mrd_flow.py")
             module_cmd = [py, str(script), str(claim), "--generate-module"]
@@ -2617,6 +2752,44 @@ class OCCDesktopApp(tk.Tk):
             if self.verify_generated_var.get():
                 module_cmd.append("--verify-generated")
             return ("module-flow", module_cmd)
+
+        if action == "research_claim":
+            cmd = [
+                py,
+                "-m",
+                "occ.cli",
+                "research",
+                str(claim),
+                "--show",
+                "5",
+            ]
+            return ("research-claim", cmd)
+
+        if action == "predict_list":
+            cmd = [py, "-m", "occ.cli", "predict", "list"]
+            return ("predict-list", cmd)
+
+        if action == "predict_show":
+            pred_id = self.module_name_var.get().strip()
+            if not pred_id:
+                messagebox.showwarning(
+                    "OCC Desktop",
+                    _tr(
+                        "Set 'Module / prediction ID' first (for example P-0003).",
+                        "Define primero 'Modulo / ID prediccion' (por ejemplo P-0003).",
+                    ),
+                )
+                return None
+            cmd = [py, "-m", "occ.cli", "predict", "show", pred_id]
+            return ("predict-show", cmd)
+
+        if action == "doctor":
+            cmd = [py, "-m", "occ.cli", "doctor"]
+            return ("doctor", cmd)
+
+        if action == "quickstart":
+            cmd = [py, "-m", "occ.cli", "quickstart"]
+            return ("quickstart", cmd)
 
         if action == "lab_run":
             claims_dir = Path(self.lab_claims_dir_var.get().strip() or ".").resolve()

@@ -29,7 +29,8 @@ OCC no reemplaza al experimento. Mejora la calidad del triaje preexperimental.
 - Resumen ejecutivo: [`docs/EXECUTIVE_SUMMARY.es.md`](docs/EXECUTIVE_SUMMARY.es.md)
 - Glosario: [`docs/GLOSSARY.es.md`](docs/GLOSSARY.es.md)
 - Índice canónico: [`docs/INDEX_CANONICAL.es.md`](docs/INDEX_CANONICAL.es.md)
-- Compendio completo (PDF): [`docs/OCC_Compendio_Canonico_Completo.pdf`](docs/OCC_Compendio_Canonico_Completo.pdf)
+- Compendio completo (PDF, español): [`docs/OCC_Compendio_Canonico_ES_v1.5.0.pdf`](docs/OCC_Compendio_Canonico_ES_v1.5.0.pdf)
+- Compendio completo (PDF, inglés): [`docs/OCC_Canonical_Compendium_EN_v1.5.0.pdf`](docs/OCC_Canonical_Compendium_EN_v1.5.0.pdf)
 
 ## Inicio rápido
 
@@ -45,6 +46,12 @@ Para levantar documentación local:
 
 ```bash
 make docs-serve
+```
+
+Para integrar compendios automáticamente (EN + ES + auditorías):
+
+```bash
+make integrate-all
 ```
 
 ### macOS / Linux
@@ -78,6 +85,7 @@ pytest -q
 ## Comandos de orientación
 
 ```bash
+occ quickstart
 occ doctor
 occ list
 occ predict list
