@@ -73,7 +73,7 @@ jobs:
             > release-android/OCCMobile-android.sha256
 
       - name: Upload workflow artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: occ-android-mobile
           path: release-android/*
