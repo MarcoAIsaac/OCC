@@ -6,6 +6,7 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Mapping, Tuple
 
+from ..compiler import VERDICT_BUNDLE_SCHEMA, build_verdict_bundle
 from ..version import get_version
 from .base import Judge, JudgeResult
 from .domain import DomainJudge
@@ -14,7 +15,7 @@ from .trace import TraceConfig, TraceJudge
 from .uv_guard import UVGuardJudge
 
 JUDGE_REPORT_SCHEMA = "occ.judge_report.v1"
-JUDGE_REPORT_SCHEMA_VERSION = "1.0"
+JUDGE_REPORT_SCHEMA_VERSION = "1.1"
 
 
 def _now_iso() -> str:
@@ -38,7 +39,6 @@ def default_judges(
 def combine(results: Iterable[JudgeResult]) -> Tuple[str, str]:
     """Return (final_verdict, first_reason_code)."""
 
-    # Priority: NO-EVAL > FAIL > PASS
     first_reason = ""
     for r in results:
         if r.verdict.startswith("NO-EVAL"):
@@ -57,14 +57,33 @@ def run_pipeline(
     final_verdict, first_reason = combine(results)
     claim_id = claim.get("claim_id")
     claim_id_text = str(claim_id) if isinstance(claim_id, str) else None
+    judge_set = [str(getattr(j, "name", "unknown")) for j in judges]
+    judge_payloads = [asdict(r) for r in results]
+    compiler_report = build_verdict_bundle(
+        claim=claim,
+        judge_names=judge_set,
+        judge_payloads=judge_payloads,
+        final_verdict=final_verdict,
+        first_reason=first_reason,
+    )
     return {
         "schema": JUDGE_REPORT_SCHEMA,
         "schema_version": JUDGE_REPORT_SCHEMA_VERSION,
+        "report_bundle_schema": VERDICT_BUNDLE_SCHEMA,
+        "report_bundle_version": compiler_report.get("schema_version"),
         "occ_version": get_version(),
         "generated_at": _now_iso(),
         "claim_id": claim_id_text,
-        "judge_set": [str(getattr(j, "name", "unknown")) for j in judges],
+        "judge_set": judge_set,
         "verdict": final_verdict,
         "first_reason": first_reason,
-        "judges": [asdict(r) for r in results],
+        "judges": judge_payloads,
+        "claim_bundle": compiler_report.get("claim_bundle"),
+        "occ_ir": compiler_report.get("occ_ir"),
+        "constraint_ir": compiler_report.get("constraint_ir"),
+        "pipeline_trace": compiler_report.get("pipeline_trace"),
+        "diagnostics": compiler_report.get("diagnostics"),
+        "reason_catalog": compiler_report.get("reason_catalog"),
+        "provenance": compiler_report.get("provenance"),
+        "compiler_report": compiler_report,
     }
