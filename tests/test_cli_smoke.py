@@ -75,3 +75,4 @@ def test_occ_quickstart() -> None:
     assert proc.returncode == 0, proc.stderr
     assert "occ doctor" in proc.stdout
     assert "occ lab run" in proc.stdout
+    assert "occ explain-report" in proc.stdout

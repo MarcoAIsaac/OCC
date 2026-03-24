@@ -16,6 +16,7 @@ If this is your first time in the repository, this page is your entry point.
 - Verify complete MRD suites (`occ verify`) deterministically.
 - Discover project content quickly (`occ list`, `occ predict`, `occ doctor`).
 - Perform operational triage over claim specs (`occ judge`).
+- Summarize compiler-style judge reports for humans (`occ explain-report`).
 
 The repo has two practical goals:
 
@@ -60,10 +61,11 @@ occ run ILSC_MRD_suite_15_modulos_CANON/mrd_obs_isaac/inputs/mrd_obs_isaac/pass.
 cat out/report.json
 ```
 
-4. Optional judge examples
+4. Generate and inspect one compiler-style judge report
 
 ```bash
-occ judge examples/claim_specs/nuclear_pass.yaml --profile nuclear
+occ judge examples/claim_specs/minimal_pass.yaml --out out/judge_report.json
+occ explain-report out/judge_report.json
 ```
 
 5. Optional desktop frontend (Windows)
@@ -79,6 +81,20 @@ occ verify
 occ verify --suite extensions
 occ verify --suite all
 ```
+
+## What the judge report now contains
+
+`occ judge --json` still returns the classic `occ.judge_report.v1` envelope, but it now embeds
+compiler-oriented layers such as:
+
+- `claim_bundle`
+- `occ_ir`
+- `constraint_ir`
+- `pipeline_trace`
+- `diagnostics`
+- `reason_catalog`
+
+Use `occ explain-report` when you want the same report in a human-readable summary instead of raw JSON.
 
 ## How to read the compendium efficiently
 

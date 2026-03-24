@@ -89,9 +89,33 @@ occ quickstart
 occ doctor
 occ list
 occ predict list
-occ judge examples/claim_specs/minimal_pass.yaml
+occ judge examples/claim_specs/minimal_pass.yaml --out out/judge_report.json
+occ explain-report out/judge_report.json
 occ judge examples/claim_specs/nuclear_pass.yaml --profile nuclear
 ```
+
+## Compiler-style judge reports
+
+`occ judge --json` still exposes the classic `occ.judge_report.v1` envelope for compatibility,
+but the report now embeds compiler-oriented layers:
+
+- `claim_bundle`
+- `occ_ir`
+- `constraint_ir`
+- `pipeline_trace`
+- `diagnostics`
+- `reason_catalog`
+- `compiler_report`
+
+When you do not want raw JSON, use:
+
+```bash
+occ judge examples/claim_specs/minimal_pass.yaml --out out/judge_report.json
+occ explain-report out/judge_report.json
+```
+
+This renders a human summary with verdict, first reason code, pipeline, required checks,
+and top reasons by category.
 
 ## Desktop app (Windows)
 

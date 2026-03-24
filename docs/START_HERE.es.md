@@ -16,6 +16,7 @@ Si es tu primera vez en este repositorio, esta página es tu punto de entrada.
 - Verificar suites MRD completas (`occ verify`) de forma determinista.
 - Descubrir contenido rápidamente (`occ list`, `occ predict`, `occ doctor`).
 - Hacer triaje operacional sobre afirmaciones (`occ judge`).
+- Resumir reportes de juez estilo compilador para humanos (`occ explain-report`).
 
 El repositorio tiene dos objetivos prácticos:
 
@@ -60,10 +61,11 @@ occ run ILSC_MRD_suite_15_modulos_CANON/mrd_obs_isaac/inputs/mrd_obs_isaac/pass.
 cat out/report.json
 ```
 
-4. Ejemplos opcionales de jueces
+4. Genera e inspecciona un reporte de juez estilo compilador
 
 ```bash
-occ judge examples/claim_specs/nuclear_pass.yaml --profile nuclear
+occ judge examples/claim_specs/minimal_pass.yaml --out out/judge_report.json
+occ explain-report out/judge_report.json
 ```
 
 5. Frontend de escritorio opcional (Windows)
@@ -79,6 +81,20 @@ occ verify
 occ verify --suite extensions
 occ verify --suite all
 ```
+
+## Qué contiene ahora el judge report
+
+`occ judge --json` sigue devolviendo la envoltura clásica `occ.judge_report.v1`, pero ahora inserta
+capas más de compilador como:
+
+- `claim_bundle`
+- `occ_ir`
+- `constraint_ir`
+- `pipeline_trace`
+- `diagnostics`
+- `reason_catalog`
+
+Usa `occ explain-report` cuando quieras leer ese mismo reporte como resumen humano y no como JSON crudo.
 
 ## Cómo leer el compendio eficientemente
 
