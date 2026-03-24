@@ -28,6 +28,7 @@ from .judges.pipeline import default_judges, run_pipeline
 from .lab import LabConfig, discover_claim_files, run_experiment_lab
 from .module_autogen import auto_generate_module, load_claim_file
 from .predictions.registry import find_registry_path, load_registry
+from .reporting import render_report_summary
 from .runner import extract_verdict_from_report, run_bundle, run_verify
 from .science_research import research_claim
 from .suites import SUITE_CANON, SUITE_EXTENSIONS, discover_suite_roots
@@ -152,7 +153,6 @@ def cmd_list(args: argparse.Namespace) -> int:
         RPRINT(_tr("No MRD modules found.", "No se encontraron módulos MRD."))
         return 0
 
-    # Compact table-like output without extra deps
     for it in items:
         runner = "yes" if it.runner else "no"
         RPRINT(f"- [{it.suite}] {it.name} (runner: {runner})")
@@ -171,7 +171,6 @@ def cmd_explain(args: argparse.Namespace) -> int:
         )
 
     mod_dir = Path(match.path)
-    # Prefer MRD_README
     for cand in ("MRD_README.md", "README.md", "README_MODULES.md"):
         p = mod_dir / cand
         if p.is_file():
@@ -180,6 +179,40 @@ def cmd_explain(args: argparse.Namespace) -> int:
             return 0
 
     RPRINT(_tr(f"No README found for {match.name}.", f"No se encontró README para {match.name}."))
+    return 0
+
+
+def cmd_explain_report(args: argparse.Namespace) -> int:
+    report_path = Path(args.report).resolve()
+    if not report_path.is_file():
+        raise SystemExit(
+            _tr(
+                f"Report file not found: {report_path}",
+                f"No se encontró reporte: {report_path}",
+            )
+        )
+    try:
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise SystemExit(
+            _tr(
+                f"Invalid JSON report: {e}",
+                f"Reporte JSON inválido: {e}",
+            )
+        )
+    if not isinstance(report, dict):
+        raise SystemExit(
+            _tr(
+                "Report must be a JSON object",
+                "El reporte debe ser un objeto JSON",
+            )
+        )
+
+    if args.json:
+        print(json.dumps(report, indent=2, ensure_ascii=False))
+        return 0
+
+    RPRINT(render_report_summary(report, language=CLI_LANGUAGE))
     return 0
 
 
@@ -329,24 +362,9 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     RPRINT(f"OCC: {info['occ_version']}")
     RPRINT(f"Python: {info['python']}")
     RPRINT(_tr(f"Platform: {info['platform']}", f"Plataforma: {info['platform']}"))
-    RPRINT(
-        _tr(
-            f"Canon suite: {info['suite_roots']['canon']}",
-            f"Suite canon: {info['suite_roots']['canon']}",
-        )
-    )
-    RPRINT(
-        _tr(
-            f"Extensions suite: {info['suite_roots']['extensions']}",
-            f"Suite extensiones: {info['suite_roots']['extensions']}",
-        )
-    )
-    RPRINT(
-        _tr(
-            f"Predictions registry: {info['predictions_registry']}",
-            f"Registry de predicciones: {info['predictions_registry']}",
-        )
-    )
+    RPRINT(_tr(f"Canon suite: {info['suite_roots']['canon']}", f"Suite canon: {info['suite_roots']['canon']}"))
+    RPRINT(_tr(f"Extensions suite: {info['suite_roots']['extensions']}", f"Suite extensiones: {info['suite_roots']['extensions']}"))
+    RPRINT(_tr(f"Predictions registry: {info['predictions_registry']}", f"Registry de predicciones: {info['predictions_registry']}"))
     return 0
 
 
@@ -369,40 +387,23 @@ def _build_quickstart_commands(start: Path) -> Dict[str, str]:
         / "pass.yaml"
     )
 
-    min_path = (
-        _format_rel(claim_min)
-        if claim_min.exists()
-        else "examples/claim_specs/minimal_pass.yaml"
-    )
-    nuc_path = (
-        _format_rel(claim_nuc)
-        if claim_nuc.exists()
-        else "examples/claim_specs/nuclear_pass.yaml"
-    )
-    bundle_path = (
-        _format_rel(bundle)
-        if bundle.exists()
-        else (
-            "ILSC_MRD_suite_15_modulos_CANON/mrd_obs_isaac/"
-            "inputs/mrd_obs_isaac/pass.yaml"
-        )
-    )
+    min_path = _format_rel(claim_min) if claim_min.exists() else "examples/claim_specs/minimal_pass.yaml"
+    nuc_path = _format_rel(claim_nuc) if claim_nuc.exists() else "examples/claim_specs/nuclear_pass.yaml"
+    bundle_path = _format_rel(bundle) if bundle.exists() else "ILSC_MRD_suite_15_modulos_CANON/mrd_obs_isaac/inputs/mrd_obs_isaac/pass.yaml"
 
     return {
         "doctor": "occ doctor",
         "catalog": "occ list --suite all",
         "judge_core": f"occ judge {min_path}",
         "judge_auto": f"occ judge {nuc_path} --profile auto",
+        "judge_explain": f"occ judge {min_path} --out out/judge_report.json && occ explain-report out/judge_report.json",
         "run_bundle": f"occ run {bundle_path} --out out/",
         "verify_extensions": "occ verify --suite extensions --strict --timeout 60",
         "predict_list": "occ predict list",
         "predict_show": "occ predict show P-0003",
         "research": f"occ research {min_path} --show 3",
         "module_auto": f"occ module auto {min_path} --create-prediction",
-        "lab_matrix": (
-            "occ lab run --claims-dir examples/claim_specs "
-            "--profiles core nuclear --out .occ_lab/latest"
-        ),
+        "lab_matrix": "occ lab run --claims-dir examples/claim_specs --profiles core nuclear --out .occ_lab/latest",
     }
 
 
@@ -420,12 +421,7 @@ def cmd_quickstart(args: argparse.Namespace) -> int:
         return 0
 
     RPRINT(_tr(f"OCC quickstart (v{get_version()})", f"Inicio rapido OCC (v{get_version()})"))
-    RPRINT(
-        _tr(
-            "Use these commands to cover the full OCC operational flow:",
-            "Usa estos comandos para cubrir el flujo operacional completo de OCC:",
-        )
-    )
+    RPRINT(_tr("Use these commands to cover the full OCC operational flow:", "Usa estos comandos para cubrir el flujo operacional completo de OCC:"))
     for key, cmd in commands.items():
         RPRINT(f"- {key}: {cmd}")
     return 0
@@ -449,12 +445,7 @@ def cmd_research(args: argparse.Namespace) -> int:
             rows = sources.get(source_name, [])
             if not isinstance(rows, list):
                 continue
-            RPRINT(
-                _tr(
-                    f"\n[{source_name}] {len(rows)} result(s)",
-                    f"\n[{source_name}] {len(rows)} resultado(s)",
-                )
-            )
+            RPRINT(_tr(f"\n[{source_name}] {len(rows)} result(s)", f"\n[{source_name}] {len(rows)} resultado(s)"))
             for item in rows[: max(1, int(args.show))]:
                 if not isinstance(item, dict):
                     continue
@@ -504,18 +495,8 @@ def cmd_module_auto(args: argparse.Namespace) -> int:
         return 0
 
     if res.get("matched_existing"):
-        RPRINT(
-            _tr(
-                f"Claim maps to an existing module: {res.get('module')}",
-                f"El claim mapea a un módulo existente: {res.get('module')}",
-            )
-        )
-        RPRINT(
-            _tr(
-                "Use `occ run <bundle> --module <module>` to execute it.",
-                "Usa `occ run <bundle> --module <módulo>` para ejecutarlo.",
-            )
-        )
+        RPRINT(_tr(f"Claim maps to an existing module: {res.get('module')}", f"El claim mapea a un módulo existente: {res.get('module')}"))
+        RPRINT(_tr("Use `occ run <bundle> --module <module>` to execute it.", "Usa `occ run <bundle> --module <módulo>` para ejecutarlo."))
         return 0
 
     RPRINT(_tr(f"Created module: {res.get('module')}", f"Módulo creado: {res.get('module')}"))
@@ -523,25 +504,12 @@ def cmd_module_auto(args: argparse.Namespace) -> int:
     RPRINT(_tr(f"Base verdict: {res.get('verdict')}", f"Veredicto base: {res.get('verdict')}"))
     locks = res.get("locks_applied", [])
     if isinstance(locks, list) and locks:
-        RPRINT(
-            _tr("Applied locks/judges: ", "Locks/jueces aplicados: ")
-            + ", ".join(str(x) for x in locks)
-        )
+        RPRINT(_tr("Applied locks/judges: ", "Locks/jueces aplicados: ") + ", ".join(str(x) for x in locks))
 
     if res.get("prediction_draft"):
-        RPRINT(
-            _tr(
-                f"Prediction draft: {res.get('prediction_draft')}",
-                f"Borrador de predicción: {res.get('prediction_draft')}",
-            )
-        )
+        RPRINT(_tr(f"Prediction draft: {res.get('prediction_draft')}", f"Borrador de predicción: {res.get('prediction_draft')}"))
     if res.get("prediction_registry"):
-        RPRINT(
-            _tr(
-                f"Prediction published to registry: {res.get('prediction_registry')}",
-                f"Predicción publicada en registry: {res.get('prediction_registry')}",
-            )
-        )
+        RPRINT(_tr(f"Prediction published to registry: {res.get('prediction_registry')}", f"Predicción publicada en registry: {res.get('prediction_registry')}"))
     return 0
 
 
@@ -551,25 +519,12 @@ def cmd_lab_run(args: argparse.Namespace) -> int:
         for raw in args.claims:
             p = Path(raw).resolve()
             if not p.is_file():
-                raise SystemExit(
-                    _tr(
-                        f"Claim file not found: {p}",
-                        f"No se encontró archivo claim: {p}",
-                    )
-                )
+                raise SystemExit(_tr(f"Claim file not found: {p}", f"No se encontró archivo claim: {p}"))
             claims.append(p)
     elif args.claims_dir:
-        claims = discover_claim_files(
-            Path(args.claims_dir).resolve(),
-            recursive=bool(args.recursive),
-        )
+        claims = discover_claim_files(Path(args.claims_dir).resolve(), recursive=bool(args.recursive))
     else:
-        raise SystemExit(
-            _tr(
-                "Provide --claims ... or --claims-dir ...",
-                "Proporciona --claims ... o --claims-dir ...",
-            )
-        )
+        raise SystemExit(_tr("Provide --claims ... or --claims-dir ...", "Proporciona --claims ... o --claims-dir ..."))
 
     if not claims:
         raise SystemExit(_tr("No claims selected.", "No se seleccionaron claims."))
@@ -579,39 +534,15 @@ def cmd_lab_run(args: argparse.Namespace) -> int:
         raise SystemExit(_tr("No profiles selected.", "No se seleccionaron perfiles."))
 
     out_dir = Path(args.out).resolve() if args.out else (Path.cwd() / ".occ_lab" / "latest")
-    payload = run_experiment_lab(
-        LabConfig(
-            claim_paths=claims,
-            profiles=profiles,
-            strict_trace=bool(args.strict_trace),
-            out_dir=out_dir,
-        )
-    )
+    payload = run_experiment_lab(LabConfig(claim_paths=claims, profiles=profiles, strict_trace=bool(args.strict_trace), out_dir=out_dir))
 
     if args.json:
         print(json.dumps(payload, indent=2, ensure_ascii=False))
     else:
         totals = payload.get("totals", {})
-        RPRINT(
-            _tr(
-                f"Lab run complete: {totals.get('runs', 0)} runs",
-                f"Lab completado: {totals.get('runs', 0)} ejecuciones",
-            )
-        )
-        RPRINT(
-            _tr(
-                f"PASS={totals.get('pass', 0)} FAIL={totals.get('fail', 0)} "
-                f"NO-EVAL={totals.get('no_eval', 0)}",
-                f"PASS={totals.get('pass', 0)} FAIL={totals.get('fail', 0)} "
-                f"NO-EVAL={totals.get('no_eval', 0)}",
-            )
-        )
-        RPRINT(
-            _tr(
-                f"Divergence: {payload.get('divergence_count', 0)} claim(s)",
-                f"Divergencia: {payload.get('divergence_count', 0)} claim(s)",
-            )
-        )
+        RPRINT(_tr(f"Lab run complete: {totals.get('runs', 0)} runs", f"Lab completado: {totals.get('runs', 0)} ejecuciones"))
+        RPRINT(_tr(f"PASS={totals.get('pass', 0)} FAIL={totals.get('fail', 0)} NO-EVAL={totals.get('no_eval', 0)}", f"PASS={totals.get('pass', 0)} FAIL={totals.get('fail', 0)} NO-EVAL={totals.get('no_eval', 0)}"))
+        RPRINT(_tr(f"Divergence: {payload.get('divergence_count', 0)} claim(s)", f"Divergencia: {payload.get('divergence_count', 0)} claim(s)"))
         artifacts = payload.get("artifacts", {})
         if isinstance(artifacts, dict):
             RPRINT(_tr("Artifacts:", "Artefactos:"))
@@ -630,163 +561,67 @@ def cmd_lab_run(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="occ",
-        description=_tr(
-            "OCC runtime CLI (MRD suite runner + catalogs)",
-            "CLI runtime de OCC (runner de suite MRD + catálogos)",
-        ),
+        description=_tr("OCC runtime CLI (MRD suite runner + catalogs)", "CLI runtime de OCC (runner de suite MRD + catálogos)"),
     )
-    p.add_argument(
-        "--version",
-        action="version",
-        version=f"occ-mrd-runner {get_version()}",
-    )
+    p.add_argument("--version", action="version", version=f"occ-mrd-runner {get_version()}")
 
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    pr = sub.add_parser(
-        "run",
-        help=_tr(
-            "Run a single bundle YAML through the appropriate MRD module",
-            "Ejecuta un bundle YAML en el módulo MRD correspondiente",
-        ),
-    )
-    pr.add_argument(
-        "bundle",
-        help="Path to bundle YAML (usually under a mrd_*/inputs folder)",
-    )
-    pr.add_argument(
-        "--module",
-        help="Module folder name (e.g. mrd_obs_isaac). If omitted, inferred from YAML path.",
-    )
-    pr.add_argument(
-        "--suite",
-        default="auto",
-        choices=["auto", "canon", "extensions"],
-        help="Which suite to search (default: auto).",
-    )
-    pr.add_argument(
-        "--out",
-        help="Output directory. If provided, report is copied to out/report.json",
-    )
-    pr.add_argument(
-        "--include-outputs",
-        action="store_true",
-        help="Also copy the module outputs folder into <out>/module_outputs (can be larger).",
-    )
-    pr.add_argument(
-        "--timeout",
-        type=int,
-        default=180,
-        help="Timeout for the run command in seconds (default: 180).",
-    )
+    pr = sub.add_parser("run", help=_tr("Run a single bundle YAML through the appropriate MRD module", "Ejecuta un bundle YAML en el módulo MRD correspondiente"))
+    pr.add_argument("bundle", help="Path to bundle YAML (usually under a mrd_*/inputs folder)")
+    pr.add_argument("--module", help="Module folder name (e.g. mrd_obs_isaac). If omitted, inferred from YAML path.")
+    pr.add_argument("--suite", default="auto", choices=["auto", "canon", "extensions"], help="Which suite to search (default: auto).")
+    pr.add_argument("--out", help="Output directory. If provided, report is copied to out/report.json")
+    pr.add_argument("--include-outputs", action="store_true", help="Also copy the module outputs folder into <out>/module_outputs (can be larger).")
+    pr.add_argument("--timeout", type=int, default=180, help="Timeout for the run command in seconds (default: 180).")
     pr.set_defaults(func=cmd_run)
 
-    pv = sub.add_parser(
-        "verify",
-        help=_tr(
-            "Run a full MRD suite verification (canonical/extensions)",
-            "Ejecuta verificación completa de suite MRD (canon/extensiones)",
-        ),
-    )
-    pv.add_argument(
-        "--suite",
-        default="canon",
-        choices=["canon", "extensions", "all"],
-        help="Which suite to verify (default: canon).",
-    )
+    pv = sub.add_parser("verify", help=_tr("Run a full MRD suite verification (canonical/extensions)", "Ejecuta verificación completa de suite MRD (canon/extensiones)"))
+    pv.add_argument("--suite", default="canon", choices=["canon", "extensions", "all"], help="Which suite to verify (default: canon).")
     pv.add_argument("--strict", action="store_true", help="Fail if any expectation fails")
-    pv.add_argument(
-        "--timeout",
-        default=180,
-        type=int,
-        help="Timeout per MRD case (seconds).",
-    )
+    pv.add_argument("--timeout", default=180, type=int, help="Timeout per MRD case (seconds).")
     pv.set_defaults(func=cmd_verify)
 
-    pl = sub.add_parser(
-        "list",
-        help=_tr("List available MRD modules", "Lista módulos MRD disponibles"),
-    )
-    pl.add_argument(
-        "--suite",
-        default="all",
-        choices=["canon", "extensions", "all"],
-        help="Which suite to list (default: all).",
-    )
+    pl = sub.add_parser("list", help=_tr("List available MRD modules", "Lista módulos MRD disponibles"))
+    pl.add_argument("--suite", default="all", choices=["canon", "extensions", "all"], help="Which suite to list (default: all).")
     pl.add_argument("--json", action="store_true", help="Emit JSON")
     pl.set_defaults(func=cmd_list)
 
-    pe = sub.add_parser(
-        "explain",
-        help=_tr("Print a module README to stdout", "Imprime el README de un módulo"),
-    )
+    pe = sub.add_parser("explain", help=_tr("Print a module README to stdout", "Imprime el README de un módulo"))
     pe.add_argument("module", help="Module folder name (e.g. mrd_obs_isaac)")
     pe.set_defaults(func=cmd_explain)
 
-    pj = sub.add_parser(
-        "judge",
-        help=_tr(
-            "Run built-in operational judges on a claim spec YAML",
-            "Ejecuta jueces operacionales integrados sobre un claim YAML",
-        ),
-    )
+    per = sub.add_parser("explain-report", help=_tr("Summarize an OCC judge report for humans", "Resume un reporte OCC para humanos"))
+    per.add_argument("report", help="Path to judge report JSON")
+    per.add_argument("--json", action="store_true", help="Emit the raw JSON report")
+    per.set_defaults(func=cmd_explain_report)
+
+    pj = sub.add_parser("judge", help=_tr("Run built-in operational judges on a claim spec YAML", "Ejecuta jueces operacionales integrados sobre un claim YAML"))
     pj.add_argument("claim", help="Path to claim spec YAML")
-    pj.add_argument(
-        "--strict-trace",
-        action="store_true",
-        help="Require all declared source paths to exist.",
-    )
-    pj.add_argument(
-        "--profile",
-        default="core",
-        choices=["core", "nuclear", "auto"],
-        help=(
-            "Judge profile: core (default), nuclear, or auto "
-            "(auto enables nuclear package when claim is nuclear-domain)."
-        ),
-    )
+    pj.add_argument("--strict-trace", action="store_true", help="Require all declared source paths to exist.")
+    pj.add_argument("--profile", default="core", choices=["core", "nuclear", "auto"], help=("Judge profile: core (default), nuclear, or auto (auto enables nuclear package when claim is nuclear-domain)."))
     pj.add_argument("--json", action="store_true", help="Emit full judge report as JSON")
     pj.add_argument("--out", help="Write report JSON to this path")
     pj.set_defaults(func=cmd_judge)
 
-    pd = sub.add_parser(
-        "doctor",
-        help=_tr("Environment & repo diagnostics", "Diagnóstico de entorno y repositorio"),
-    )
+    pd = sub.add_parser("doctor", help=_tr("Environment & repo diagnostics", "Diagnóstico de entorno y repositorio"))
     pd.add_argument("--json", action="store_true", help="Emit JSON")
     pd.set_defaults(func=cmd_doctor)
 
-    pqs = sub.add_parser(
-        "quickstart",
-        help=_tr(
-            "Print a compact command map covering the full OCC workflow",
-            "Imprime un mapa compacto de comandos para cubrir el flujo completo OCC",
-        ),
-    )
+    pqs = sub.add_parser("quickstart", help=_tr("Print a compact command map covering the full OCC workflow", "Imprime un mapa compacto de comandos para cubrir el flujo completo OCC"))
     pqs.add_argument("--json", action="store_true", help="Emit JSON")
     pqs.set_defaults(func=cmd_quickstart)
 
-    pp = sub.add_parser(
-        "predict",
-        help=_tr("Predictions registry commands", "Comandos de registry de predicciones"),
-    )
+    pp = sub.add_parser("predict", help=_tr("Predictions registry commands", "Comandos de registry de predicciones"))
     pp_sub = pp.add_subparsers(dest="pred_cmd", required=True)
-
     ppl = pp_sub.add_parser("list", help="List predictions")
     ppl.add_argument("--json", action="store_true", help="Emit JSON")
     ppl.set_defaults(func=cmd_predict_list)
-
     pps = pp_sub.add_parser("show", help="Show a prediction")
     pps.add_argument("id", help="Prediction id (e.g. P-0003)")
     pps.set_defaults(func=cmd_predict_show)
 
-    prc = sub.add_parser(
-        "research",
-        help=_tr(
-            "Run best-effort scientific web research from a claim YAML/JSON",
-            "Ejecuta investigación científica web (best effort) desde claim YAML/JSON",
-        ),
-    )
+    prc = sub.add_parser("research", help=_tr("Run best-effort scientific web research from a claim YAML/JSON", "Ejecuta investigación científica web (best effort) desde claim YAML/JSON"))
     prc.add_argument("claim", help="Path to claim YAML/JSON")
     prc.add_argument("--max-results", default=5, type=int, help="Results per source")
     prc.add_argument("--show", default=3, type=int, help="Rows shown per source in text mode")
@@ -794,105 +629,31 @@ def build_parser() -> argparse.ArgumentParser:
     prc.add_argument("--json", action="store_true", help="Emit JSON")
     prc.set_defaults(func=cmd_research)
 
-    pm = sub.add_parser(
-        "module",
-        help=_tr(
-            "Module engineering commands (auto-generation from claims)",
-            "Comandos de ingeniería de módulos (autogeneración desde claims)",
-        ),
-    )
+    pm = sub.add_parser("module", help=_tr("Module engineering commands (auto-generation from claims)", "Comandos de ingeniería de módulos (autogeneración desde claims)"))
     pm_sub = pm.add_subparsers(dest="module_cmd", required=True)
-
-    pma = pm_sub.add_parser(
-        "auto",
-        help=_tr(
-            "Create a new extension module from claim data when no module fits",
-            "Crea un nuevo módulo de extensiones cuando no hay uno que encaje",
-        ),
-    )
+    pma = pm_sub.add_parser("auto", help=_tr("Create a new extension module from claim data when no module fits", "Crea un nuevo módulo de extensiones cuando no hay uno que encaje"))
     pma.add_argument("claim", help="Path to claim YAML/JSON")
     pma.add_argument("--module-name", help="Explicit module name (e.g. mrd_auto_x)")
-    pma.add_argument(
-        "--no-research",
-        action="store_true",
-        help="Disable external scientific source scan",
-    )
+    pma.add_argument("--no-research", action="store_true", help="Disable external scientific source scan")
     pma.add_argument("--max-sources", default=5, type=int, help="Max results per source")
-    pma.add_argument(
-        "--create-prediction",
-        action="store_true",
-        help="Create prediction draft from generated context",
-    )
-    pma.add_argument(
-        "--publish-prediction",
-        action="store_true",
-        help="Also append the generated prediction to predictions/registry.yaml",
-    )
-    pma.add_argument(
-        "--no-manifest",
-        action="store_true",
-        help="Do not register the generated module in extensions manifest",
-    )
-    pma.add_argument(
-        "--force",
-        action="store_true",
-        help="If module exists, create a timestamped variant",
-    )
+    pma.add_argument("--create-prediction", action="store_true", help="Create prediction draft from generated context")
+    pma.add_argument("--publish-prediction", action="store_true", help="Also append the generated prediction to predictions/registry.yaml")
+    pma.add_argument("--no-manifest", action="store_true", help="Do not register the generated module in extensions manifest")
+    pma.add_argument("--force", action="store_true", help="If module exists, create a timestamped variant")
     pma.add_argument("--json", action="store_true", help="Emit JSON")
     pma.set_defaults(func=cmd_module_auto)
 
-    plab = sub.add_parser(
-        "lab",
-        help=_tr(
-            "Batch claim evaluation across profiles with comparative artifacts",
-            "Evaluación batch de claims por perfiles con artefactos comparativos",
-        ),
-    )
+    plab = sub.add_parser("lab", help=_tr("Batch claim evaluation across profiles with comparative artifacts", "Evaluación batch de claims por perfiles con artefactos comparativos"))
     plab_sub = plab.add_subparsers(dest="lab_cmd", required=True)
-
-    plr = plab_sub.add_parser(
-        "run",
-        help=_tr(
-            "Run an experiment matrix for claim specs",
-            "Ejecuta una matriz experimental para claims",
-        ),
-    )
+    plr = plab_sub.add_parser("run", help=_tr("Run an experiment matrix for claim specs", "Ejecuta una matriz experimental para claims"))
     group = plr.add_mutually_exclusive_group(required=True)
-    group.add_argument(
-        "--claims",
-        nargs="+",
-        help="Explicit claim files (.yaml/.yml/.json)",
-    )
-    group.add_argument(
-        "--claims-dir",
-        help="Directory containing claim files",
-    )
-    plr.add_argument(
-        "--recursive",
-        action="store_true",
-        help="When using --claims-dir, scan subfolders recursively",
-    )
-    plr.add_argument(
-        "--profiles",
-        nargs="+",
-        default=["core", "nuclear"],
-        choices=["core", "nuclear"],
-        help="Judge profiles to evaluate (default: core nuclear)",
-    )
-    plr.add_argument(
-        "--strict-trace",
-        action="store_true",
-        help="Require declared source paths to exist",
-    )
-    plr.add_argument(
-        "--out",
-        help="Output directory for lab artifacts (default: .occ_lab/latest)",
-    )
-    plr.add_argument(
-        "--fail-on-non-pass",
-        action="store_true",
-        help="Return exit code 1 if any FAIL/NO-EVAL is produced",
-    )
+    group.add_argument("--claims", nargs="+", help="Explicit claim files (.yaml/.yml/.json)")
+    group.add_argument("--claims-dir", help="Directory containing claim files")
+    plr.add_argument("--recursive", action="store_true", help="When using --claims-dir, scan subfolders recursively")
+    plr.add_argument("--profiles", nargs="+", default=["core", "nuclear"], choices=["core", "nuclear"], help="Judge profiles to evaluate (default: core nuclear)")
+    plr.add_argument("--strict-trace", action="store_true", help="Require declared source paths to exist")
+    plr.add_argument("--out", help="Output directory for lab artifacts (default: .occ_lab/latest)")
+    plr.add_argument("--fail-on-non-pass", action="store_true", help="Return exit code 1 if any FAIL/NO-EVAL is produced")
     plr.add_argument("--json", action="store_true", help="Emit JSON")
     plr.set_defaults(func=cmd_lab_run)
 
