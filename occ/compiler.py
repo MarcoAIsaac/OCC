@@ -6,6 +6,7 @@ import hashlib
 import json
 from typing import Any, Dict, List, Mapping, Sequence
 
+from .reason_codes import lookup_reason
 from .version import get_version
 
 CLAIM_BUNDLE_SCHEMA = "occ.claim_bundle.v1"
@@ -177,28 +178,14 @@ def build_constraint_ir(bundle: Mapping[str, Any], occ_ir: Mapping[str, Any]) ->
     }
 
 
-def categorize_reason(code: str) -> str:
-    if code.startswith("DOM"):
-        return "domain"
-    if code.startswith("UV"):
-        return "uv_projection"
-    if code.startswith("TR"):
-        return "traceability"
-    if code.startswith("L4") or code.startswith("J4") or code.startswith("NUC"):
-        return "nuclear_domain"
-    if code.startswith("MRD"):
-        return "mrd_runtime"
-    if not code:
-        return "none"
-    return "general"
-
-
-def severity_from_verdict(verdict: str) -> str:
+def severity_from_verdict(verdict: str, default_severity: str) -> str:
     if verdict.startswith("FAIL"):
         return "error"
     if verdict.startswith("NO-EVAL"):
         return "warning"
-    return "info"
+    if verdict.startswith("PASS"):
+        return "info"
+    return default_severity
 
 
 def build_reason_catalog(judge_payloads: Sequence[Mapping[str, Any]]) -> List[Dict[str, Any]]:
@@ -206,12 +193,14 @@ def build_reason_catalog(judge_payloads: Sequence[Mapping[str, Any]]) -> List[Di
     for entry in judge_payloads:
         code = str(entry.get("code", ""))
         verdict = str(entry.get("verdict", ""))
+        meta = lookup_reason(code)
         catalog.append(
             {
                 "judge": str(entry.get("judge", "")),
                 "code": code,
-                "category": categorize_reason(code),
-                "severity": severity_from_verdict(verdict),
+                "category": meta["category"],
+                "label": meta["label"],
+                "severity": severity_from_verdict(verdict, meta["default_severity"]),
                 "verdict": verdict,
                 "message": str(entry.get("message", "")),
             }
