@@ -35,7 +35,7 @@ dev = [
 
 # Optional quality-of-life extras
 cli = [
-  "rich>=13",
+  "rich>=14.3.4",
 ]
 
 docs = [
